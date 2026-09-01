@@ -5,7 +5,7 @@ import { usePathname,useRouter } from "next/navigation"
 const nav=[
   ["Overview","/portal","▦"],["Sales","/portal/sales","⌑"],["Orders","/portal/orders","◇"],["Products","/portal/products","⬡"],
   ["Campaign Progress","/portal/progress","◎"],["Payouts","/portal/payouts","▣"],["Reports","/portal/reports","▤"],["Marketing Tools","/portal/marketing","⌁"],
-  ["Help","/portal/help","?"],["Payout Assistant","/portal/payout-assistant","♙"],["Account Settings","/portal/settings","⚙"],
+  ["Help","/portal/help","?"],["Account Settings","/portal/settings","⚙"],
 ]
 
 export default function PortalShell({children,org,campaign,campaigns,userEmail,organizationId,platform,lastSynced}:{children:React.ReactNode;org:any;campaign:any;campaigns:any[];userEmail:string;organizationId:string;platform:boolean;lastSynced?:string|null}){
