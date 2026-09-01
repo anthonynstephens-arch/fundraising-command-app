@@ -33,6 +33,7 @@ function downloadCsv(){
 
 export default function BreastCancerDemo(){
   const [tab,setTab]=useState("Overview")
+  const [mobileMenuOpen,setMobileMenuOpen]=useState(false)
   const [range,setRange]=useState(60)
   const [search,setSearch]=useState("")
   const [copied,setCopied]=useState("")
@@ -47,7 +48,8 @@ export default function BreastCancerDemo(){
     <aside className="bca2-sidebar">
       <div className="bca2-wordmark"><strong>Fundraiser Command</strong><span>DETROIT DECAL & APPAREL</span></div>
       <div className="bca2-demo-badge">BREAST CANCER DEMO</div>
-      <nav>{tabs.map(t=><button key={t} className={tab===t?"active":""} onClick={()=>setTab(t)}>{t}</button>)}</nav>
+      <button className="bca2-mobile-menu-toggle" onClick={()=>setMobileMenuOpen(v=>!v)} aria-expanded={mobileMenuOpen}>{mobileMenuOpen?"Close Menu":"Menu · "+tab}</button>
+      <nav className={mobileMenuOpen?"mobile-open":""}>{tabs.map(t=><button key={t} className={tab===t?"active":""} onClick={()=>{setTab(t);setMobileMenuOpen(false)}}>{t}</button>)}</nav>
       <div className="bca2-bottom"><span>Sample department portal</span><Link href="/">Exit Demo ↗</Link></div>
     </aside>
 
