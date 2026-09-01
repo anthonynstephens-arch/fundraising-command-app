@@ -1,0 +1,2 @@
+import Link from "next/link"
+export function PublicHeader(){return <header className="pub-header"><div className="pub-header-inner"><Link href="/" className="pub-brand"><span className="pub-mark">FC</span><span><strong>Fundraising Command</strong><small>Powered by Detroit Decal & Apparel</small></span></Link><nav className="pub-nav"><Link href="/fundraisers">Fundraisers</Link><Link href="/apply">Start a Fundraiser</Link><Link href="/login" className="pub-login">Admin Login</Link></nav></div></header>}
