@@ -1625,3 +1625,89 @@ input:focus,select:focus,textarea:focus{
   .marketing-template-list>div:not(.agency-empty){grid-template-columns:1fr auto}
   .marketing-template-list>div>button:last-child{grid-column:2}
 }
+
+
+/* =========================================================
+   BCA DEMO — CURRENT FEATURE PARITY
+   ========================================================= */
+.bca2-live-pill{display:inline-flex;align-items:center;padding:5px 8px;border-radius:999px;background:#e8fbf3;color:#00855c;font-size:8px;font-weight:900;letter-spacing:.04em}
+.bca2-timeline-card{margin-top:18px}
+.bca2-timeline{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:18px 20px 22px}
+.bca2-timeline>span{font-size:9px;font-weight:900;color:#6f8298}
+.bca2-timeline>div{height:8px;border-radius:999px;background:#edf2f7;overflow:hidden}
+.bca2-timeline>div i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#0d68be,#53a2ef)}
+.bca2-request-demo textarea{width:calc(100% - 40px);margin:0 20px 12px;min-height:80px;padding:10px;border:1px solid #dfe6ee;border-radius:9px;background:#fff;color:#40566f;font:inherit;font-size:10px;resize:vertical}
+.bca2-request-demo>button{margin:0 20px 20px;border:0;border-radius:9px;background:#0d68be;color:#fff;padding:11px 14px;font-size:10px;font-weight:900}
+.bca2-request-amount{display:grid;gap:4px;margin:18px 20px 12px;padding:16px;border-radius:11px;border:1px solid #e1e7ed;background:#f8fafc}
+.bca2-request-amount span{font-size:9px;font-weight:900;color:#72859a}.bca2-request-amount strong{font-size:28px;color:#1d2a3e!important}.bca2-request-amount small{font-size:9px;color:#95a5b6}
+.bca2-requested{margin:18px 20px 20px;padding:18px;border:1px solid #f2d28a;border-radius:11px;background:#fff7e7;display:grid;gap:5px}
+.bca2-requested span{font-size:8px;color:#9c6400;font-weight:900}.bca2-requested strong{font-size:27px;color:#1d2a3e!important}.bca2-requested p{margin:0;color:#7b6d4e!important;font-size:9px;line-height:1.5}
+.bca2-pro-report{overflow:visible!important}
+.bca2-report-sheet-demo{margin:18px 20px;border:1px solid #dfe5ec;border-radius:12px;background:#fff;overflow:hidden;box-shadow:0 12px 26px rgba(20,38,58,.08)}
+.bca2-report-sheet-demo .top{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;background:#0c1c30;border-top:5px solid #e23884;color:#fff}
+.bca2-report-sheet-demo .top>div{display:grid;gap:2px}.bca2-report-sheet-demo .top strong{font-size:10px}.bca2-report-sheet-demo .top span{font-size:7px;color:#a8bed4;letter-spacing:.09em}.bca2-report-sheet-demo .top>b{font-size:9px}
+.bca2-report-sheet-demo .title{padding:16px 18px 8px}.bca2-report-sheet-demo .title>span{font-size:7px;color:#e23884;font-weight:900;letter-spacing:.08em}.bca2-report-sheet-demo .title h4{margin:4px 0!important;color:#1d2a3e!important;font-size:20px!important}.bca2-report-sheet-demo .title p{margin:0;color:#7b8ea4!important;font-size:8px}
+.bca2-report-sheet-demo .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px 18px 14px}.bca2-report-sheet-demo .kpis>div{padding:11px;border:1px solid #e4e9ee;border-radius:8px;background:#fafbfd}.bca2-report-sheet-demo .kpis span{display:block;font-size:7px;color:#8797aa;text-transform:uppercase;font-weight:900}.bca2-report-sheet-demo .kpis b{display:block;margin-top:4px;font-size:14px;color:#1d2a3e!important}
+.bca2-report-sheet-demo .rows{padding:0 18px 18px}.bca2-report-sheet-demo .rows>div{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;padding:9px;border-top:1px solid #edf0f3}.bca2-report-sheet-demo .rows span{font-size:7px;color:#52677d;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bca2-marketing-hero{margin-bottom:14px;padding:20px 22px;border-radius:14px;background:linear-gradient(135deg,#0d2238,#173655);color:#fff;display:flex;justify-content:space-between;gap:18px;align-items:center}
+.bca2-marketing-hero>div>span{font-size:8px;font-weight:900;letter-spacing:.11em;color:#f08ab9}.bca2-marketing-hero h2{margin:5px 0 3px!important;color:#fff!important;font-size:22px!important}.bca2-marketing-hero p{margin:0;color:#b7c7d8!important;font-size:9px}.bca2-marketing-hero>b{font-size:8px;padding:6px 8px;border-radius:999px;background:#e8fbf3;color:#00855c!important}
+.bca2-marketing-tabs{display:flex;gap:7px;margin-bottom:16px}.bca2-marketing-tabs button{border:1px solid #dfe6ee;border-radius:8px;background:#fff;color:#60758f;padding:8px 11px;font-size:9px;font-weight:900}.bca2-marketing-tabs button.active{background:#0d68be;color:#fff;border-color:#0d68be}
+.bca2-tracked-links{padding:10px 20px 20px;display:grid}.bca2-tracked-links>div{display:grid;grid-template-columns:80px 1fr auto;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid #edf1f5}.bca2-tracked-links span{font-size:9px;font-weight:900;color:#435a72}.bca2-tracked-links code{font-size:8px;color:#7f91a5;overflow:hidden;text-overflow:ellipsis}.bca2-tracked-links button{border:0;background:transparent;color:#0d68be;font-size:8px;font-weight:900}
+.bca2-demo-assets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:18px 20px 20px}.bca2-demo-assets>div{min-height:220px;border-radius:12px;padding:16px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;position:relative}.bca2-demo-assets .square{background:linear-gradient(145deg,#141a23,#3a1830)}.bca2-demo-assets .story{background:linear-gradient(180deg,#101820,#211222)}.bca2-demo-assets .product{background:linear-gradient(160deg,#f4f5f8,#d8dee7);color:#15263a}.bca2-demo-assets .milestone{background:linear-gradient(145deg,#111b28,#153d65)}
+.bca2-demo-assets small{font-size:7px;font-weight:900;letter-spacing:.08em;color:#f2a1c7}.bca2-demo-assets strong{font-size:45px;line-height:1;color:#fff!important;margin:10px 0 3px}.bca2-demo-assets span{font-size:8px;font-weight:900;color:#dce5ef}.bca2-demo-assets b{font-size:9px;color:#fff!important;margin-top:10px}.bca2-demo-assets .product small,.bca2-demo-assets .product span{color:#536b84}.bca2-demo-assets .product strong,.bca2-demo-assets .product b{color:#15263a!important}
+.bca2-saved-template{margin:0 20px 20px;padding-top:12px;border-top:1px solid #edf1f5;font-size:8px;color:#7b8ea4}.bca2-saved-template span{display:inline-flex;margin:6px 5px 0 0;padding:5px 7px;border-radius:999px;background:#eef4fb;color:#0d68be;font-weight:900}
+.bca2-reminders{padding:8px 20px 20px;display:grid}.bca2-reminders>div{display:grid;grid-template-columns:70px 1fr auto;gap:9px;align-items:center;padding:10px 0;border-bottom:1px solid #edf1f5}.bca2-reminders b{font-size:9px;color:#0d68be!important}.bca2-reminders span{font-size:9px;color:#40566f}.bca2-reminders em{font-style:normal;font-size:7px;font-weight:900;color:#7f92a6}
+.bca2-member-list>div{grid-template-columns:1fr auto auto auto!important}.bca2-member-list em{font-style:normal;font-size:7px;font-weight:900;padding:4px 6px;border-radius:999px}.bca2-member-list em.active{background:#e8fbf3;color:#00855c}.bca2-member-list em.pending{background:#fff4dc;color:#a85f00}.bca2-member-list button{border:0;background:transparent;color:#0d68be;font-size:8px;font-weight:900}
+.bca2-member-notice{margin:0 20px 20px;padding:10px 12px;border-radius:8px;background:#eef6ff;color:#0d5fa8;font-size:9px;font-weight:800}
+
+@media(max-width:900px){
+  .bca2-demo-assets{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:640px){
+  .bca2-demo-assets{grid-template-columns:1fr}
+  .bca2-report-sheet-demo .kpis{grid-template-columns:1fr}
+  .bca2-report-sheet-demo .rows{overflow:auto}
+  .bca2-report-sheet-demo .rows>div{min-width:520px}
+  .bca2-marketing-hero{align-items:flex-start;flex-direction:column}
+  .bca2-marketing-tabs{overflow:auto;padding-bottom:2px}
+  .bca2-tracked-links>div{grid-template-columns:70px 1fr}.bca2-tracked-links button{grid-column:2}
+  .bca2-member-list>div{grid-template-columns:1fr auto!important}.bca2-member-list em,.bca2-member-list button{grid-column:2}
+}
+
+/* =========================================================
+   BCA LANDING — CAMPAIGN GRAPHICS SHOWCASE
+   ========================================================= */
+.bca-land-visual-showcase{
+  max-width:1240px;margin:0 auto;padding:80px 24px;
+  display:grid;grid-template-columns:.78fr 1.22fr;gap:64px;align-items:center
+}
+.bca-land-showcase-copy>span{color:#ff79b4;font-size:10px;font-weight:900;letter-spacing:.12em}
+.bca-land-showcase-copy h2{margin:10px 0 14px!important;color:#fff!important;font-size:clamp(34px,4vw,52px)!important;line-height:1.02!important;letter-spacing:-.04em!important}
+.bca-land-showcase-copy p{max-width:520px;margin:0;color:#c9cad2!important;font-size:14px;line-height:1.65}
+.bca-land-showcase-points{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}.bca-land-showcase-points b{padding:7px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.09);background:#2d2d34;color:#e9e9ee!important;font-size:9px}
+.bca-land-graphic-wall{position:relative;min-height:560px}
+.bca-land-poster,.bca-land-shirt-card,.bca-land-qr-card,.bca-land-milestone-card{position:absolute;border:1px solid rgba(255,255,255,.10);box-shadow:0 24px 50px rgba(0,0,0,.22)}
+.bca-land-poster{left:0;top:40px;width:330px;height:420px;padding:28px;border-radius:20px;background:radial-gradient(circle at 78% 20%,rgba(255,89,165,.35),transparent 38%),linear-gradient(150deg,#15151a,#2b1722);overflow:hidden}
+.bca-land-poster small{font-size:9px;color:#ff8cbe;font-weight:900;letter-spacing:.1em}.bca-land-poster>strong{display:block;margin-top:70px;color:#fff!important;font-size:31px;line-height:.95;letter-spacing:-.04em}.bca-land-poster>span{display:block;margin-top:13px;color:#c8c7ce;font-size:11px;font-weight:800}.bca-land-poster>em{position:absolute;left:28px;bottom:28px;font-style:normal;color:#fff;font-size:8px;font-weight:900;letter-spacing:.12em}
+.bca-land-poster-ribbon{position:absolute;right:24px;top:26px;width:78px;height:78px;border-radius:22px;background:linear-gradient(135deg,#ff6eaf,#d72f7a);display:grid;place-items:center;color:#fff;font-size:18px;font-weight:1000;transform:rotate(8deg)}
+.bca-land-shirt-card{right:12px;top:0;width:245px;height:285px;border-radius:18px;background:#f7f7f9;padding:18px;color:#1a2532;transform:rotate(4deg)}
+.bca-land-shirt-card>strong,.bca-land-shirt-card>span{display:block;text-align:center}.bca-land-shirt-card>strong{font-size:11px;color:#1c2b3b!important}.bca-land-shirt-card>span{font-size:8px;color:#7b8997;margin-top:3px}
+.bca-land-shirt{position:relative;width:160px;height:175px;margin:0 auto 8px;background:#21232a;border-radius:20px 20px 26px 26px;clip-path:polygon(20% 0,36% 9%,64% 9%,80% 0,100% 15%,88% 35%,78% 28%,78% 100%,22% 100%,22% 28%,12% 35%,0 15%)}.bca-land-shirt>div{position:absolute;left:50%;top:55%;transform:translate(-50%,-50%);text-align:center}.bca-land-shirt small{display:block;color:#ff8cbe;font-size:7px}.bca-land-shirt b{display:block;color:#fff!important;font-size:27px}.bca-land-shirt span{display:block;color:#c6cad0;font-size:7px}
+.bca-land-qr-card{right:0;bottom:8px;width:220px;height:220px;border-radius:18px;background:#fff;padding:18px;text-align:center}.bca-land-qr-card>strong{display:block;margin-top:7px;color:#14283c!important;font-size:10px}.bca-land-qr-card>span{font-size:8px;color:#8190a0}
+.bca-land-qr-faux{width:125px;height:125px;margin:0 auto;display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(7,1fr);gap:2px;background:#fff;padding:4px;border:1px solid #e1e5ea}.bca-land-qr-faux i{display:block;background:#fff}.bca-land-qr-faux i.on{background:#0c2034}
+.bca-land-milestone-card{left:235px;bottom:0;width:260px;height:205px;border-radius:18px;background:linear-gradient(145deg,#0f2236,#163a60);padding:20px;transform:rotate(-4deg)}
+.bca-land-milestone-card small{font-size:7px;color:#91aed0;font-weight:900;letter-spacing:.08em}.bca-land-milestone-card>strong{display:block;margin-top:14px;color:#ff6eaf!important;font-size:52px;line-height:1}.bca-land-milestone-card>span{display:block;color:#fff;font-size:9px;font-weight:900}.bca-land-milestone-card>div{height:7px;margin:15px 0 12px;border-radius:999px;background:rgba(255,255,255,.13);overflow:hidden}.bca-land-milestone-card>div i{display:block;height:100%;background:#ff6eaf}.bca-land-milestone-card>b{font-size:8px;color:#fff!important;letter-spacing:.08em}
+
+@media(max-width:1000px){
+  .bca-land-visual-showcase{grid-template-columns:1fr;gap:34px}
+  .bca-land-graphic-wall{max-width:650px;width:100%;margin:0 auto}
+}
+@media(max-width:680px){
+  .bca-land-visual-showcase{padding:58px 18px}
+  .bca-land-graphic-wall{min-height:720px}
+  .bca-land-poster{left:50%;transform:translateX(-50%);width:min(330px,88vw)}
+  .bca-land-shirt-card{top:410px;left:8px;right:auto;width:210px;height:250px;transform:rotate(-3deg)}
+  .bca-land-qr-card{right:0;bottom:0;width:180px;height:180px}
+  .bca-land-qr-faux{width:100px;height:100px}
+  .bca-land-milestone-card{display:none}
+}
