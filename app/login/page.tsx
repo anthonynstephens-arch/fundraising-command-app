@@ -1,0 +1,5 @@
+'use client'
+import { FormEvent,useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
+export default function Login(){const [email,setEmail]=useState('');const [password,setPassword]=useState('');const [msg,setMsg]=useState('');const router=useRouter();async function submit(e:FormEvent){e.preventDefault();setMsg('');const {error}=await createClient().auth.signInWithPassword({email,password});if(error){setMsg(error.message);return}router.push('/dashboard');router.refresh()}return <main className="center"><form className="card login" onSubmit={submit}><div className="eyebrow">FUNDRAISING COMMAND</div><h2>Welcome back</h2><p>Sign in to manage organizations and campaigns.</p><label>Email<input type="email" required value={email} onChange={e=>setEmail(e.target.value)}/></label><label>Password<input type="password" required value={password} onChange={e=>setPassword(e.target.value)}/></label>{msg&&<div className="error">{msg}</div>}<button className="primary">Sign in</button></form></main>}
