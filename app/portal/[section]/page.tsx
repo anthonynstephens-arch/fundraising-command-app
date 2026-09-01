@@ -53,7 +53,7 @@ export default async function PortalSection({params,searchParams}:{params:Promis
   if(section==="sales") content=<SalesExplorer orders={d.orders} items={d.items} products={d.products}/>
   else if(section==="orders") content=<OrdersExplorer rows={orderRows}/>
   else if(section==="reports") content=<ReportsTool org={d.org.name} campaign={d.campaign?.name||"Campaign"} orders={orderRows} products={products} payouts={payoutRows} totals={s}/>
-  else if(section==="marketing") content=<MarketingTools url={d.campaign?.public_store_url||""} orgName={d.org.name} campaignName={d.campaign?.name||"Campaign"} daysRemaining={daysRemaining} pct={pct} raised={money(s.raised)} goal={money(goal)}/>
+  else if(section==="marketing") content=<MarketingTools url={d.campaign?.public_store_url||""} orgName={d.org.name} campaignName={d.campaign?.name||"Campaign"} daysRemaining={daysRemaining} pct={pct} raised={money(s.raised)} goal={money(goal)} startsAt={d.campaign?.starts_at||null} endsAt={d.campaign?.ends_at||null}/>
   else if(section==="products") content=<>
     <div className="agency-page-head"><div><h1>Products</h1><p>Campaign product performance and rankings from Shopify orders</p></div></div>
     <section className="agency-product-grid">{products.map((p:any,i:number)=><article className="agency-product-card" key={p.id}>
