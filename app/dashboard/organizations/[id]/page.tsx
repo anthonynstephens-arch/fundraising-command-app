@@ -1,168 +1,85 @@
-import Link from 'next/link'
-import { notFound, redirect } from 'next/navigation'
+import Link from "next/link"
+import { notFound, redirect } from "next/navigation"
+import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 
-import { createClient } from '@/lib/supabase/server'
+export const dynamic = "force-dynamic"
 
-export default async function OrganizationDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
-  const { id } = await params
-  const supabase = await createClient()
+function money(v:number){return new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(v||0)}
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+export default async function OrganizationDetailPage({params}:{params:Promise<{id:string}>}) {
+  const {id}=await params
+  const userDb=await createClient()
+  const {data:{user}}=await userDb.auth.getUser()
+  if(!user) redirect("/login")
 
-  if (!user) redirect('/login')
+  const db=createAdminClient()
+  const {data:organization}=await db.from("organizations").select("id,name,slug,organization_type,contact_name,contact_email,contact_phone,logo_url,website_url,is_active,created_at").eq("id",id).maybeSingle()
+  if(!organization) notFound()
 
-  const { data: organization } = await supabase
-    .from('organizations')
-    .select(
-      'id,name,slug,organization_type,contact_name,contact_email,contact_phone,logo_url,website_url,is_active,created_at'
-    )
-    .eq('id', id)
-    .single()
-
-  if (!organization) notFound()
-
-  const [
-    { data: campaigns },
-    { data: orders },
-    { data: payouts },
-    { count: memberCount },
-  ] = await Promise.all([
-    supabase
-      .from('campaigns')
-      .select('id,name,status,goal_amount')
-      .eq('organization_id', id),
-
-    supabase
-      .from('orders')
-      .select('id,total,status')
-      .eq('organization_id', id),
-
-    supabase
-      .from('payouts')
-      .select('id,payout_amount,status')
-      .eq('organization_id', id),
-
-    supabase
-      .from('organization_members')
-      .select('*', { count: 'exact', head: true })
-      .eq('organization_id', id),
+  const [{data:campaigns},{data:orders},{data:payouts},{data:members}]=await Promise.all([
+    db.from("campaigns").select("id,name,status,goal_amount,starts_at,ends_at").eq("organization_id",id).order("created_at",{ascending:false}),
+    db.from("orders").select("id,total,status").eq("organization_id",id),
+    db.from("payouts").select("id,payout_amount,status").eq("organization_id",id),
+    db.from("organization_members").select("id,user_id,role,created_at").eq("organization_id",id)
   ])
 
-  const grossSales = (orders || []).reduce(
-    (total, order) => total + Number(order.total || 0),
-    0
-  )
+  const gross=(orders||[]).filter((o:any)=>o.status!=="cancelled").reduce((s:number,o:any)=>s+Number(o.total||0),0)
+  const payout=(payouts||[]).reduce((s:number,p:any)=>s+Number(p.payout_amount||0),0)
 
-  const payoutTotal = (payouts || []).reduce(
-    (total, payout) => total + Number(payout.payout_amount || 0),
-    0
-  )
+  return <>
+    <section className="fc-page-header">
+      <div>
+        <div className="fc-kicker">DEPARTMENT</div>
+        <h1>{organization.name}</h1>
+        <p>{organization.organization_type || "Organization"} · {organization.is_active ? "Active" : "Inactive"}</p>
+      </div>
+      <div className="fc-head-actions">
+        <Link href={"/dashboard/organizations/"+id+"/members"} className="fc-btn fc-btn-primary">Manage Access</Link>
+        <Link href={"/portal?org="+id} target="_blank" className="fc-btn">Open Department View ↗</Link>
+      </div>
+    </section>
 
-  return (
-    <main className="dash">
-      
+    <section className="fc-stat-grid">
+      <div className="fc-stat-card"><span>Campaigns</span><strong>{campaigns?.length||0}</strong></div>
+      <div className="fc-stat-card"><span>Members</span><strong>{members?.length||0}</strong></div>
+      <div className="fc-stat-card"><span>Gross Sales</span><strong>{money(gross)}</strong></div>
+      <div className="fc-stat-card"><span>Payouts</span><strong>{money(payout)}</strong></div>
+    </section>
 
-      <section>
-        <header>
-          <div>
-            <div className="eyebrow">ORGANIZATION</div>
-            <h2>{organization.name}</h2>
-          </div>
-
-          <div className="user">{user.email}</div>
-        </header>
-
-        <div className="stats">
-          <Stat label="Campaigns" value={campaigns?.length || 0} />
-          <Stat label="Members" value={memberCount || 0} />
-          <Stat label="Gross sales" value={`$${grossSales.toFixed(2)}`} />
-          <Stat label="Payouts" value={`$${payoutTotal.toFixed(2)}`} />
+    <section className="fc-dashboard-grid">
+      <div className="fc-panel">
+        <div className="fc-panel-head"><div><div className="fc-kicker">PROFILE</div><h2>Department Details</h2></div></div>
+        <div className="fc-kpi-list">
+          <div><span>Type</span><strong>{organization.organization_type||"Organization"}</strong></div>
+          <div><span>Contact</span><strong>{organization.contact_name||"—"}</strong></div>
+          <div><span>Email</span><strong>{organization.contact_email||"—"}</strong></div>
+          <div><span>Phone</span><strong>{organization.contact_phone||"—"}</strong></div>
+          <div><span>Website</span><strong>{organization.website_url||"—"}</strong></div>
         </div>
+      </div>
 
-        <div className="page-actions">
-          <div>
-            <h3>Organization administration</h3>
-            <p>Manage access and organization settings.</p>
-          </div>
-          <Link href={`/dashboard/organizations/${organization.id}/members`} className="primary">
-            Manage Members
-          </Link>
+      <div className="fc-panel">
+        <div className="fc-panel-head"><div><div className="fc-kicker">ACCESS</div><h2>Member Access</h2></div></div>
+        <p className="fc-note">Assign people to this department, set their role, and control who can see the department portal.</p>
+        <div className="fc-role-grid">
+          <div><strong>Owner</strong><span>Full department control</span></div>
+          <div><strong>Admin</strong><span>Campaigns, members, reports</span></div>
+          <div><strong>Manager</strong><span>Campaign operations</span></div>
+          <div><strong>Viewer</strong><span>Read-only reporting</span></div>
         </div>
+        <Link href={"/dashboard/organizations/"+id+"/members"} className="fc-btn fc-btn-primary">Manage Members</Link>
+      </div>
+    </section>
 
-        <div className="panel">
-          <h3>Organization details</h3>
-
-          <p>
-            <strong>Type:</strong>{' '}
-            {organization.organization_type || 'Organization'}
-          </p>
-
-          <p>
-            <strong>Status:</strong>{' '}
-            {organization.is_active ? 'Active' : 'Inactive'}
-          </p>
-
-          {organization.website_url && (
-            <p>
-              <strong>Website:</strong> {organization.website_url}
-            </p>
-          )}
-
-          {organization.contact_name && (
-            <p>
-              <strong>Contact:</strong> {organization.contact_name}
-            </p>
-          )}
-
-          {organization.contact_email && (
-            <p>
-              <strong>Email:</strong> {organization.contact_email}
-            </p>
-          )}
-
-          {organization.contact_phone && (
-            <p>
-              <strong>Phone:</strong> {organization.contact_phone}
-            </p>
-          )}
-        </div>
-
-        <div className="panel">
-          <h3>Campaigns</h3>
-
-          {campaigns?.length ? (
-            campaigns.map((campaign) => (
-              <div key={campaign.id}>
-                <strong>{campaign.name}</strong>
-                <p>Status: {campaign.status}</p>
-              </div>
-            ))
-          ) : (
-            <p>No campaigns yet.</p>
-          )}
-        </div>
-      </section>
-    </main>
-  )
-}
-
-function Stat({
-  label,
-  value,
-}: {
-  label: string
-  value: string | number
-}) {
-  return (
-    <div className="stat">
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </div>
-  )
+    <section className="fc-card fc-section-gap">
+      <div className="fc-card-head"><div><div className="fc-kicker">FUNDRAISING</div><h2>Campaigns</h2></div></div>
+      <div className="fc-list-grid">
+        {(campaigns||[]).map((c:any)=><Link key={c.id} href={"/dashboard/campaigns/"+c.id} className="fc-list-card">
+          <div><span className="fc-kicker">{c.status}</span><h3>{c.name}</h3><p>Goal {money(Number(c.goal_amount||0))}</p></div><span>→</span>
+        </Link>)}
+      </div>
+      {!campaigns?.length&&<div className="fc-empty">No campaigns assigned to this department yet.</div>}
+    </section>
+  </>
 }
