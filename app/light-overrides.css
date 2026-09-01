@@ -1237,3 +1237,42 @@ input:focus,select:focus,textarea:focus{
   .bca-land-compare{margin-left:16px;margin-right:16px;grid-template-columns:1fr}.bca-land-compare-col.bad,.bca-land-compare-col.good{border-radius:14px}.bca-land-compare-vs{min-height:50px}
   .bca-land-final{margin-left:16px;margin-right:16px;padding:28px;flex-direction:column;align-items:flex-start}.bca-land-final-actions{width:100%;min-width:0}.bca-land-final-actions a{width:100%}
 }
+
+
+/* BCA landing v2 — fix first-fold hierarchy and contrast */
+.bca-land-hero-v2{min-height:auto!important;padding-top:72px!important;padding-bottom:54px!important;gap:44px!important}
+.bca-land-hero-v2 .bca-land-hero-copy h1{
+  max-width:720px!important;
+  margin:18px 0 0!important;
+  color:#ffffff!important;
+  font-size:clamp(46px,5.2vw,68px)!important;
+  line-height:.98!important;
+  letter-spacing:-.045em!important;
+}
+.bca-land-hero-v2 .bca-land-hero-copy h1 span{display:block;color:#ff5fa9!important}
+.bca-land-hero-v2 .bca-land-hero-copy p{max-width:710px!important;margin-top:22px!important;color:#d0d0d7!important;font-size:16px!important;line-height:1.58!important}
+.bca-land-hero-points{display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:24px}
+.bca-land-hero-points>div{display:flex;align-items:center;gap:7px;color:#c6c6ce;font-size:11px;font-weight:700}
+.bca-land-hero-points b{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:#3d2733;color:#ff76b3;font-size:10px}
+.bca-land-hero-visual-v2{min-height:420px!important}
+.bca-land-dashboard-v2{transform:none!important;width:min(100%,500px)!important;padding:24px!important;border-color:#4a4a51!important;background:linear-gradient(180deg,#2b2b31,#27272c)!important}
+.bca-land-ribbon-v2{
+  position:absolute;right:2px;top:14px;z-index:3;
+  width:74px;height:74px;border-radius:20px;
+  display:grid;place-items:center;
+  background:linear-gradient(135deg,#ff5ea9,#d72f7a);
+  color:#fff;font-size:20px;font-weight:1000;letter-spacing:.08em;
+  transform:rotate(7deg);box-shadow:0 18px 42px rgba(232,62,140,.24)
+}
+.bca-land-card-link{display:inline-flex;margin-top:17px;color:#ff8fbe;text-decoration:none;font-size:11px;font-weight:900}
+.bca-land-demo-v2{margin-top:10px!important}
+
+/* force readable type on all dark BCA landing panels */
+.bca-landing h1,.bca-landing h2,.bca-landing h3,.bca-landing strong,.bca-landing b{color:#fff}
+.bca-landing .bca-land-feature-grid p,.bca-landing .bca-land-steps p,.bca-landing .bca-land-demo-copy p,.bca-landing .bca-land-final p{color:#bfc0c8!important}
+
+@media(max-width:760px){
+  .bca-land-hero-v2{padding-top:52px!important}
+  .bca-land-hero-v2 .bca-land-hero-copy h1{font-size:42px!important}
+  .bca-land-ribbon-v2{right:-4px;top:-18px;width:62px;height:62px;font-size:17px}
+}
