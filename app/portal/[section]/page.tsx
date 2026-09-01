@@ -47,13 +47,22 @@ export default async function PortalSection({params,searchParams}:{params:Promis
 
   const payoutRows=d.payouts.map((p:any)=>({date:new Date(p.created_at).toLocaleDateString(),status:p.status,gross:Number(p.gross_sales||0),contribution:Number(p.contribution_amount||0),payout:Number(p.payout_amount||0)}))
   const lastSynced=d.lastWebhook?.created_at||null
+  const nowMs=Date.now()
+  function grossInWindow(fromDays:number,toDays:number){
+    const from=nowMs-fromDays*86400000
+    const to=nowMs-toDays*86400000
+    const ids=new Set(d.orders.filter((o:any)=>{const t=o.placed_at?new Date(o.placed_at).getTime():0;return t>=from&&t<to}).map((o:any)=>o.id))
+    return d.items.filter((i:any)=>ids.has(i.order_id)).reduce((a:number,i:any)=>a+Number(i.unit_price||0)*Number(i.quantity||0),0)
+  }
+  const last3Sales=grossInWindow(3,0)
+  const previous3Sales=grossInWindow(6,3)
 
   let content:React.ReactNode
 
   if(section==="sales") content=<SalesExplorer orders={d.orders} items={d.items} products={d.products}/>
   else if(section==="orders") content=<OrdersExplorer rows={orderRows}/>
   else if(section==="reports") content=<ReportsTool org={d.org.name} campaign={d.campaign?.name||"Campaign"} orders={orderRows} products={products} payouts={payoutRows} totals={s}/>
-  else if(section==="marketing") content=<MarketingTools url={d.campaign?.public_store_url||""} orgName={d.org.name} campaignName={d.campaign?.name||"Campaign"} daysRemaining={daysRemaining} pct={pct} raised={money(s.raised)} goal={money(goal)} startsAt={d.campaign?.starts_at||null} endsAt={d.campaign?.ends_at||null}/>
+  else if(section==="marketing") content=<MarketingTools campaignId={d.campaign?.id||""} organizationId={d.organizationId} url={d.campaign?.public_store_url||""} orgName={d.org.name} orgLogo={d.org.logo_url||null} campaignName={d.campaign?.name||"Campaign"} daysRemaining={daysRemaining} pct={pct} raised={money(s.raised)} goal={money(goal)} startsAt={d.campaign?.starts_at||null} endsAt={d.campaign?.ends_at||null} products={products.slice(0,8)} last3Sales={last3Sales} previous3Sales={previous3Sales}/>
   else if(section==="products") content=<>
     <div className="agency-page-head"><div><h1>Products</h1><p>Campaign product performance and rankings from Shopify orders</p></div></div>
     <section className="agency-product-grid">{products.map((p:any,i:number)=><article className="agency-product-card" key={p.id}>
