@@ -30,16 +30,16 @@ export default async function PortalMembers({searchParams}:{searchParams:Promise
 
   const {data:members}=await db.from("organization_members").select("id,user_id,role,created_at").eq("organization_id",organizationId).order("created_at")
 
-  const users=new Map<string,string>()
+  const users=new Map<string,{email:string;confirmed:boolean}>()
   let page=1
   for(let i=0;i<10;i++){
     const {data}=await db.auth.admin.listUsers({page,perPage:1000})
-    for(const u of data.users) users.set(u.id,u.email||u.id)
+    for(const u of data.users) users.set(u.id,{email:u.email||u.id,confirmed:!!u.email_confirmed_at})
     if(data.users.length<1000) break
     page++
   }
 
-  const rows=(members||[]).map((m:any)=>({...m,email:users.get(m.user_id)||null}))
+  const rows=(members||[]).map((m:any)=>{const u=users.get(m.user_id);return {...m,email:u?.email||null,confirmed:!!u?.confirmed}})
 
   return <div className="portal-page">
     <div className="portal-page-top">
