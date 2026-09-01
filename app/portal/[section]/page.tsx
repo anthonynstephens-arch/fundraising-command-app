@@ -4,6 +4,7 @@ import SalesExplorer from "@/components/portal/SalesExplorer"
 import OrdersExplorer from "@/components/portal/OrdersExplorer"
 import ReportsTool from "@/components/portal/ReportsTool"
 import MarketingTools from "@/components/portal/MarketingTools"
+import PayoutRequestPanel from "@/components/portal/PayoutRequestPanel"
 import { getPortalData, money, portalStats } from "@/lib/portal/data"
 
 export const dynamic="force-dynamic"
@@ -70,10 +71,12 @@ export default async function PortalSection({params,searchParams}:{params:Promis
     </section>
     <section className="agency-kpis four"><div><span>DAYS ELAPSED</span><strong>{start?Math.max(0,Math.ceil((Date.now()-start.getTime())/86400000)):0}</strong></div><div><span>DAYS REMAINING</span><strong className="orange">{daysRemaining}</strong></div><div><span>REQUIRED DAILY SALES</span><strong>{money(daysRemaining?Math.max(0,salesGoal-s.gross)/daysRemaining:0)}</strong></div><div><span>AVG. DAILY SALES</span><strong className="green">{money(start?s.gross/Math.max(1,Math.ceil((Date.now()-start.getTime())/86400000)):0)}</strong></div></section>
   </>
-  else if(section==="payouts"||section==="payout-assistant") content=<>
+  else if(section==="payouts") content=<>
     <div className="agency-page-head"><div><h1>{section==="payouts"?"Payouts":"Payout Assistant"}</h1><p>Transparent campaign payout information</p></div></div>
     <div className="agency-notice">⚠ <b>Estimate notice:</b> Fundraising proceeds before approval are estimates. Approved payout records below are the source of truth.</div>
     <section className="agency-kpis four"><div><span>TOTAL EARNED</span><strong>{money(d.payouts.reduce((a:number,p:any)=>a+Number(p.payout_amount||0),0))}</strong></div><div><span>TOTAL PAID</span><strong className="green">{money(d.payouts.filter((p:any)=>p.status==="paid").reduce((a:number,p:any)=>a+Number(p.payout_amount||0),0))}</strong></div><div><span>PENDING</span><strong>{money(d.payouts.filter((p:any)=>["pending","processing"].includes(p.status)).reduce((a:number,p:any)=>a+Number(p.payout_amount||0),0))}</strong></div><div><span>AVAILABLE FOR PAYOUT</span><strong>{money(d.payouts.filter((p:any)=>p.status==="approved").reduce((a:number,p:any)=>a+Number(p.payout_amount||0),0))}</strong></div></section>
+    <PayoutRequestPanel organizationId={d.organizationId} campaignId={d.campaign?.id||""} available={Math.max(0,s.raised-d.payouts.filter((p:any)=>p.status!=="cancelled").reduce((a:number,p:any)=>a+Number(p.payout_amount||0),0))} threshold={Number(d.campaign?.min_payout_threshold||0)} canRequest={d.canManage} openRequest={d.payoutRequests.find((r:any)=>["requested","approved","processing"].includes(r.status))||null}/>
+    <section className="agency-card"><header><div><h2>Payout Request History</h2><p>Every request and its status</p></div></header>{d.payoutRequests.length?<div className="agency-table-wrap"><table className="agency-table"><thead><tr><th>REQUESTED</th><th>AMOUNT</th><th>STATUS</th><th>REVIEWED</th><th>NOTE</th></tr></thead><tbody>{d.payoutRequests.map((r:any)=><tr key={r.id}><td>{new Date(r.requested_at).toLocaleDateString()}</td><td><b>{money(Number(r.requested_amount||0))}</b></td><td><span className={"agency-pill "+r.status}>{r.status}</span></td><td>{r.reviewed_at?new Date(r.reviewed_at).toLocaleDateString():"—"}</td><td>{r.admin_note||r.note||"—"}</td></tr>)}</tbody></table></div>:<div className="agency-empty">No payout requests yet.</div>}</section>
     <section className="agency-card"><header><div><h2>Payout Ledger</h2><p>Complete history of campaign disbursements</p></div></header>{d.payouts.length?<div className="agency-table-wrap"><table className="agency-table"><thead><tr><th>DATE</th><th>STATUS</th><th>GROSS</th><th>CONTRIBUTION</th><th>PAYOUT</th></tr></thead><tbody>{d.payouts.map((p:any)=><tr key={p.id}><td>{new Date(p.created_at).toLocaleDateString()}</td><td><span className="agency-pill">{p.status}</span></td><td>{money(Number(p.gross_sales||0))}</td><td>{money(Number(p.contribution_amount||0))}</td><td><b>{money(Number(p.payout_amount||0))}</b></td></tr>)}</tbody></table></div>:<div className="agency-empty big">No approved payouts yet.</div>}</section>
   </>
   else if(section==="settings") content=<>
