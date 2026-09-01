@@ -28,7 +28,7 @@ export default async function DepartmentPortal({searchParams}:{searchParams:Prom
   }
   if(!organizationId) redirect("/apply")
 
-  const memberRole=memberships?.find((m:any)=>m.organization_id===organizationId)?.role||null
+  if(!org) redirect("/portal")\n\n  const memberRole=memberships?.find((m:any)=>m.organization_id===organizationId)?.role||null
   const preview=!!platform&&!memberRole
 
   const [{data:org},{data:campaigns},{data:orders},{data:items},{data:payouts},{data:allOrgs}]=await Promise.all([
