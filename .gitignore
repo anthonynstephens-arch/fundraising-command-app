@@ -3,5 +3,21 @@ node_modules
 .env*
 !.env.example
 .vercel
-.fc-backup-*
-.DS_Store
+
+# Local secrets / deployment state
+.env
+.env.local
+.env.*.local
+.vercel
+
+# Local secrets / deployment state
+.env
+.env.local
+.env.*.local
+.vercel
+
+# Local secrets / deployment state
+.env
+.env.local
+.env.*.local
+.vercel
