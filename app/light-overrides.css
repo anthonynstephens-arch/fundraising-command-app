@@ -657,3 +657,204 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
 
 @media(max-width:950px){.apply-hero,.pub-campaign-hero{grid-template-columns:1fr}.pub-campaign-grid,.pub-product-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.shopify-stats{grid-template-columns:1fr}.form-grid,.fc-admin-grid,.shopify-form-grid,.bulk-rule-row{grid-template-columns:1fr!important}.form-grid .full,.fc-span-2,.shopify-collection-field{grid-column:auto!important}}
 @media(max-width:650px){.apply-hero{padding:48px 16px}.pub-form-grid,.pub-campaign-grid,.pub-product-grid{grid-template-columns:1fr!important}.apply-demo-link,.pub-section-head,.shopify-page-header,.product-list-toolbar{flex-direction:column;align-items:flex-start}.pub-apply-card{padding:20px!important}}
+
+
+/* === Base44-inspired refinement pass === */
+:root{
+  --b44-bg:#f7f8fc;
+  --b44-card:#ffffff;
+  --b44-card-soft:#fbfbfe;
+  --b44-line:#e8eaf2;
+  --b44-text:#171a24;
+  --b44-muted:#737b8c;
+  --b44-purple:#6c5ce7;
+  --b44-purple-dark:#5548d8;
+  --b44-purple-soft:#f0efff;
+  --b44-blue:#4f7cff;
+  --b44-shadow:0 12px 32px rgba(27,31,59,.06);
+  --b44-shadow-soft:0 5px 18px rgba(27,31,59,.045);
+}
+
+html,body{background:var(--b44-bg)!important;color:var(--b44-text)!important}
+
+/* App chrome */
+.fc-app{grid-template-columns:236px minmax(0,1fr)!important;background:var(--b44-bg)!important}
+.fc-app-sidebar{
+  padding:20px 14px!important;
+  gap:18px!important;
+  border-right:1px solid var(--b44-line)!important;
+  box-shadow:none!important;
+}
+.fc-app-brand{padding:4px 8px 12px!important}
+.fc-app-brand-mark,.fc-app-mobile-brand .fc-app-brand-mark{
+  width:36px!important;height:36px!important;flex-basis:36px!important;
+  border-radius:11px!important;
+  background:linear-gradient(145deg,#7167f0,#5c52db)!important;
+  box-shadow:0 7px 16px rgba(92,82,219,.22)!important;
+}
+.fc-app-brand-copy strong{font-size:14px!important;letter-spacing:-.01em}
+.fc-app-brand-copy small{font-size:10px!important;color:#9aa0ae!important}
+.fc-nav-label{margin:8px 10px -7px!important;color:#a5aab6!important;font-size:9px!important}
+.fc-app-nav{gap:4px!important}
+.fc-app-nav a,.fc-app-sidebar-footer a{
+  min-height:38px!important;padding:0 10px!important;border-radius:9px!important;
+  font-size:12.5px!important;font-weight:700!important;color:#737b8c!important;
+}
+.fc-app-nav a.active{
+  background:#f0efff!important;color:#5146d7!important;
+  border:1px solid #e4e1ff!important;
+  box-shadow:none!important;
+}
+.fc-app-nav a:hover{background:#f7f6ff!important;color:#5146d7!important}
+.fc-app-content{max-width:1360px!important;padding:28px 30px 50px!important}
+
+/* Page headers */
+.fc-page-head,.fc-page-header{margin-bottom:22px!important;align-items:center!important}
+.fc-page-head h1,.fc-page-header h1{
+  margin:4px 0 6px!important;font-size:31px!important;line-height:1.08!important;letter-spacing:-.028em!important
+}
+.fc-page-head p,.fc-page-header p{font-size:13px!important;color:var(--b44-muted)!important}
+.fc-eyebrow,.fc-kicker{font-size:9px!important;letter-spacing:.13em!important;color:#7468ef!important}
+.fc-head-actions{gap:8px!important}
+
+/* Buttons */
+.fc-btn,.fc-button,.primary,.primary-button,.portal-button,.pub-primary{
+  min-height:38px!important;padding:0 13px!important;border-radius:9px!important;
+  font-size:12px!important;font-weight:800!important;
+  background:linear-gradient(135deg,#6f63ee,#5a50dd)!important;
+  box-shadow:0 5px 12px rgba(91,80,221,.17)!important;
+}
+.fc-btn:not(.fc-btn-primary),.secondary,.secondary-button,.portal-secondary,.pub-secondary{
+  background:#fff!important;color:#4c5362!important;border:1px solid #e1e4eb!important;box-shadow:none!important;
+}
+
+/* Cards */
+.fc-card,.fc-panel,.fc-stat-card,.fc-metric,.shopify-panel,.shopify-stat,
+.portal-card,.pub-card,.pub-campaign-card,.pub-apply-card,.bca-card,.dept-feature-grid article,.dept-hero-card{
+  border:1px solid var(--b44-line)!important;
+  border-radius:14px!important;
+  background:var(--b44-card)!important;
+  box-shadow:var(--b44-shadow-soft)!important;
+}
+.fc-card,.fc-panel{padding:18px!important}
+.fc-panel-head,.fc-card-head{margin-bottom:14px!important}
+.fc-panel-head h2,.fc-card-head h2{font-size:18px!important}
+.fc-stat-grid,.fc-metrics,.portal-stats,.bca-stats{gap:12px!important}
+.fc-stat-card,.fc-metric,.portal-stats>div,.bca-stats>div{
+  min-height:102px!important;padding:16px!important;border-radius:13px!important
+}
+.fc-stat-card span,.fc-metric span,.portal-stats span,.bca-stats span{
+  font-size:10px!important;color:#9298a8!important;font-weight:800!important
+}
+.fc-stat-card strong,.fc-metric strong,.portal-stats strong,.bca-stats strong{
+  margin-top:10px!important;font-size:25px!important;letter-spacing:-.02em!important
+}
+.fc-dashboard-grid,.portal-grid,.bca-grid{gap:14px!important}
+
+/* Tables */
+.fc-table th,.shopify-table th,.portal-table th,.bca-table th{
+  background:#fafbfe!important;color:#9aa1af!important;font-size:9.5px!important;
+  padding:11px 12px!important;border-bottom:1px solid #edf0f4!important
+}
+.fc-table td,.shopify-table td,.portal-table td,.bca-table td{
+  padding:12px!important;font-size:12.5px!important;border-bottom:1px solid #f0f2f6!important
+}
+.fc-table tbody tr:hover,.shopify-table tbody tr:hover,.portal-table tbody tr:hover,.bca-table tbody tr:hover{
+  background:#fbfbfe!important
+}
+
+/* Forms */
+input,select,textarea,.pub-form input,.pub-form select,.pub-form textarea,
+.form-grid input,.form-grid select,.form-grid textarea,.fc-admin-grid input,.fc-admin-grid textarea,
+.shopify-form-grid input,.shopify-form-grid select{
+  border:1px solid #e1e4eb!important;border-radius:9px!important;background:#fff!important;
+  box-shadow:none!important;font-size:12.5px!important
+}
+input:focus,select:focus,textarea:focus{
+  border-color:#a49af7!important;box-shadow:0 0 0 3px rgba(108,92,231,.09)!important
+}
+
+/* Public site */
+.pub-header-inner{max-width:1180px!important;padding:14px 22px!important}
+.pub-mark{width:36px!important;height:36px!important;border-radius:10px!important}
+.pub-brand strong{font-size:13px!important}
+.pub-brand small{font-size:9px!important}
+.pub-nav a{font-size:12px!important;padding:8px 11px!important}
+.dept-hero{padding-top:64px!important;gap:34px!important}
+.dept-hero-copy h1{font-size:clamp(42px,5.5vw,66px)!important;line-height:.98!important}
+.dept-hero-copy>p{font-size:16px!important;line-height:1.6!important}
+.dept-trust-row{font-size:11px!important}
+.dept-section{padding-top:50px!important;padding-bottom:50px!important}
+.dept-section-head h2,.dept-demo-strip h2,.dept-role-band h2,.dept-final-cta h2{font-size:clamp(28px,3.5vw,39px)!important}
+.dept-feature-grid{gap:12px!important}
+.dept-feature-grid article{padding:20px!important}
+.dept-feature-grid h3{margin-top:21px!important;font-size:16px!important}
+.dept-feature-grid p{font-size:12.5px!important}
+.dept-demo-strip,.dept-role-band,.dept-final-cta{border-radius:16px!important}
+.dept-demo-strip{background:linear-gradient(135deg,#4b43c9,#695eea)!important}
+.dept-final-cta{background:#242735!important}
+
+/* Application */
+.apply-hero{padding-top:58px!important;gap:34px!important}
+.apply-copy h1{font-size:clamp(39px,4.8vw,58px)!important}
+.apply-copy>p{font-size:15px!important}
+.apply-benefits{gap:8px!important}
+.apply-benefits>div{padding:13px 0!important}
+.pub-apply-card{padding:23px!important;border-radius:16px!important}
+.apply-form-head h2{font-size:24px!important}
+.pub-form-grid{gap:12px!important}
+.pub-form{gap:14px!important}
+.pub-form label{font-size:11px!important}
+.pub-form input,.pub-form select{min-height:42px!important}
+.pub-form textarea{min-height:110px!important}
+
+/* Department portal */
+.portal-shell{grid-template-columns:224px minmax(0,1fr)!important;background:var(--b44-bg)!important}
+.portal-sidebar{padding:18px 13px!important;gap:16px!important;border-right:1px solid var(--b44-line)!important}
+.portal-brand strong{font-size:13px!important}
+.portal-main{padding:28px 30px 50px!important;max-width:1360px!important}
+.portal-head h1,.portal-page-top h1{font-size:31px!important}
+.portal-head p,.portal-page-top p{font-size:13px!important}
+.portal-sidebar nav{gap:4px!important}
+.portal-sidebar nav a{padding:9px 10px!important;font-size:12px!important;border-radius:8px!important}
+.portal-card{padding:17px!important}
+.portal-card-head h2{font-size:18px!important}
+.portal-row{padding:11px 0!important;font-size:12px!important}
+
+/* BCA demo */
+.bca-demo{grid-template-columns:224px minmax(0,1fr)!important}
+.bca-sidebar{padding:18px 13px!important;gap:18px!important}
+.bca-logo>span{width:36px!important;height:36px!important;border-radius:10px!important}
+.bca-logo strong{font-size:12px!important}
+.bca-sidebar nav{gap:4px!important}
+.bca-sidebar nav button{padding:9px 10px!important;font-size:12px!important;border-radius:8px!important}
+.bca-main{padding:28px 30px 50px!important;max-width:1360px!important}
+.bca-head h1{font-size:31px!important}
+.bca-head p{font-size:13px!important}
+.bca-card{padding:17px!important}
+.bca-card-head h2{font-size:18px!important}
+
+/* Campaign/product management */
+.shopify-page{gap:14px!important}
+.shopify-page-header h1{font-size:31px!important}
+.shopify-panel{padding:18px!important}
+.campaign-product-group{border-color:var(--b44-line)!important;border-radius:12px!important;box-shadow:none!important}
+.campaign-product-header{padding:12px!important;background:#fbfbfe!important}
+.product-list-toolbar{margin-bottom:12px!important}
+.fc-list-card{padding:14px!important;border-radius:12px!important;box-shadow:none!important}
+.fc-list-card h3{font-size:16px!important}
+.fc-quick-links{gap:8px!important}
+.fc-quick-links a{padding:12px!important;border-radius:10px!important;background:#fbfbfe!important}
+
+/* More breathing room, less "boxed in" */
+.fc-stack{gap:12px!important}
+.fc-section-gap{margin-top:14px!important}
+.fc-kpi-list>div{padding:11px 0!important}
+.fc-role-grid,.fc-role-help{gap:8px!important}
+
+@media(max-width:900px){
+  .fc-app,.portal-shell,.bca-demo{grid-template-columns:1fr!important}
+  .fc-app-sidebar,.portal-sidebar,.bca-sidebar{display:none!important}
+  .fc-app-mobile-brand{display:flex!important}
+  .fc-app-content,.portal-main,.bca-main{padding:22px 16px 40px!important}
+}
