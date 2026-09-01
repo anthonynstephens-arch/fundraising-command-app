@@ -55,6 +55,51 @@ export default function Page(){
       <div><strong>No spreadsheet mess</strong><span>Campaign accounting stays organized</span></div>
     </section>
 
+
+    <section className="bca-land-visual-showcase">
+      <div className="bca-land-showcase-copy">
+        <span>LOOKS LIKE A REAL CAMPAIGN</span>
+        <h2>Your agency gets more than a link.</h2>
+        <p>Campaign products, department-ready graphics, QR promotion, milestone posts, and a storefront that all look like they belong together.</p>
+        <div className="bca-land-showcase-points"><b>Agency branded</b><b>Ready to share</b><b>Built for October</b></div>
+      </div>
+
+      <div className="bca-land-graphic-wall">
+        <div className="bca-land-poster">
+          <small>METRO PUBLIC SAFETY</small>
+          <strong>BREAST CANCER<br/>AWARENESS</strong>
+          <span>OCTOBER 2026</span>
+          <div className="bca-land-poster-ribbon">BCA</div>
+          <em>SHOP · SUPPORT · SHARE</em>
+        </div>
+
+        <div className="bca-land-shirt-card">
+          <div className="bca-land-shirt">
+            <i className="left"/><i className="right"/>
+            <div><small>MPS</small><b>BCA</b><span>2026</span></div>
+          </div>
+          <strong>Campaign Apparel</strong>
+          <span>Built around your agency</span>
+        </div>
+
+        <div className="bca-land-qr-card">
+          <div className="bca-land-qr-faux">
+            {Array.from({length:49}).map((_,i)=><i key={i} className={(i%3===0||i%7===0||i%8===1)?"on":""}/>)}
+          </div>
+          <strong>SCAN TO SUPPORT</strong>
+          <span>Tracked campaign QR</span>
+        </div>
+
+        <div className="bca-land-milestone-card">
+          <small>CAMPAIGN MILESTONE</small>
+          <strong>75%</strong>
+          <span>OF GOAL</span>
+          <div><i style={{width:"75%"}}/></div>
+          <b>KEEP IT GOING</b>
+        </div>
+      </div>
+    </section>
+
     <section className="bca-land-section">
       <div className="bca-land-section-head">
         <div><span>MORE THAN A SHIRT FUNDRAISER</span><h2>Everything your department needs to run October professionally.</h2></div>
