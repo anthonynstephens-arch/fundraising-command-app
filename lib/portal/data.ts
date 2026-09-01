@@ -57,6 +57,7 @@ export async function getPortalData(requestedOrg?:string, requestedCampaign?:str
   const campaignOrders=(orders||[]).filter((o:any)=>orderIds.has(o.id))
 
   const campaignPayouts=(payouts||[]).filter((p:any)=>!campaignId||p.campaign_id===campaignId)
+  const {data:payoutRequests}=campaignId?await db.from("payout_requests").select("*").eq("campaign_id",campaignId).order("requested_at",{ascending:false}):{data:[] as any[]}
 
   const memberRole=memberships?.find((m:any)=>m.organization_id===organizationId)?.role||null
   const canManage=!!platform||memberRole==="owner"||memberRole==="admin"
@@ -73,7 +74,7 @@ export async function getPortalData(requestedOrg?:string, requestedCampaign?:str
 
   return {
     db,user,platform:!!platform,organizationId,org,campaigns:allCampaigns,campaign:selectedCampaign,
-    orders:campaignOrders,items:campaignItems,products,payouts:campaignPayouts,members:members||[],allOrgs:allOrgs||[],
+    orders:campaignOrders,items:campaignItems,products,payouts:campaignPayouts,payoutRequests:payoutRequests||[],members:members||[],allOrgs:allOrgs||[],
     memberRole,canManage,userMap,lastWebhook:lastWebhook||null
   }
 }
