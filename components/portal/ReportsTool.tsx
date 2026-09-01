@@ -1,45 +1,193 @@
 "use client"
-import { useState } from "react"
+import { useMemo,useState } from "react"
 import { jsPDF } from "jspdf"
 
 const reportTypes=[
-  ["Campaign Summary","High-level overview of campaign performance and totals"],
-  ["Sales by Product","Per-product sales, units, and fundraising contribution"],
-  ["Order Summary","Complete order listing with financial status"],
-  ["Payout Statement","Payout history and current available balance"],
-  ["Monthly Performance Report","Month-over-month sales and fundraising trends"],
-  ["Full Campaign Closeout Report","Comprehensive final report with adjustments"],
-]
+  ["Campaign Summary","Executive overview of campaign performance, totals and status"],
+  ["Sales by Product","Product sales, units, gross revenue and fundraising contribution"],
+  ["Order Summary","Campaign order ledger with financial and fulfillment status"],
+  ["Payout Statement","Payout request and disbursement history"],
+  ["Monthly Performance Report","Performance snapshot with campaign totals and order activity"],
+  ["Full Campaign Closeout Report","Final campaign summary with sales, contributions and payouts"],
+] as const
+
+function money(v:any){return new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(Number(v||0))}
 function csvCell(v:any){return '"'+String(v??"").replaceAll('"','""')+'"'}
+function slug(v:string){return v.replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"").toLowerCase()}
 function saveCsv(name:string,rows:any[][]){const body=rows.map(r=>r.map(csvCell).join(",")).join("\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([body],{type:"text/csv"}));a.download=name;a.click();URL.revokeObjectURL(a.href)}
 
 export default function ReportsTool({org,campaign,orders,products,payouts,totals}:{org:string;campaign:string;orders:any[];products:any[];payouts:any[];totals:any}){
-  const [type,setType]=useState(reportTypes[0][0])
+  const [type,setType]=useState<(typeof reportTypes)[number][0]>("Campaign Summary")
+  const generated=new Intl.DateTimeFormat("en-US",{month:"long",day:"numeric",year:"numeric"}).format(new Date())
+  const paidTotal=payouts.filter(p=>p.status==="paid").reduce((a,p)=>a+Number(p.payout||0),0)
+  const pendingTotal=payouts.filter(p=>["pending","approved","processing"].includes(p.status)).reduce((a,p)=>a+Number(p.payout||0),0)
+  const topProducts=[...products].sort((a,b)=>Number(b.gross||0)-Number(a.gross||0)).slice(0,5)
+
+  const previewRows=useMemo(()=>{
+    if(type==="Sales by Product") return topProducts.map(p=>[p.title,p.qty,money(p.gross),money(p.raised)])
+    if(type==="Payout Statement") return payouts.slice(0,8).map(p=>[p.date,p.status,money(p.gross),money(p.payout)])
+    return orders.slice(0,8).map(o=>[o.order,o.date,o.customer,money(o.gross),money(o.raised)])
+  },[type,orders,topProducts,payouts])
+
   function csvRows(){
     if(type==="Sales by Product") return [["Product","Units","Gross","Raised"],...products.map(p=>[p.title,p.qty,p.gross,p.raised])]
     if(type==="Payout Statement") return [["Date","Status","Gross Sales","Contribution","Payout"],...payouts.map(p=>[p.date,p.status,p.gross,p.contribution,p.payout])]
+    if(type==="Campaign Summary"||type==="Monthly Performance Report"||type==="Full Campaign Closeout Report"){
+      return [
+        ["Fundraiser Command Report",type],
+        ["Organization",org],["Campaign",campaign],["Generated",generated],[],
+        ["Metric","Value"],["Gross Sales",totals.gross],["Eligible Sales",totals.eligible],["Fundraising",totals.raised],["Orders",orders.length],["Paid Payouts",paidTotal],["Pending Payouts",pendingTotal],[],
+        ["Order","Date","Customer","Gross","Eligible","Raised","Payment","Fulfillment"],
+        ...orders.map(o=>[o.order,o.date,o.customer,o.gross,o.eligible,o.raised,o.payment,o.fulfillment])
+      ]
+    }
     return [["Order","Date","Customer","Gross","Eligible","Raised","Payment","Fulfillment"],...orders.map(o=>[o.order,o.date,o.customer,o.gross,o.eligible,o.raised,o.payment,o.fulfillment])]
   }
+
+  function addHeader(doc:jsPDF,page:number,title:string){
+    doc.setFillColor(12,28,48);doc.rect(0,0,612,78,"F")
+    doc.setFillColor(226,56,132);doc.rect(0,0,612,7,"F")
+    doc.setTextColor(255,255,255);doc.setFont("helvetica","bold");doc.setFontSize(17);doc.text("FUNDRAISER COMMAND",42,35)
+    doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(166,192,220);doc.text("DETROIT DECAL & APPAREL",42,50)
+    doc.setFont("helvetica","bold");doc.setTextColor(255,255,255);doc.setFontSize(11);doc.text(title,570,36,{align:"right"})
+    doc.setFont("helvetica","normal");doc.setTextColor(169,180,194);doc.setFontSize(8);doc.text("Page "+page,570,50,{align:"right"})
+  }
+
+  function addFooter(doc:jsPDF){
+    const pageCount=doc.getNumberOfPages()
+    for(let p=1;p<=pageCount;p++){
+      doc.setPage(p);doc.setDrawColor(226,230,236);doc.line(42,748,570,748)
+      doc.setFont("helvetica","normal");doc.setFontSize(7.5);doc.setTextColor(128,138,151)
+      doc.text("Generated by Fundraiser Command · "+generated,42,764)
+      doc.text(org+" · "+campaign,570,764,{align:"right"})
+    }
+  }
+
+  function table(doc:jsPDF,headers:string[],rows:any[][],y:number,widths:number[]){
+    const x=42,rowH=22
+    const drawHeader=()=>{
+      doc.setFillColor(245,247,250);doc.rect(x,y,widths.reduce((a,b)=>a+b,0),rowH,"F")
+      doc.setFont("helvetica","bold");doc.setFontSize(7.5);doc.setTextColor(105,119,138)
+      let cx=x
+      headers.forEach((h,i)=>{doc.text(h.toUpperCase(),cx+6,y+14);cx+=widths[i]})
+      y+=rowH
+    }
+    drawHeader()
+    rows.forEach((row,ri)=>{
+      if(y>720){doc.addPage();addHeader(doc,doc.getNumberOfPages(),type);y=98;drawHeader()}
+      if(ri%2===1){doc.setFillColor(251,252,253);doc.rect(x,y,widths.reduce((a,b)=>a+b,0),rowH,"F")}
+      doc.setDrawColor(234,237,241);doc.line(x,y+rowH,x+widths.reduce((a,b)=>a+b,0),y+rowH)
+      doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(53,67,85)
+      let cx=x
+      row.forEach((v:any,i:number)=>{
+        const maxChars=Math.max(6,Math.floor(widths[i]/4.7))
+        const txt=String(v??"—").length>maxChars?String(v).slice(0,maxChars-1)+"…":String(v??"—")
+        doc.text(txt,cx+6,y+14);cx+=widths[i]
+      })
+      y+=rowH
+    })
+    return y
+  }
+
   function downloadPdf(){
     const doc=new jsPDF({unit:"pt",format:"letter"})
-    let y=56
-    doc.setFontSize(18);doc.text("Fundraiser Command",48,y);y+=24
-    doc.setFontSize(14);doc.text(type,48,y);y+=22
-    doc.setFontSize(10);doc.text(org+" · "+campaign,48,y);y+=20
-    doc.text("Gross sales: $"+Number(totals.gross||0).toFixed(2),48,y);y+=16
-    doc.text("Eligible sales: $"+Number(totals.eligible||0).toFixed(2),48,y);y+=16
-    doc.text("Fundraising: $"+Number(totals.raised||0).toFixed(2),48,y);y+=22
-    const rows=csvRows().slice(0,28)
-    for(const row of rows){doc.text(row.join("   |   ").slice(0,120),48,y);y+=14;if(y>730){doc.addPage();y=50}}
-    doc.save((campaign||"campaign").replace(/[^a-z0-9]+/gi,"-").toLowerCase()+"-"+type.replace(/[^a-z0-9]+/gi,"-").toLowerCase()+".pdf")
+    addHeader(doc,1,type)
+
+    doc.setTextColor(28,40,56);doc.setFont("helvetica","bold");doc.setFontSize(22);doc.text(type,42,112)
+    doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(105,119,138)
+    doc.text(org+"  ·  "+campaign,42,130)
+    doc.text("Generated "+generated,570,130,{align:"right"})
+
+    const cards=[
+      ["Gross Sales",money(totals.gross)],
+      ["Eligible Sales",money(totals.eligible)],
+      ["Fundraising",money(totals.raised)],
+      ["Orders",String(orders.length)]
+    ]
+    let cx=42
+    cards.forEach(([label,value],i)=>{
+      doc.setFillColor(i===2?255:248,i===2?242:249,i===2?248:251);doc.setDrawColor(i===2?244:226,i===2?188:230,i===2?214:236)
+      doc.roundedRect(cx,154,123,70,8,8,"FD")
+      doc.setFont("helvetica","bold");doc.setFontSize(7.5);doc.setTextColor(i===2?180:112,i===2?49:126,i===2?110:144);doc.text(label.toUpperCase(),cx+12,176)
+      doc.setFontSize(17);doc.setTextColor(i===2?205:27,i===2?45:40,i===2?117:56);doc.text(value,cx+12,202)
+      cx+=135
+    })
+
+    let y=258
+    if(type==="Campaign Summary"||type==="Monthly Performance Report"||type==="Full Campaign Closeout Report"){
+      doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(28,40,56);doc.text("Campaign Performance",42,y);y+=14
+      doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(99,112,128)
+      const summary=[
+        "This report summarizes the campaign activity currently recorded in Fundraiser Command.",
+        "Sales and order activity originate from the connected Shopify campaign data. Fundraising reflects stored contribution snapshots."
+      ]
+      summary.forEach(line=>{doc.text(line,42,y,{maxWidth:528});y+=14})
+      y+=10
+      doc.setFont("helvetica","bold");doc.setFontSize(11);doc.setTextColor(28,40,56);doc.text("Recent Orders",42,y);y+=10
+      y=table(doc,["Order","Date","Customer","Gross","Raised"],orders.map(o=>[o.order,o.date,o.customer,money(o.gross),money(o.raised)]),y,[70,82,188,94,94])
+
+      if(topProducts.length){
+        y+=24;if(y>650){doc.addPage();addHeader(doc,doc.getNumberOfPages(),type);y=105}
+        doc.setFont("helvetica","bold");doc.setFontSize(11);doc.setTextColor(28,40,56);doc.text("Top Products",42,y);y+=10
+        table(doc,["Product","Units","Gross","Fundraising"],topProducts.map(p=>[p.title,p.qty,money(p.gross),money(p.raised)]),y,[260,70,99,99])
+      }
+    } else if(type==="Sales by Product"){
+      doc.setFont("helvetica","bold");doc.setFontSize(11);doc.setTextColor(28,40,56);doc.text("Product Performance",42,y);y+=10
+      table(doc,["Product","Units","Gross","Fundraising"],products.map(p=>[p.title,p.qty,money(p.gross),money(p.raised)]),y,[260,70,99,99])
+    } else if(type==="Payout Statement"){
+      doc.setFont("helvetica","bold");doc.setFontSize(11);doc.setTextColor(28,40,56);doc.text("Payout Summary",42,y);y+=18
+      doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(93,107,124)
+      doc.text("Paid to date: "+money(paidTotal),42,y);doc.text("Pending / in progress: "+money(pendingTotal),220,y);y+=24
+      table(doc,["Date","Status","Gross","Contribution","Payout"],payouts.map(p=>[p.date,p.status,money(p.gross),money(p.contribution),money(p.payout)]),y,[88,92,112,124,112])
+    } else {
+      doc.setFont("helvetica","bold");doc.setFontSize(11);doc.setTextColor(28,40,56);doc.text("Order Ledger",42,y);y+=10
+      table(doc,["Order","Date","Customer","Gross","Eligible","Raised"],orders.map(o=>[o.order,o.date,o.customer,money(o.gross),money(o.eligible),money(o.raised)]),y,[64,76,166,74,74,74])
+    }
+
+    addFooter(doc)
+    doc.save(slug(campaign||"campaign")+"-"+slug(type)+".pdf")
   }
+
+  const previewHeaders=type==="Sales by Product"?["Product","Units","Gross","Raised"]:type==="Payout Statement"?["Date","Status","Gross","Payout"]:["Order","Date","Customer","Gross","Raised"]
+
   return <>
-    <div className="agency-page-head"><div><h1>Reports</h1><p>Generate branded reports for your campaign</p></div></div>
+    <div className="agency-page-head"><div><h1>Reports</h1><p>Professional campaign reports built from live portal data</p></div></div>
     <section className="agency-report-layout">
-      <aside className="agency-card"><header><div><h2>Report Types</h2><p>Select a report to generate</p></div></header>{reportTypes.map(([name,sub])=><button onClick={()=>setType(name)} className={type===name?"active":""} key={name}>▤ <span><b>{name}</b><small>{sub}</small></span></button>)}</aside>
-      <article className="agency-card"><header><div><h2>Report Options</h2><p>Generate your report from live campaign data</p></div></header>
-        <div className="agency-report-preview"><h3>{type}</h3><p>{reportTypes.find(r=>r[0]===type)?.[1]}</p><div><span>Orders <b>{orders.length}</b></span><span>Campaign totals <b>{"$"+Number(totals.gross||0).toFixed(2)+" gross · $"+Number(totals.raised||0).toFixed(2)+" raised"}</b></span></div></div>
-        <div className="agency-actions"><button onClick={downloadPdf}>↓ Download PDF</button><button onClick={()=>saveCsv("campaign-report.csv",csvRows())}>▤ Download CSV</button><button onClick={()=>window.print()}>▣ Print</button></div>
+      <aside className="agency-card agency-report-picker">
+        <header><div><h2>Report Types</h2><p>Choose the report you need</p></div></header>
+        {reportTypes.map(([name,sub])=><button onClick={()=>setType(name)} className={type===name?"active":""} key={name}><span className="agency-report-icon">▤</span><span><b>{name}</b><small>{sub}</small></span></button>)}
+      </aside>
+
+      <article className="agency-card agency-report-builder">
+        <header><div><h2>Report Preview</h2><p>What your downloaded report will look like</p></div><span className="agency-pill active">LIVE DATA</span></header>
+
+        <div className="agency-report-sheet" id="agency-report-print">
+          <div className="agency-report-sheet-top">
+            <div><strong>FUNDRAISER COMMAND</strong><span>DETROIT DECAL & APPAREL</span></div>
+            <div><b>{type}</b><small>{generated}</small></div>
+          </div>
+          <div className="agency-report-sheet-title"><span>{org}</span><h3>{campaign}</h3><p>{reportTypes.find(r=>r[0]===type)?.[1]}</p></div>
+          <div className="agency-report-sheet-kpis">
+            <div><span>Gross Sales</span><strong>{money(totals.gross)}</strong></div>
+            <div><span>Eligible Sales</span><strong>{money(totals.eligible)}</strong></div>
+            <div className="pink"><span>Fundraising</span><strong>{money(totals.raised)}</strong></div>
+            <div><span>Orders</span><strong>{orders.length}</strong></div>
+          </div>
+          <div className="agency-report-sheet-section">
+            <div className="agency-report-sheet-section-head"><h4>{type==="Sales by Product"?"Product Performance":type==="Payout Statement"?"Payout Activity":"Recent Campaign Activity"}</h4><span>Preview</span></div>
+            <div className="agency-report-sheet-table">
+              <div className="head">{previewHeaders.map(h=><span key={h}>{h}</span>)}</div>
+              {previewRows.length?previewRows.map((row:any[],i:number)=><div className="row" key={i}>{row.map((v,j)=><span key={j}>{String(v)}</span>)}</div>):<div className="empty">No records available for this report yet.</div>}
+            </div>
+          </div>
+          <div className="agency-report-sheet-footer"><span>Generated by Fundraiser Command</span><span>{org} · {campaign}</span></div>
+        </div>
+
+        <div className="agency-report-actions-pro">
+          <button className="agency-primary" onClick={downloadPdf}>↓ Download Professional PDF</button>
+          <button className="agency-outline-button" onClick={()=>saveCsv(slug(campaign)+"-"+slug(type)+".csv",csvRows())}>▤ Download CSV</button>
+          <button className="agency-outline-button" onClick={()=>window.print()}>▣ Print</button>
+        </div>
       </article>
     </section>
   </>
