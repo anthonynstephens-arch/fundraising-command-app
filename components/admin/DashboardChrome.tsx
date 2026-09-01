@@ -24,19 +24,22 @@ export default function DashboardChrome({ children }: { children: React.ReactNod
           <span className="fc-app-brand-mark">FC</span>
           <span className="fc-app-brand-copy">
             <strong>Fundraising Command</strong>
-            <small>Operations Portal</small>
+            <small>Platform Administration</small>
           </span>
         </Link>
 
+        <div className="fc-nav-label">PLATFORM</div>
         <nav className="fc-app-nav">
           {nav.map((item) => {
             const active = item.exact ? pathname === item.href : pathname.startsWith(item.href)
-            return (
-              <Link key={item.href} href={item.href} className={active ? "active" : ""}>
-                {item.label}
-              </Link>
-            )
+            return <Link key={item.href} href={item.href} className={active ? "active" : ""}>{item.label}</Link>
           })}
+        </nav>
+
+        <div className="fc-nav-label">PREVIEW</div>
+        <nav className="fc-app-nav">
+          <Link href="/portal" target="_blank">Department Portal ↗</Link>
+          <Link href="/demo/breast-cancer-awareness" target="_blank">BCA Demo ↗</Link>
         </nav>
 
         <div className="fc-app-sidebar-footer">
