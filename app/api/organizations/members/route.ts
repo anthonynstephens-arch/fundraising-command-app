@@ -38,16 +38,35 @@ export async function POST(req:NextRequest){
     const organizationId=String(body.organizationId||"")
     const email=String(body.email||"").trim().toLowerCase()
     const role=String(body.role||"viewer")
+    const action=String(body.action||"add")
     if(!organizationId||!email||!allowedRoles.includes(role)) return NextResponse.json({error:"Invalid member details."},{status:400})
     const gate=await access(organizationId)
     if(!gate.ok) return NextResponse.json({error:"Not authorized."},{status:gate.status})
     if(role==="owner"&&!gate.platform&&gate.role!=="owner") return NextResponse.json({error:"Only an owner can assign another owner."},{status:403})
 
     const db=createAdminClient()
+
+    if(action==="resend"){
+      const membershipId=String(body.membershipId||"")
+      if(!membershipId) return NextResponse.json({error:"Missing membership."},{status:400})
+      const {data:membership}=await db.from("organization_members").select("id,user_id,role").eq("id",membershipId).eq("organization_id",organizationId).maybeSingle()
+      if(!membership) return NextResponse.json({error:"Membership not found."},{status:404})
+      const {data:userData}=await db.auth.admin.getUserById(membership.user_id)
+      const oldUser=userData?.user
+      if(oldUser?.email_confirmed_at) return NextResponse.json({error:"This member has already activated their account."},{status:400})
+      if(oldUser) await db.auth.admin.deleteUser(oldUser.id)
+      const {data:inviteData,error:inviteError}=await db.auth.admin.inviteUserByEmail(email,{redirectTo:"https://fundraising-command-app.vercel.app/auth/callback?next=/auth/invite"})
+      if(inviteError) return NextResponse.json({error:inviteError.message},{status:400})
+      if(!inviteData.user) return NextResponse.json({error:"Unable to resend invitation."},{status:400})
+      const {error:updateError}=await db.from("organization_members").update({user_id:inviteData.user.id}).eq("id",membershipId).eq("organization_id",organizationId)
+      if(updateError) return NextResponse.json({error:updateError.message},{status:400})
+      return NextResponse.json({ok:true,invited:true,userId:inviteData.user.id})
+    }
+
     let authUser=await findUserByEmail(db,email)
     let invited=false
     if(!authUser){
-      const {data,error}=await db.auth.admin.inviteUserByEmail(email)
+      const {data,error}=await db.auth.admin.inviteUserByEmail(email,{redirectTo:"https://fundraising-command-app.vercel.app/auth/callback?next=/auth/invite"})
       if(error) return NextResponse.json({error:error.message},{status:400})
       authUser=data.user
       invited=true
