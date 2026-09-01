@@ -1,20 +1,22 @@
 "use client"
 
 import { FormEvent,useEffect,useState } from "react"
-import { useRouter,useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 
 export default function InvitePage(){
   const router=useRouter()
-  const search=useSearchParams()
   const [password,setPassword]=useState("")
   const [confirm,setConfirm]=useState("")
   const [email,setEmail]=useState("")
   const [ready,setReady]=useState(false)
-  const [msg,setMsg]=useState(search.get("error")||"")
+  const [msg,setMsg]=useState("")
   const [busy,setBusy]=useState(false)
 
   useEffect(()=>{
+    const params=new URLSearchParams(window.location.search)
+    const queryError=params.get("error")
+    if(queryError) setMsg(queryError)
     const supabase=createClient()
     supabase.auth.getUser().then(({data,error})=>{
       if(error||!data.user){setMsg(m=>m||"This invitation is invalid or has expired. Ask your department administrator to resend it.");setReady(true);return}
