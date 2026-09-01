@@ -1,0 +1,13 @@
+import Link from "next/link"
+import {PublicHeader} from "@/components/public/PublicHeader"
+import {PublicFooter} from "@/components/public/PublicFooter"
+import {getPublicCampaigns} from "@/lib/public/campaigns"
+export const dynamic="force-dynamic"
+const money=(v:number)=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(v)
+export default async function Page(){
+ const campaigns=await getPublicCampaigns(); const featured=campaigns[0]; const raised=campaigns.reduce((s,c)=>s+c.stats.netRaised,0); const sales=campaigns.reduce((s,c)=>s+c.stats.sales,0)
+ return <main className="pub-page"><PublicHeader/><section className="pub-home"><div className="pub-kicker">FUNDRAISING COMMAND</div><h1>Fundraising built for organizations that have better things to do.</h1><p>Branded campaign stores, Shopify checkout, live sales tracking, contribution accounting, organization portals and payouts — all under one command center.</p><div className="pub-actions"><Link href="/apply" className="pub-primary">Start a Fundraiser</Link><Link href="/fundraisers" className="pub-secondary">Browse Fundraisers</Link></div><div className="pub-home-metrics"><div><small>ACTIVE CAMPAIGNS</small><strong>{campaigns.filter(c=>c.status==="active").length}</strong></div><div><small>TRACKED SALES</small><strong>{money(sales)}</strong></div><div><small>RAISED</small><strong>{money(raised)}</strong></div></div></section>
+ <section className="pub-section pub-how"><div className="pub-kicker">HOW IT WORKS</div><h2>From idea to live fundraiser.</h2><div className="pub-how-grid"><div><span>01</span><h3>Apply</h3><p>Tell us what you want to build.</p></div><div><span>02</span><h3>Build</h3><p>Products, rules and branding get connected.</p></div><div><span>03</span><h3>Launch</h3><p>Share one public campaign page.</p></div><div><span>04</span><h3>Track</h3><p>Sales, contributions, refunds and payouts stay synced.</p></div></div></section>
+ {featured&&<section className="pub-strip"><div><div className="pub-kicker">FEATURED CAMPAIGN</div><h2>{featured.name}</h2><p>{featured.description}</p><div className="pub-progress big"><div style={{width:`${featured.stats.progress}%`}}/></div><strong>{money(featured.stats.netRaised)} raised</strong></div><Link className="pub-primary" href={`/fundraisers/${featured.slug}`}>View Campaign</Link></section>}
+ <section className="pub-strip"><div><div className="pub-kicker">READY TO LAUNCH?</div><h2>Your fundraiser shouldn’t require ten spreadsheets.</h2></div><Link href="/apply" className="pub-primary">Start Your Campaign</Link></section><PublicFooter/></main>
+}
