@@ -1497,3 +1497,25 @@ input:focus,select:focus,textarea:focus{
 .agency-pill.paid{background:#e8fbf3!important;color:#00855c!important;border-color:#9fe8cf!important}
 .agency-pill.rejected,.agency-pill.cancelled{background:#fff0f1!important;color:#b4232f!important;border-color:#f2b8be!important}
 .fc-pill.requested{background:#fff4dc;color:#a85f00}.fc-pill.approved{background:#e9f2ff;color:#0d61ad}.fc-pill.processing{background:#eeeaff;color:#5e46b8}.fc-pill.paid{background:#e8fbf3;color:#00855c}.fc-pill.rejected{background:#fff0f1;color:#b4232f}
+
+
+/* Professional reports */
+.agency-report-picker button{align-items:flex-start!important}
+.agency-report-icon{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:#eef4fb;color:#0d68be;flex:0 0 30px}
+.agency-report-picker button.active .agency-report-icon{background:#e7f0ff;color:#0b5faf}
+.agency-report-builder{overflow:visible!important}
+.agency-report-sheet{margin:20px;border:1px solid #dfe5ec;border-radius:14px;background:#fff;box-shadow:0 16px 36px rgba(23,40,61,.08);overflow:hidden;color:#1d2a3e}
+.agency-report-sheet-top{min-height:74px;padding:16px 20px;background:#0c1c30;border-top:6px solid #e23884;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.agency-report-sheet-top>div{display:flex;flex-direction:column;gap:3px}.agency-report-sheet-top strong{font-size:14px;letter-spacing:.02em}.agency-report-sheet-top span{font-size:8px;color:#a6c0dc;letter-spacing:.14em}.agency-report-sheet-top b{font-size:11px;text-align:right}.agency-report-sheet-top small{font-size:8px;color:#a8b7c7;text-align:right}
+.agency-report-sheet-title{padding:22px 22px 10px}.agency-report-sheet-title>span{color:#e23884;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.agency-report-sheet-title h3{margin:4px 0 5px!important;color:#1d2a3e!important;font-size:24px!important;letter-spacing:-.025em}.agency-report-sheet-title p{margin:0;color:#75879c!important;font-size:10px}
+.agency-report-sheet-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;padding:14px 22px 18px}.agency-report-sheet-kpis>div{padding:13px;border:1px solid #e3e8ee;border-radius:10px;background:#fafbfd}.agency-report-sheet-kpis>div.pink{background:#fff3f8;border-color:#f2cade}.agency-report-sheet-kpis span{display:block;color:#8192a6;font-size:8px;font-weight:900;text-transform:uppercase}.agency-report-sheet-kpis strong{display:block;margin-top:5px;color:#1f2b3c!important;font-size:18px}.agency-report-sheet-kpis .pink strong{color:#c72f75!important}
+.agency-report-sheet-section{padding:0 22px 22px}.agency-report-sheet-section-head{display:flex;justify-content:space-between;align-items:center;margin:8px 0}.agency-report-sheet-section-head h4{margin:0;color:#1d2a3e!important;font-size:12px}.agency-report-sheet-section-head span{color:#8da0b5;font-size:8px}
+.agency-report-sheet-table{border:1px solid #e5e9ee;border-radius:9px;overflow:hidden}.agency-report-sheet-table .head,.agency-report-sheet-table .row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;align-items:center}.agency-report-sheet-table .head{background:#f6f8fa;padding:9px 10px}.agency-report-sheet-table .head span{font-size:7px;color:#8192a6;font-weight:900;text-transform:uppercase}.agency-report-sheet-table .row{padding:10px;border-top:1px solid #edf0f3}.agency-report-sheet-table .row span{font-size:8px;color:#4d6076;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.agency-report-sheet-table .empty{padding:25px;text-align:center;color:#91a2b5;font-size:9px}
+.agency-report-sheet-footer{display:flex;justify-content:space-between;gap:20px;padding:12px 22px;border-top:1px solid #e8ecf0;color:#929faf;font-size:7px}
+.agency-report-actions-pro{display:flex;flex-wrap:wrap;gap:9px;padding:0 20px 20px}
+@media(max-width:720px){.agency-report-sheet{margin:12px}.agency-report-sheet-kpis{grid-template-columns:repeat(2,1fr)}.agency-report-sheet-table{overflow:auto}.agency-report-sheet-table .head,.agency-report-sheet-table .row{min-width:560px}.agency-report-actions-pro>*{width:100%}}
+@media print{
+  body *{visibility:hidden!important}
+  #agency-report-print,#agency-report-print *{visibility:visible!important}
+  #agency-report-print{position:absolute!important;left:0;top:0;width:100%!important;margin:0!important;box-shadow:none!important;border:0!important}
+}
