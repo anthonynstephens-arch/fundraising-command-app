@@ -1,0 +1,2 @@
+import Link from "next/link"
+export function PublicFooter(){return <footer className="pub-footer"><div><strong>Fundraising Command</strong><p>Campaign stores, sales tracking and payout accounting in one place.</p></div><div><Link href="/fundraisers">Fundraisers</Link><Link href="/apply">Start a Fundraiser</Link><Link href="/login">Admin</Link></div></footer>}
