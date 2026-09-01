@@ -61,6 +61,7 @@ export default function MarketingTools({
   const final48=daysRemaining>0&&daysRemaining<=2
   const slowing=previous3Sales>0&&last3Sales<previous3Sales*.5
   const selectedProduct=products.find(p=>p.id===productId)||products[0]
+  const qrUrl=tracking.find(x=>x.channel==="qr")?.share_url||url
 
   const campaignMessage=final48
     ?"FINAL 48 HOURS: "+orgName+"'s "+campaignName+" fundraiser ends soon. Shop before the campaign closes: "+url
@@ -113,7 +114,7 @@ export default function MarketingTools({
     loadMarketing()
   }
 
-  useEffect(()=>{if(qrCanvas.current&&url)QRCode.toCanvas(qrCanvas.current,url,{width:220,margin:1,color:{dark:"#0b1f33",light:"#ffffff"}})},[url])
+  useEffect(()=>{if(qrCanvas.current&&qrUrl)QRCode.toCanvas(qrCanvas.current,qrUrl,{width:220,margin:1,color:{dark:"#0b1f33",light:"#ffffff"}})},[qrUrl])
 
   useEffect(()=>{
     const render=(canvas:HTMLCanvasElement|null,w:number,h:number,mode:"square"|"story"|"flyer")=>{
@@ -127,6 +128,7 @@ export default function MarketingTools({
       const pad=mode==="story"?90:74
       ctx.fillStyle=pink;ctx.fillRect(pad,pad,150,10)
       ctx.font=(mode==="story"?"800 32px":"800 24px")+" Arial";ctx.fillStyle=soft;ctx.fillText(initials(orgName)+"  •  FUNDRAISER",pad,pad+58)
+      if(orgLogo){const img=new Image();img.crossOrigin="anonymous";img.onload=()=>{try{ctx.save();ctx.fillStyle="rgba(255,255,255,.10)";ctx.roundRect(w-pad-150,pad,150,150,24);ctx.fill();ctx.drawImage(img,w-pad-138,pad+12,126,126);ctx.restore()}catch{}};img.src=orgLogo}
       ctx.font=(mode==="story"?"800 66px":"800 48px")+" Arial";ctx.fillStyle=white
       wrap(ctx,orgName,pad,pad+(mode==="story"?170:145),w-pad*2,mode==="story"?76:56,3)
       ctx.font=(mode==="story"?"800 80px":"800 58px")+" Arial"
@@ -169,7 +171,8 @@ export default function MarketingTools({
     ctx.font="800 26px Arial";ctx.fillStyle="#f5d0e1";ctx.fillText(orgName.toUpperCase(),70,132)
     ctx.font="800 52px Arial";ctx.fillStyle="#ffffff";wrap(ctx,"CAMPAIGN FAVORITE",70,215,900,58,2)
     ctx.fillStyle="#ffffff";ctx.roundRect(70,355,940,480,26);ctx.fill()
-    ctx.font="800 54px Arial";ctx.fillStyle="#14263a";wrap(ctx,selectedProduct.title,115,470,850,64,4)
+    ctx.font="800 54px Arial";ctx.fillStyle="#14263a";wrap(ctx,selectedProduct.title,115,470,430,64,4)
+    if(selectedProduct.image){const img=new Image();img.crossOrigin="anonymous";img.onload=()=>{try{ctx.fillStyle="#ffffff";ctx.roundRect(610,395,330,330,22);ctx.fill();ctx.drawImage(img,630,415,290,290)}catch{}};img.src=selectedProduct.image}
     ctx.font="800 62px Arial";ctx.fillStyle="#ed4f9a";ctx.fillText(selectedProduct.price?("$"+selectedProduct.price.toFixed(2)):"SHOP NOW",115,690)
     ctx.font="700 27px Arial";ctx.fillStyle="#60778e";ctx.fillText(selectedProduct.qty+" sold  •  "+new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(selectedProduct.raised)+" raised",115,755)
     ctx.fillStyle="#0d68be";ctx.roundRect(70,890,940,110,20);ctx.fill()
