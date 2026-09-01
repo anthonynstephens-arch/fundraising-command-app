@@ -23,7 +23,7 @@ export default async function PortalMembers({searchParams}:{searchParams:Promise
   if(!canManage) redirect("/portal?org="+organizationId)
 
   const {data:organization}=await db.from("organizations").select("id,name").eq("id",organizationId).single()
-  const {data:members}=await db.from("organization_members").select("id,user_id,role,created_at").eq("organization_id",organizationId).order("created_at")
+  if(!organization) redirect("/portal")\n  const {data:members}=await db.from("organization_members").select("id,user_id,role,created_at").eq("organization_id",organizationId).order("created_at")
 
   const users=new Map<string,string>()
   let page=1
