@@ -1109,3 +1109,23 @@ input:focus,select:focus,textarea:focus{
   .agency-report-layout{grid-template-columns:1fr}
   .agency-milestones{grid-template-columns:1fr}
 }
+
+
+/* Portal functional controls */
+.agency-campaign-switch{position:relative;cursor:pointer}
+.agency-campaign-switch select{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.agency-tabs button{border:0;background:transparent;padding:7px 11px;font:inherit;font-size:10px;color:#62758f;font-weight:800;cursor:pointer}
+.agency-tabs button.active{background:#fff;color:#0d66bb;border:1px solid #d8e3ef;border-radius:7px}
+.agency-svg-chart{height:300px;padding:18px 20px}
+.agency-svg-chart svg{width:100%;height:100%;display:block;overflow:visible}
+.agency-outline-button{min-height:38px;padding:0 14px;border:1px solid #dfe6ee;border-radius:8px;background:#fff;color:#425871;font-size:11px;font-weight:900;cursor:pointer}
+.agency-action-msg{padding:7px 10px;border-radius:999px;background:#e8fbf3;color:#00855c;font-size:10px;font-weight:900}
+.agency-qr-real{min-height:220px;display:grid;place-items:center;padding:18px}
+.agency-qr-real canvas{width:180px!important;height:180px!important;border:1px solid #dfe6ee;border-radius:10px;padding:8px;background:#fff}
+.agency-text-action{border:0;background:transparent;color:#0d65b8;font-size:10px;font-weight:900;cursor:pointer}
+.agency-primary:disabled,.agency-copybox button:disabled{opacity:.5;cursor:not-allowed}
+@media print{
+  .agency-sidebar,.agency-topbar,.agency-actions button,.agency-report-layout aside{display:none!important}
+  .agency-shell{display:block!important}.agency-content{max-width:none!important;padding:0!important}
+  .agency-card{box-shadow:none!important}
+}
