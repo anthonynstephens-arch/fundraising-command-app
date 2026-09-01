@@ -1474,3 +1474,26 @@ input:focus,select:focus,textarea:focus{
   .bca2-head-actions{width:100%!important}
   .bca2-head-actions a,.bca2-head-actions button{flex:1!important}
 }
+
+
+/* Payout request workflow */
+.agency-payout-request{padding:20px;display:grid;gap:16px}
+.agency-request-amount{display:grid;gap:4px;padding:18px;border-radius:12px;background:#f7f9fc;border:1px solid #e2e8ef}
+.agency-request-amount span{font-size:10px;font-weight:900;color:#71849e;letter-spacing:.04em}
+.agency-request-amount strong{font-size:32px;line-height:1;color:#1d2a3e}
+.agency-request-amount small{font-size:10px;color:#8ea1b7}
+.agency-request-note{display:grid;gap:7px;color:#60758e;font-size:10px;font-weight:800}
+.agency-request-note textarea{min-height:90px;padding:11px 12px;border:1px solid #dce4ec;border-radius:9px;background:#fff;resize:vertical;font:inherit;color:#1d2a3e}
+.agency-request-warning{padding:12px 13px;border-radius:9px;background:#fff8e8;border:1px solid #f1da96;color:#9a5a00;font-size:10px;line-height:1.45}
+.agency-request-button{width:max-content}
+.agency-request-message{padding:11px 12px;border-radius:9px;background:#eef6ff;color:#0c5ca6;font-size:10px;font-weight:800}
+.agency-request-status{display:grid;grid-template-columns:auto 1fr;gap:10px 14px;align-items:start;padding:16px;border:1px solid #dfe6ee;border-radius:11px;background:#fbfcfe}
+.agency-request-status>div{display:flex;flex-direction:column;gap:3px}
+.agency-request-status strong{font-size:13px;color:#1d2a3e}.agency-request-status small{font-size:10px;color:#8ea1b7}
+.agency-request-status p{grid-column:1/-1;margin:2px 0 0;color:#62758d;font-size:10px;line-height:1.5}
+.agency-pill.requested{background:#fff4dc!important;color:#a85f00!important;border-color:#f4d38d!important}
+.agency-pill.approved{background:#e9f2ff!important;color:#0d61ad!important;border-color:#b9d5f2!important}
+.agency-pill.processing{background:#eeeaff!important;color:#5e46b8!important;border-color:#d1c5ff!important}
+.agency-pill.paid{background:#e8fbf3!important;color:#00855c!important;border-color:#9fe8cf!important}
+.agency-pill.rejected,.agency-pill.cancelled{background:#fff0f1!important;color:#b4232f!important;border-color:#f2b8be!important}
+.fc-pill.requested{background:#fff4dc;color:#a85f00}.fc-pill.approved{background:#e9f2ff;color:#0d61ad}.fc-pill.processing{background:#eeeaff;color:#5e46b8}.fc-pill.paid{background:#e8fbf3;color:#00855c}.fc-pill.rejected{background:#fff0f1;color:#b4232f}
