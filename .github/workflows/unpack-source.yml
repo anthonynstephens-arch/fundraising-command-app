@@ -1,0 +1,36 @@
+name: Expand source bundle
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  expand:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Expand Fundraising Command source
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f .bootstrap/source.tgz ]; then
+            echo "No source bundle to expand."
+            exit 0
+          fi
+          tar -xzf .bootstrap/source.tgz
+          rm -f .bootstrap/source.tgz .bootstrap/fc_chunk_00
+          rmdir .bootstrap 2>/dev/null || true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes."
+            exit 0
+          fi
+          git commit -m "Expand Fundraising Command source"
+          git push origin HEAD:main
