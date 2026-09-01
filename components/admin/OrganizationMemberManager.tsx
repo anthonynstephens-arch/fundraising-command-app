@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 
-type Member={id:string;user_id:string;role:string;created_at:string;email?:string|null}
+type Member={id:string;user_id:string;role:string;created_at:string;email?:string|null;confirmed?:boolean}
 
 export default function OrganizationMemberManager({organizationId,members}:{organizationId:string;members:Member[]}){
   const router=useRouter()
@@ -28,6 +28,17 @@ export default function OrganizationMemberManager({organizationId,members}:{orga
     const data=await res.json()
     setBusy("")
     if(!res.ok){setMessage(data.error||"Unable to update role.");return}
+    router.refresh()
+  }
+
+  async function resend(m:Member){
+    if(!m.email) return
+    setBusy("resend-"+m.id);setMessage("")
+    const res=await fetch("/api/organizations/members",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"resend",organizationId,membershipId:m.id,email:m.email,role:m.role})})
+    const data=await res.json()
+    setBusy("")
+    if(!res.ok){setMessage(data.error||"Unable to resend invite.");return}
+    setMessage("Fresh invitation sent to "+m.email+".")
     router.refresh()
   }
 
@@ -68,14 +79,14 @@ export default function OrganizationMemberManager({organizationId,members}:{orga
         <thead><tr><th>Member</th><th>Role</th><th>Added</th><th></th></tr></thead>
         <tbody>
           {members.map(m=><tr key={m.id}>
-            <td><strong>{m.email||m.user_id}</strong>{m.email&&<small className="fc-member-id">{m.user_id}</small>}</td>
+            <td><strong>{m.email||m.user_id}</strong>{m.email&&<small className="fc-member-id">{m.user_id}</small>}<span className={"fc-member-status "+(m.confirmed?"active":"pending")}>{m.confirmed?"Active":"Invite pending"}</span></td>
             <td>
               <select className="fc-inline-select" value={m.role} disabled={busy===m.id} onChange={e=>updateRole(m.id,e.target.value)}>
                 <option value="owner">Owner</option><option value="admin">Admin</option><option value="manager">Manager</option><option value="viewer">Viewer</option>
               </select>
             </td>
             <td>{new Date(m.created_at).toLocaleDateString()}</td>
-            <td className="fc-table-action"><button className="fc-link-danger" type="button" disabled={busy===m.id} onClick={()=>remove(m.id)}>Remove</button></td>
+            <td className="fc-table-action">{!m.confirmed&&<button className="fc-link-secondary" type="button" disabled={busy==="resend-"+m.id} onClick={()=>resend(m)}>{busy==="resend-"+m.id?"Sending…":"Resend Invite"}</button>}<button className="fc-link-danger" type="button" disabled={busy===m.id} onClick={()=>remove(m.id)}>Remove</button></td>
           </tr>)}
         </tbody>
       </table>
