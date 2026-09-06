@@ -200,10 +200,38 @@ export async function importShopifyOrder(
     ),
   ]
 
-  const campaignId =
-    campaignIds.length === 1
-      ? campaignIds[0]
-      : null
+  if (campaignIds.length === 0) {
+    return {
+      skipped: true,
+      reason: 'No fundraiser campaign products found in order',
+      shopifyOrderId:
+        stripShopifyGid(payload.id) ||
+        String(payload.id),
+      campaignId: null,
+      lineItemCount: mappedLines.length,
+    }
+  }
+
+  if (campaignIds.length > 1) {
+    throw new Error(
+      `Order contains products from multiple fundraiser campaigns: ${campaignIds.join(', ')}`
+    )
+  }
+
+  const campaignId = campaignIds[0]
+
+  const { data: campaign, error: campaignError } =
+    await supabase
+      .from('campaigns')
+      .select('organization_id')
+      .eq('id', campaignId)
+      .single()
+
+  if (campaignError || !campaign) {
+    throw campaignError || new Error(
+      `Campaign ${campaignId} was not found`
+    )
+  }
 
   const shopifyOrderId =
     stripShopifyGid(payload.id) ||
@@ -215,19 +243,9 @@ export async function importShopifyOrder(
     payload.orderNumber ||
     shopifyOrderId
 
-  const { data: existingOrder } =
-    await supabase
-      .from('orders')
-      .select('id')
-      .eq(
-        'shopify_order_id',
-        shopifyOrderId
-      )
-      .maybeSingle()
-
   const orderRecord = {
     organization_id:
-      store.organization_id,
+      campaign.organization_id,
     campaign_id: campaignId,
     shopify_order_id:
       shopifyOrderId,
@@ -262,26 +280,18 @@ export async function importShopifyOrder(
       new Date().toISOString(),
   }
 
-  let orderId = existingOrder?.id
-
-  if (orderId) {
-    const { error } = await supabase
+  const { data: savedOrder, error: orderError } =
+    await supabase
       .from('orders')
-      .update(orderRecord)
-      .eq('id', orderId)
-
-    if (error) throw error
-  } else {
-    const { data, error } = await supabase
-      .from('orders')
-      .insert(orderRecord)
+      .upsert(orderRecord, {
+        onConflict: 'shopify_order_id',
+      })
       .select('id')
       .single()
 
-    if (error) throw error
+  if (orderError) throw orderError
 
-    orderId = data.id
-  }
+  const orderId = savedOrder.id
 
   const existingLineIds =
     mappedLines
@@ -379,20 +389,14 @@ export async function importShopifyOrder(
           : 0,
     }
 
-    if (existing) {
-      const { error } = await supabase
-        .from('order_items')
-        .update(record)
-        .eq('id', existing.id)
+    const { error } = await supabase
+      .from('order_items')
+      .upsert(record, {
+        onConflict:
+          'order_id,shopify_line_item_id',
+      })
 
-      if (error) throw error
-    } else {
-      const { error } = await supabase
-        .from('order_items')
-        .insert(record)
-
-      if (error) throw error
-    }
+    if (error) throw error
   }
 
   return {
