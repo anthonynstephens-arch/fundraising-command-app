@@ -1,6 +1,7 @@
 "use client"
 import Link from "next/link"
 import { usePathname,useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
 
 const nav=[
   ["Overview","/portal","▦"],["Sales","/portal/sales","⌑"],["Orders","/portal/orders","◇"],["Products","/portal/products","⬡"],
@@ -8,7 +9,7 @@ const nav=[
   ["Help","/portal/help","?"],["Account Settings","/portal/settings","⚙"],
 ]
 
-export default function PortalShell({children,org,campaign,campaigns,userEmail,organizationId,platform,lastSynced}:{children:React.ReactNode;org:any;campaign:any;campaigns:any[];userEmail:string;organizationId:string;platform:boolean;lastSynced?:string|null}){
+export default function PortalShell({children,org,campaign,campaigns,userEmail,organizationId,platform,lastSynced,pinAccess=false}:{children:React.ReactNode;org:any;campaign:any;campaigns:any[];userEmail:string;organizationId:string;platform:boolean;lastSynced?:string|null;pinAccess?:boolean}){
   const path=usePathname()
   const router=useRouter()
   const baseQ=new URLSearchParams({org:organizationId})
@@ -18,6 +19,13 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
   function switchCampaign(id:string){
     const p=new URLSearchParams({org:organizationId,campaign:id})
     router.push(path+"?"+p.toString())
+    router.refresh()
+  }
+
+  async function signOut(){
+    if(pinAccess) await fetch("/api/pin-session",{method:"DELETE"})
+    else await createClient().auth.signOut()
+    router.push("/login")
     router.refresh()
   }
 
@@ -52,6 +60,7 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
           </label>
           <div className="agency-sync"><span>↻</span><div><small>LAST SYNCED</small><strong>{lastSynced?new Date(lastSynced).toLocaleString():"No webhook yet"}</strong></div></div>
           <div className="agency-avatar" title={userEmail}>{(userEmail||"U").slice(0,2).toUpperCase()}</div>
+          <button type="button" className="agency-signout" onClick={signOut}>Sign out</button>
         </div>
       </header>
       <main className="agency-content">{children}</main>

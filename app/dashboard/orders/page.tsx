@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { orderLabel } from "@/lib/orders/display"
 
 export const dynamic = "force-dynamic"
 
@@ -92,7 +93,7 @@ export default async function OrdersPage() {
                 const campaign = Array.isArray(order.campaign) ? order.campaign[0] : order.campaign
                 return (
                   <tr key={order.id}>
-                    <td><strong>#{order.shopify_order_number || "—"}</strong></td>
+                    <td><strong>{orderLabel(order.shopify_order_number)}</strong></td>
                     <td>{org?.name || "—"}</td>
                     <td>{campaign?.name || "Unattributed"}</td>
                     <td><span className={`fc-pill ${order.status}`}>{order.status}</span></td>

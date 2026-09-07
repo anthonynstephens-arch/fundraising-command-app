@@ -1,20 +1,25 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { getPortalPinSession } from "@/lib/pin-auth"
 
 export async function getPortalData(requestedOrg?:string, requestedCampaign?:string){
   const auth=await createClient()
-  const {data:{user}}=await auth.auth.getUser()
-  if(!user) redirect("/login")
+  const [{data:{user}},pinSession]=await Promise.all([
+    auth.auth.getUser(),
+    getPortalPinSession()
+  ])
+  if(!user&&!pinSession) redirect("/login")
   const db=createAdminClient()
 
   const [{data:platform},{data:memberships}]=await Promise.all([
-    db.from("platform_admins").select("role").eq("user_id",user.id).eq("is_active",true).maybeSingle(),
-    db.from("organization_members").select("organization_id,role").eq("user_id",user.id)
+    user?db.from("platform_admins").select("role").eq("user_id",user.id).eq("is_active",true).maybeSingle():Promise.resolve({data:null}),
+    user?db.from("organization_members").select("organization_id,role").eq("user_id",user.id):Promise.resolve({data:[] as any[]})
   ])
 
-  let organizationId=requestedOrg||memberships?.[0]?.organization_id||null
-  if(organizationId&&!platform&&!memberships?.some((m:any)=>m.organization_id===organizationId)) organizationId=null
+  let organizationId=pinSession?.organizationId||requestedOrg||memberships?.[0]?.organization_id||null
+  if(pinSession&&requestedOrg&&requestedOrg!==pinSession.organizationId) organizationId=pinSession.organizationId
+  if(organizationId&&!platform&&!pinSession&&!memberships?.some((m:any)=>m.organization_id===organizationId)) organizationId=null
   if(!organizationId&&platform){
     const {data:first}=await db.from("organizations").select("id").eq("is_active",true).order("name").limit(1).maybeSingle()
     organizationId=first?.id||null
@@ -59,7 +64,7 @@ export async function getPortalData(requestedOrg?:string, requestedCampaign?:str
   const campaignPayouts=(payouts||[]).filter((p:any)=>!campaignId||p.campaign_id===campaignId)
   const {data:payoutRequests}=campaignId?await db.from("payout_requests").select("*").eq("campaign_id",campaignId).order("requested_at",{ascending:false}):{data:[] as any[]}
 
-  const memberRole=memberships?.find((m:any)=>m.organization_id===organizationId)?.role||null
+  const memberRole=pinSession?.role||memberships?.find((m:any)=>m.organization_id===organizationId)?.role||null
   const canManage=!!platform||memberRole==="owner"||memberRole==="admin"
   const userMap=new Map<string,string>()
   if(canManage){
@@ -72,8 +77,14 @@ export async function getPortalData(requestedOrg?:string, requestedCampaign?:str
     }
   }
 
+  const portalUser=user||{
+    id:`pin:${pinSession!.credentialId}`,
+    email:pinSession!.displayName,
+    user_metadata:{full_name:pinSession!.displayName}
+  }
+
   return {
-    db,user,platform:!!platform,organizationId,org,campaigns:allCampaigns,campaign:selectedCampaign,
+    db,user:portalUser,pinSession,platform:!!platform,organizationId,org,campaigns:allCampaigns,campaign:selectedCampaign,
     orders:campaignOrders,items:campaignItems,products,payouts:campaignPayouts,payoutRequests:payoutRequests||[],members:members||[],allOrgs:allOrgs||[],
     memberRole,canManage,userMap,lastWebhook:lastWebhook||null
   }
