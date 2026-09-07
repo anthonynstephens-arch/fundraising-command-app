@@ -1,58 +1,56 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { createClient as createAdminClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getPortalPinSession } from '@/lib/pin-auth'
 
 export const dynamic = 'force-dynamic'
 
-function getAdminClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-  if (!url) throw new Error('NEXT_PUBLIC_SUPABASE_URL is missing')
-  if (!key) throw new Error('SUPABASE_SERVICE_ROLE_KEY is missing')
-
-  return createAdminClient(url, key, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
-  })
-}
-
-async function requireAdmin() {
+async function canManageProducts(ids: string[]) {
   const supabase = await createClient()
+  const [{ data: { user } }, pinSession] = await Promise.all([
+    supabase.auth.getUser(),
+    getPortalPinSession(),
+  ])
+  if (!user && !pinSession) return false
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const admin = createAdminClient()
+  const { data: productRows } = await admin
+    .from('campaign_products')
+    .select('id,campaign_id')
+    .in('id', ids)
+  if (!productRows || productRows.length !== ids.length) return false
 
-  if (!user) return null
+  const campaignIds = [...new Set(productRows.map(product => product.campaign_id))]
+  const { data: campaigns } = await admin
+    .from('campaigns')
+    .select('id,organization_id')
+    .in('id', campaignIds)
+  if (!campaigns || campaigns.length !== campaignIds.length) return false
 
-  const { data } = await supabase
-    .from('platform_admins')
-    .select('user_id')
-    .eq('user_id', user.id)
-    .eq('is_active', true)
-    .maybeSingle()
+  const organizationIds = [...new Set(campaigns.map(campaign => campaign.organization_id))]
+  if (pinSession && ['owner', 'admin'].includes(pinSession.role)) {
+    if (organizationIds.every(id => id === pinSession.organizationId)) return true
+  }
+  if (!user) return false
 
-  return data ? user : null
+  const [{ data: platform }, { data: memberships }] = await Promise.all([
+    admin.from('platform_admins').select('user_id').eq('user_id', user.id).eq('is_active', true).maybeSingle(),
+    admin.from('organization_members').select('organization_id,role').eq('user_id', user.id).in('organization_id', organizationIds),
+  ])
+  if (platform) return true
+
+  const manageable = new Set((memberships || [])
+    .filter(member => member.role === 'owner' || member.role === 'admin')
+    .map(member => member.organization_id))
+  return organizationIds.every(id => manageable.has(id))
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await requireAdmin()
-
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
-
     const body = await request.json()
 
-    const ids = Array.isArray(body.ids)
-      ? body.ids
+    const ids: string[] = Array.isArray(body.ids)
+      ? Array.from(new Set<string>(body.ids.filter((id: unknown): id is string => typeof id === 'string' && id.length > 0)))
       : []
 
     const contributionType =
@@ -106,7 +104,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const admin = getAdminClient()
+    if (!await canManageProducts(ids)) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const admin = createAdminClient()
 
     const updatePayload: any = {
       contribution_type:
