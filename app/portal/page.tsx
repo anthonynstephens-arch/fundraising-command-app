@@ -2,6 +2,7 @@ import Link from "next/link"
 import PortalShell from "@/components/portal/PortalShell"
 import PortalMetricChart from "@/components/portal/PortalMetricChart"
 import { getPortalData, money, portalStats, dailySeries } from "@/lib/portal/data"
+import { customerName, orderLabel } from "@/lib/orders/display"
 
 export const dynamic="force-dynamic"
 
@@ -28,7 +29,7 @@ export default async function PortalOverview({searchParams}:{searchParams:Promis
   }
   const top=[...productTotals.values()].sort((a,b)=>b.gross-a.gross).slice(0,4)
 
-  return <PortalShell org={d.org} campaign={d.campaign} campaigns={d.campaigns} userEmail={d.user.email||""} organizationId={d.organizationId} platform={d.platform} lastSynced={d.lastWebhook?.created_at||null}>
+  return <PortalShell org={d.org} campaign={d.campaign} campaigns={d.campaigns} userEmail={d.user.email||""} organizationId={d.organizationId} platform={d.platform} lastSynced={d.lastWebhook?.created_at||null} pinAccess={!!d.pinSession}>
     <section className="agency-hero">
       <span>Welcome back,</span><h1>{firstName}</h1>
       <div className="agency-hero-tags">
@@ -81,8 +82,7 @@ export default async function PortalOverview({searchParams}:{searchParams:Promis
         <div className="agency-table-wrap"><table className="agency-table"><thead><tr><th>ORDER</th><th>DATE</th><th>CUSTOMER</th><th>TOTAL</th><th>FUNDRAISING</th><th>STATUS</th></tr></thead><tbody>{d.orders.slice(0,5).map((o:any)=>{
           const oi=d.items.filter((i:any)=>i.order_id===o.id)
           const raised=oi.reduce((a:number,i:any)=>a+Number(i.contribution_amount||0)-Number(i.refunded_contribution_amount||0),0)
-          const customer=[o.customer_first_name,o.customer_last_initial].filter(Boolean).join(" ")||o.customer_email||"Customer"
-          return <tr key={o.id}><td><b>#{o.shopify_order_number||"—"}</b></td><td>{o.placed_at?new Date(o.placed_at).toLocaleDateString():"—"}</td><td>{customer}</td><td>{money(Number(o.total||0))}</td><td className="green"><b>{money(raised)}</b></td><td><span className="agency-pill active">{o.status}</span></td></tr>
+          return <tr key={o.id}><td><b>{orderLabel(o.shopify_order_number)}</b></td><td>{o.placed_at?new Date(o.placed_at).toLocaleDateString():"—"}</td><td>{customerName(o)}</td><td>{money(Number(o.total||0))}</td><td className="green"><b>{money(raised)}</b></td><td><span className="agency-pill active">{o.status}</span></td></tr>
         })}</tbody></table></div>
       </article>
       <article className="agency-card">

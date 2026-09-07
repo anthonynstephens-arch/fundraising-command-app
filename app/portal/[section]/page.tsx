@@ -6,6 +6,7 @@ import ReportsTool from "@/components/portal/ReportsTool"
 import MarketingTools from "@/components/portal/MarketingTools"
 import PayoutRequestPanel from "@/components/portal/PayoutRequestPanel"
 import { getPortalData, money, portalStats } from "@/lib/portal/data"
+import { customerName, orderLabel } from "@/lib/orders/display"
 
 export const dynamic="force-dynamic"
 
@@ -29,7 +30,17 @@ export default async function PortalSection({params,searchParams}:{params:Promis
     const refund=oi.reduce((a:number,i:any)=>a+Number(i.refunded_merchandise_amount||0),0)
     const eligible=Math.max(0,gross-refund)
     const raised=oi.reduce((a:number,i:any)=>a+Number(i.contribution_amount||0)-Number(i.refunded_contribution_amount||0),0)
-    return {id:o.id,order:"#"+(o.shopify_order_number||"—"),date:o.placed_at?new Date(o.placed_at).toLocaleDateString():"—",customer:[o.customer_first_name,o.customer_last_initial].filter(Boolean).join(" ")||o.customer_email||"Customer",email:o.customer_email||"",items,gross,eligible,refund,raised,payment:o.status||"pending",fulfillment:o.fulfillment_status||"unfulfilled"}
+    const lines=oi.map((i:any)=>({
+      id:i.id,
+      title:i.title,
+      variant:i.variant_title,
+      sku:i.sku,
+      quantity:Number(i.quantity||0),
+      unitPrice:Number(i.unit_price||0),
+      total:Number(i.unit_price||0)*Number(i.quantity||0),
+      contribution:Number(i.contribution_amount||0)-Number(i.refunded_contribution_amount||0)
+    }))
+    return {id:o.id,order:orderLabel(o.shopify_order_number),date:o.placed_at?new Date(o.placed_at).toLocaleDateString():"—",customer:customerName(o),email:o.customer_email||"",items,gross,eligible,refund,raised,payment:o.status||"pending",fulfillment:o.fulfillment_status||"unfulfilled",lines}
   })
 
   const productMap=new Map<string,any>()
@@ -94,5 +105,5 @@ export default async function PortalSection({params,searchParams}:{params:Promis
   </>
   else content=<><div className="agency-page-head"><div><h1>Help Center</h1><p>Support for your fundraiser</p></div></div><section className="agency-card"><header><div><h2>Campaign Support</h2></div></header><div className="agency-detail-list"><div><span>Fundraising calculation</span><b>Based on contribution rules stored with each campaign product</b></div><div><span>Customer checkout</span><b>Shopify</b></div><div><span>Order synchronization</span><b>Shopify webhooks</b></div></div></section></>
 
-  return <PortalShell org={d.org} campaign={d.campaign} campaigns={d.campaigns} userEmail={d.user.email||""} organizationId={d.organizationId} platform={d.platform} lastSynced={lastSynced}>{content}</PortalShell>
+  return <PortalShell org={d.org} campaign={d.campaign} campaigns={d.campaigns} userEmail={d.user.email||""} organizationId={d.organizationId} platform={d.platform} lastSynced={lastSynced} pinAccess={!!d.pinSession}>{content}</PortalShell>
 }

@@ -243,6 +243,18 @@ export async function importShopifyOrder(
     payload.orderNumber ||
     shopifyOrderId
 
+  const firstName =
+    payload.shipping_address?.first_name ||
+    payload.billing_address?.first_name ||
+    payload.customer?.first_name ||
+    null
+
+  const lastName =
+    payload.shipping_address?.last_name ||
+    payload.billing_address?.last_name ||
+    payload.customer?.last_name ||
+    null
+
   const orderRecord = {
     organization_id:
       campaign.organization_id,
@@ -255,6 +267,14 @@ export async function importShopifyOrder(
       payload.email ||
       payload.customer?.email ||
       null,
+    customer_first_name:
+      firstName,
+    customer_last_name:
+      lastName,
+    customer_last_initial:
+      lastName
+        ? `${String(lastName).trim().charAt(0).toUpperCase()}.`
+        : null,
     currency:
       payload.currency ||
       payload.currencyCode ||
