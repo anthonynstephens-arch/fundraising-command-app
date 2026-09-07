@@ -93,7 +93,10 @@ export default async function PortalOverview({searchParams}:{searchParams:Promis
 
     {d.canManage&&<section className="agency-card">
       <header><div><h2>Dashboard Access</h2><p>Accounts with access to this department&apos;s portal</p></div><Link href={"/portal/members?org="+d.organizationId}>Manage access →</Link></header>
-      <div className="agency-table-wrap"><table className="agency-table"><thead><tr><th>EMAIL</th><th>ROLE</th><th>ACCESS</th></tr></thead><tbody>{d.members.map((m:any)=><tr key={m.id}><td>{d.userMap.get(m.user_id)||m.user_id}</td><td><span className="agency-pill">{m.role}</span></td><td>Department portal</td></tr>)}</tbody></table></div>
+      <div className="agency-table-wrap"><table className="agency-table"><thead><tr><th>MEMBER</th><th>ROLE</th><th>SIGN-IN</th><th>STATUS</th></tr></thead><tbody>
+        {d.members.map((m:any)=><tr key={"email:"+m.id}><td><b>{d.userMap.get(m.user_id)||m.user_id}</b></td><td><span className="agency-pill">{m.role}</span></td><td><span className="agency-pill">Email</span></td><td><span className="agency-pill active">Active</span></td></tr>)}
+        {d.pinMembers.map((m:any)=><tr key={"pin:"+m.id}><td><b>{m.display_name}</b></td><td><span className="agency-pill">{m.role}</span></td><td><span className="agency-pill">PIN</span></td><td><span className={"agency-pill "+(m.active?"active":"")}>{m.active?"Active":"Disabled"}</span></td></tr>)}
+      </tbody></table></div>
     </section>}
   </PortalShell>
 }
