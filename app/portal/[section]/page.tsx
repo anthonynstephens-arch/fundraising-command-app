@@ -5,6 +5,7 @@ import OrdersExplorer from "@/components/portal/OrdersExplorer"
 import ReportsTool from "@/components/portal/ReportsTool"
 import MarketingTools from "@/components/portal/MarketingTools"
 import PayoutRequestPanel from "@/components/portal/PayoutRequestPanel"
+import CampaignProductContributionManager from "@/components/CampaignProductContributionManager"
 import { getPortalData, money, portalStats } from "@/lib/portal/data"
 import { customerName, orderLabel } from "@/lib/orders/display"
 
@@ -76,6 +77,7 @@ export default async function PortalSection({params,searchParams}:{params:Promis
   else if(section==="marketing") content=<MarketingTools campaignId={d.campaign?.id||""} organizationId={d.organizationId} url={d.campaign?.public_store_url||""} orgName={d.org.name} orgLogo={d.org.logo_url||null} campaignName={d.campaign?.name||"Campaign"} daysRemaining={daysRemaining} pct={pct} raised={money(s.raised)} goal={money(goal)} startsAt={d.campaign?.starts_at||null} endsAt={d.campaign?.ends_at||null} products={products.slice(0,8)} last3Sales={last3Sales} previous3Sales={previous3Sales}/>
   else if(section==="products") content=<>
     <div className="agency-page-head"><div><h1>Products</h1><p>Campaign product performance and rankings from Shopify orders</p></div></div>
+    {d.canManage&&<CampaignProductContributionManager products={d.products}/>}
     <section className="agency-product-grid">{products.map((p:any,i:number)=><article className="agency-product-card" key={p.id}>
       <div className="agency-product-image">{p.image?<img src={p.image} alt=""/>:<span>PRODUCT</span>}{i===0&&p.gross>0&&<em>★ Top Earner</em>}</div>
       <div className="agency-product-body"><div className="agency-product-title"><strong>{p.title}</strong><span className="agency-pill active">Active</span></div><small>{p.price?money(p.price):"Campaign item"}</small>
