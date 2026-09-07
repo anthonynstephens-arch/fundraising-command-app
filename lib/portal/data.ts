@@ -26,13 +26,14 @@ export async function getPortalData(requestedOrg?:string, requestedCampaign?:str
   }
   if(!organizationId) redirect("/apply")
 
-  const [{data:org},{data:campaigns},{data:orders},{data:items},{data:payouts},{data:members},{data:allOrgs},{data:lastWebhook}]=await Promise.all([
+  const [{data:org},{data:campaigns},{data:orders},{data:items},{data:payouts},{data:members},{data:pinMembers},{data:allOrgs},{data:lastWebhook}]=await Promise.all([
     db.from("organizations").select("*").eq("id",organizationId).maybeSingle(),
     db.from("campaigns").select("*").eq("organization_id",organizationId).order("created_at",{ascending:false}),
     db.from("orders").select("*").eq("organization_id",organizationId).order("placed_at",{ascending:false}),
     db.from("order_items").select("*"),
     db.from("payouts").select("*").eq("organization_id",organizationId).order("created_at",{ascending:false}),
     db.from("organization_members").select("*").eq("organization_id",organizationId).order("created_at"),
+    db.from("portal_pin_credentials").select("id,display_name,role,active,created_at").eq("organization_id",organizationId).order("created_at"),
     platform?db.from("organizations").select("id,name").eq("is_active",true).order("name"):Promise.resolve({data:[] as any[]}),
     db.from("webhook_events").select("created_at,processed_at,event_type").not("processed_at","is",null).order("created_at",{ascending:false}).limit(1).maybeSingle()
   ])
@@ -85,7 +86,7 @@ export async function getPortalData(requestedOrg?:string, requestedCampaign?:str
 
   return {
     db,user:portalUser,pinSession,platform:!!platform,organizationId,org,campaigns:allCampaigns,campaign:selectedCampaign,
-    orders:campaignOrders,items:campaignItems,products,payouts:campaignPayouts,payoutRequests:payoutRequests||[],members:members||[],allOrgs:allOrgs||[],
+    orders:campaignOrders,items:campaignItems,products,payouts:campaignPayouts,payoutRequests:payoutRequests||[],members:members||[],pinMembers:pinMembers||[],allOrgs:allOrgs||[],
     memberRole,canManage,userMap,lastWebhook:lastWebhook||null
   }
 }
