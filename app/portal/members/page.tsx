@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import OrganizationMemberManager from "@/components/admin/OrganizationMemberManager"
+import PinAccessManager from "@/components/admin/PinAccessManager"
 
 export const dynamic="force-dynamic"
 
@@ -28,7 +29,10 @@ export default async function PortalMembers({searchParams}:{searchParams:Promise
   const {data:organization}=await db.from("organizations").select("id,name").eq("id",organizationId).maybeSingle()
   if(!organization) redirect("/portal")
 
-  const {data:members}=await db.from("organization_members").select("id,user_id,role,created_at").eq("organization_id",organizationId).order("created_at")
+  const [{data:members},{data:pinCredentials}]=await Promise.all([
+    db.from("organization_members").select("id,user_id,role,created_at").eq("organization_id",organizationId).order("created_at"),
+    db.from("portal_pin_credentials").select("id,display_name,role,active,created_at").eq("organization_id",organizationId).order("created_at")
+  ])
 
   const users=new Map<string,{email:string;confirmed:boolean}>()
   let page=1
@@ -40,6 +44,18 @@ export default async function PortalMembers({searchParams}:{searchParams:Promise
   }
 
   const rows=(members||[]).map((m:any)=>{const u=users.get(m.user_id);return {...m,email:u?.email||null,confirmed:!!u?.confirmed}})
+  const pinIds=(pinCredentials||[]).map((credential:any)=>credential.id)
+  const {data:pinEvents}=pinIds.length
+    ?await db.from("portal_pin_login_events").select("credential_id,logged_in_at").in("credential_id",pinIds).order("logged_in_at",{ascending:false})
+    :{data:[] as any[]}
+  const pinStats=new Map<string,{loginCount:number;lastLogin:string|null}>()
+  for(const event of pinEvents||[]){
+    const current=pinStats.get(event.credential_id)||{loginCount:0,lastLogin:null}
+    current.loginCount+=1
+    current.lastLogin||=event.logged_in_at
+    pinStats.set(event.credential_id,current)
+  }
+  const pins=(pinCredentials||[]).map((credential:any)=>({...credential,...(pinStats.get(credential.id)||{loginCount:0,lastLogin:null})}))
 
   return <div className="portal-page">
     <div className="portal-page-top">
@@ -57,6 +73,14 @@ export default async function PortalMembers({searchParams}:{searchParams:Promise
         <strong>{rows.length}</strong>
       </div>
       <OrganizationMemberManager organizationId={organizationId} members={rows}/>
+    </div>
+
+    <div className="portal-card">
+      <div className="portal-card-head">
+        <div><span>QUICK ACCESS</span><h2>PIN Members</h2><p>Create portal access without requiring an email account.</p></div>
+        <strong>{pins.length}</strong>
+      </div>
+      <PinAccessManager organizationId={organizationId} credentials={pins}/>
     </div>
   </div>
 }

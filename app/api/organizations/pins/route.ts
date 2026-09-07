@@ -4,27 +4,25 @@ import { createAdminClient } from "@/lib/supabase/admin"
 
 const roles = new Set(["owner", "admin", "manager", "viewer"])
 
-async function requirePlatformAdmin() {
+async function canManageOrganization(organizationId: string) {
   const auth = await createClient()
   const { data: { user } } = await auth.auth.getUser()
   if (!user) return false
   const db = createAdminClient()
-  const { data } = await db
-    .from("platform_admins")
-    .select("user_id")
-    .eq("user_id", user.id)
-    .eq("is_active", true)
-    .maybeSingle()
-  return !!data
+  const [{ data: platform }, { data: membership }] = await Promise.all([
+    db.from("platform_admins").select("user_id").eq("user_id", user.id).eq("is_active", true).maybeSingle(),
+    db.from("organization_members").select("role").eq("organization_id", organizationId).eq("user_id", user.id).maybeSingle(),
+  ])
+  return !!platform || membership?.role === "owner" || membership?.role === "admin"
 }
 
 export async function GET(request: Request) {
-  if (!await requirePlatformAdmin()) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
   const organizationId = new URL(request.url).searchParams.get("organizationId")
   if (!organizationId) {
     return NextResponse.json({ error: "Organization is required." }, { status: 400 })
+  }
+  if (!await canManageOrganization(organizationId)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
   const db = createAdminClient()
@@ -61,12 +59,12 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  if (!await requirePlatformAdmin()) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
   const { organizationId, displayName, role, pin } = await request.json()
   if (!organizationId || typeof displayName !== "string" || !roles.has(role) || !/^\d{4,8}$/.test(pin || "")) {
     return NextResponse.json({ error: "Enter a name, role, and a 4–8 digit PIN." }, { status: 400 })
+  }
+  if (!await canManageOrganization(organizationId)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
   const db = createAdminClient()
   const { data, error } = await db.rpc("create_portal_pin_credential", {
@@ -80,31 +78,34 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  if (!await requirePlatformAdmin()) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
   const { id, active } = await request.json()
   if (!id || typeof active !== "boolean") {
     return NextResponse.json({ error: "Invalid PIN login update." }, { status: 400 })
   }
   const db = createAdminClient()
+  const { data: credential } = await db.from("portal_pin_credentials").select("organization_id").eq("id", id).maybeSingle()
+  if (!credential || !await canManageOrganization(credential.organization_id)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
   const { error } = await db
     .from("portal_pin_credentials")
     .update({ active, updated_at: new Date().toISOString() })
     .eq("id", id)
+    .eq("organization_id", credential.organization_id)
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
   if (!active) await db.from("portal_pin_sessions").delete().eq("credential_id", id)
   return NextResponse.json({ ok: true })
 }
 
 export async function DELETE(request: Request) {
-  if (!await requirePlatformAdmin()) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
   const { id } = await request.json()
   if (!id) return NextResponse.json({ error: "PIN login is required." }, { status: 400 })
   const db = createAdminClient()
-  const { error } = await db.from("portal_pin_credentials").delete().eq("id", id)
+  const { data: credential } = await db.from("portal_pin_credentials").select("organization_id").eq("id", id).maybeSingle()
+  if (!credential || !await canManageOrganization(credential.organization_id)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+  const { error } = await db.from("portal_pin_credentials").delete().eq("id", id).eq("organization_id", credential.organization_id)
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
   return NextResponse.json({ ok: true })
 }
