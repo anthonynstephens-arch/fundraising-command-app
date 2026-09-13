@@ -12,6 +12,10 @@ export default async function HomeRouter(){
     db.from("organization_members").select("organization_id").eq("user_id",user.id).limit(1).maybeSingle()
   ])
   if(platform) redirect("/dashboard")
+  if(membership){
+    const {data:org}=await db.from('organizations').select('organization_type').eq('id',membership.organization_id).maybeSingle()
+    if(org?.organization_type==='detroit_fire_station') redirect('/station')
+  }
   if(membership) redirect("/portal")
   redirect("/apply")
 }
