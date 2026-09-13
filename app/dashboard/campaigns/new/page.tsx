@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { FormEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import './campaign-form.css'
 
 type Organization = {
   id: string
@@ -90,7 +91,7 @@ export default function NewCampaignPage() {
   }
 
   return (
-    <main className="dash">
+    <div className="campaign-create">
       
 
       <section>
@@ -207,6 +208,6 @@ export default function NewCampaignPage() {
           </div>
         </form>
       </section>
-    </main>
+    </div>
   )
 }
