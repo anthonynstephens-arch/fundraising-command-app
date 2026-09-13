@@ -57,17 +57,17 @@ begin
   then raise exception 'Station request not found'; end if;
   if r.payout_id is null then raise exception 'Request has no reserved payout'; end if;
   if action='approve' and r.status='requested' and r.requested_amount>=100 then
-    update payout_requests set status='approved',reviewed_by=actor,reviewed_at=now(),admin_note=note where id=r.id;
+    update payout_requests set status='approved',reviewed_by=actor,reviewed_at=now(),admin_note=review_station_payout.note where id=r.id;
   elsif action='reject' and r.status='requested' then
     update payouts set status='cancelled' where id=r.payout_id;
-    update payout_requests set status='rejected',reviewed_by=actor,reviewed_at=now(),admin_note=note where id=r.id;
+    update payout_requests set status='rejected',reviewed_by=actor,reviewed_at=now(),admin_note=review_station_payout.note where id=r.id;
   elsif action='processing' and r.status='approved' then
     update payouts set status='processing' where id=r.payout_id;
-    update payout_requests set status='processing',admin_note=note where id=r.id;
+    update payout_requests set status='processing',admin_note=review_station_payout.note where id=r.id;
   elsif action='paid' and r.status in ('approved','processing') then
     if coalesce(trim(reference),'')='' then raise exception 'Payment reference is required'; end if;
     update payouts set status='paid',paid_at=now(),payment_reference=reference where id=r.payout_id;
-    update payout_requests set status='paid',paid_at=now(),admin_note=note where id=r.id;
+    update payout_requests set status='paid',paid_at=now(),admin_note=review_station_payout.note where id=r.id;
   else raise exception 'Invalid payout transition'; end if;
 end;
 $$;
