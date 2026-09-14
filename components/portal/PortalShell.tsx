@@ -12,13 +12,20 @@ const nav=[
 export default function PortalShell({children,org,campaign,campaigns,userEmail,organizationId,platform,lastSynced,pinAccess=false}:{children:React.ReactNode;org:any;campaign:any;campaigns:any[];userEmail:string;organizationId:string;platform:boolean;lastSynced?:string|null;pinAccess?:boolean}){
   const path=usePathname()
   const router=useRouter()
+  const stationMode = org.organization_type === "detroit_fire_station" || path.startsWith("/station")
+  const stationHome = organizationId ? "/station/" + organizationId : "/station"
+  const navigation = stationMode ? (organizationId ? [
+    ["Overview", stationHome, "▦"], ["All Stations", "/station", "⌂"],
+    ...nav.filter(([label]) => !["Overview", "Payouts"].includes(label)),
+    ["Station Payouts", stationHome + "#payouts", "▣"],
+  ] : [["All Stations", "/station", "⌂"]]) : nav
   const baseQ=new URLSearchParams({org:organizationId})
   if(campaign?.id) baseQ.set("campaign",campaign.id)
   const q="?"+baseQ.toString()
 
   function switchCampaign(id:string){
     const p=new URLSearchParams({org:organizationId,campaign:id})
-    router.push(path+"?"+p.toString())
+    router.push((path.startsWith("/station") ? "/portal" : path)+"?"+p.toString())
     router.refresh()
   }
 
@@ -31,10 +38,10 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
 
   return <div className="agency-shell">
     <aside className="agency-sidebar">
-      <div className="agency-wordmark"><strong>Fundraiser Command</strong><span>DETROIT DECAL & APPAREL</span></div>
-      <nav>{nav.map(([label,href,icon])=>{
-        const active=href==="/portal"?path==="/portal":path.startsWith(href)
-        return <Link key={href} href={href+q} className={active?"active":""}><i>{icon}</i><span>{label}</span></Link>
+      <div className="agency-wordmark"><strong>{stationMode ? "Firestation Command" : "Fundraiser Command"}</strong><span>DETROIT DECAL & APPAREL</span></div>
+      <nav>{navigation.map(([label,href,icon])=>{
+        const active=href.startsWith("/station") ? path===href : href==="/portal"?path==="/portal":path.startsWith(href)
+        return <Link key={href} href={href.startsWith("/station") ? href : href+q} className={active?"active":""}><i>{icon}</i><span>{label}</span></Link>
       })}</nav>
       <div className="agency-side-bottom">
         <div className="agency-seal">{org.logo_url?<img src={org.logo_url} alt=""/>:<span>FC</span>}</div>
@@ -47,17 +54,17 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
       <header className="agency-topbar">
         <div className="agency-org">
           <div className="agency-org-logo">{org.logo_url?<img src={org.logo_url} alt=""/>:<span>FC</span>}</div>
-          <div><strong>{org.name}</strong><span>Agency Portal</span></div>
+          <div><strong>{org.name}</strong><span>{stationMode ? "Station Portal" : "Agency Portal"}</span></div>
         </div>
         <div className="agency-top-actions">
-          <label className="agency-campaign-switch">
+          {campaigns.length > 0 && <label className="agency-campaign-switch">
             <span>◎</span>
             <div><strong>{campaign?.name||"No active campaign"}</strong><small>{campaign?.status||"None"}</small></div>
             <select aria-label="Switch campaign" value={campaign?.id||""} onChange={e=>switchCampaign(e.target.value)}>
               {campaigns.map((c:any)=><option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
             <b>SWITCH</b>
-          </label>
+          </label>}
           <div className="agency-sync"><span>↻</span><div><small>LAST SYNCED</small><strong>{lastSynced?new Date(lastSynced).toLocaleString():"No webhook yet"}</strong></div></div>
           <div className="agency-avatar" title={userEmail}>{(userEmail||"U").slice(0,2).toUpperCase()}</div>
           <button type="button" className="agency-signout" onClick={signOut}>Sign out</button>

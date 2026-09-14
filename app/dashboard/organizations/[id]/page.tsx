@@ -1,4 +1,5 @@
 import Link from "next/link"
+import OrganizationLogoUpload from "@/components/admin/OrganizationLogoUpload"
 import { notFound, redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
@@ -47,6 +48,7 @@ export default async function OrganizationDetailPage({params}:{params:Promise<{i
       <div className="fc-stat-card"><span>Payouts</span><strong>{money(payout)}</strong></div>
     </section>
 
+    <section className="fc-card"><h2>Department / station logo</h2><OrganizationLogoUpload organizationId={id} name={organization.name} logoUrl={organization.logo_url} /></section>
     <section className="fc-dashboard-grid">
       <div className="fc-panel">
         <div className="fc-panel-head"><div><div className="fc-kicker">PROFILE</div><h2>Department Details</h2></div></div>
