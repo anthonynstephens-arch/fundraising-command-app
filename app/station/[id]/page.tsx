@@ -15,7 +15,7 @@ export default async function Station({ params }: { params: Promise<{ id: string
   if (error) throw error
   const sum = (key: string) => collections.reduce((a, c) => a + Number(c[key] || 0), 0)
   const color = /^#[0-9a-f]{6}$/i.test(d.station.brand_primary_color || '') ? d.station.brand_primary_color : '#cf4538'
-  return <PortalShell org={d.station} campaign={collections[0]} campaigns={collections} userEmail={d.user.email || ""} organizationId={id} platform={d.admin} lastSynced={lastSynced}><div className="station-app" style={{ '--station-color': color } as React.CSSProperties}>
+  return <PortalShell org={d.station} campaign={collections[0]} campaigns={collections} userEmail={d.user.email || ""} organizationId={id} platform={d.admin} pinAccess={!!d.pinSession} lastSynced={lastSynced}><div className="station-app" style={{ '--station-color': color } as React.CSSProperties}>
 
     <header className="agency-hero station-header">{d.station.logo_url && <img src={d.station.logo_url} alt={d.station.name + ' logo'} />}<div><p className="station-eyebrow">DETROIT FIRE DEPARTMENT · STATION FUND</p><h1>{d.station.name}</h1><p>{d.station.brand_name_short || 'Built by your house. Backed by your community.'}</p></div></header>
     <section className="agency-kpis station-metrics">{[['Collection sales', sum('gross_sales')], ['Station earnings', sum('earned')], ['Available', sum('available')], ['Pending approval / payment', sum('pending')], ['Paid to station', sum('paid')]].map(([label, value]) => <div key={String(label)}><span>{label}</span><strong>{money(value)}</strong></div>)}</section>

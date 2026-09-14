@@ -2,25 +2,37 @@ import 'server-only'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect, notFound } from 'next/navigation'
+import { getPortalPinSession } from '@/lib/pin-auth'
+import { resolvePortalContext } from '@/lib/portal/context'
 
 export const STATION_TYPE = 'detroit_fire_station'
 export async function stationAccess(id?: string) {
   const auth = await createClient()
-  const { data: { user } } = await auth.auth.getUser()
-  if (!user) redirect('/login')
+  const [{ data: { user } }, savedPinSession] = await Promise.all([
+    auth.auth.getUser(), getPortalPinSession()
+  ])
+  if (!user && !savedPinSession) redirect('/login')
   const db = createAdminClient()
-  const { data: admin, error } = await db.from('platform_admins').select('user_id').eq('user_id', user.id).eq('is_active', true).maybeSingle()
+  const { data: admin, error } = user ? await db.from('platform_admins').select('user_id').eq('user_id', user.id).eq('is_active', true).maybeSingle() : { data: null, error: null }
   if (error) throw error
-  const { data: memberships, error: memberError } = await db.from('organization_members').select('organization_id,role').eq('user_id', user.id)
+  const { data: memberships, error: memberError } = user ? await db.from('organization_members').select('organization_id,role').eq('user_id', user.id) : { data: [], error: null }
   if (memberError) throw memberError
   let query = db.from('organizations').select('*').eq('organization_type', STATION_TYPE).eq('is_active', true).order('name')
-  if (!admin) query = query.in('id', (memberships || []).map(m => m.organization_id))
+  if (!admin) {
+    const allowedIds = (memberships || []).map(m => m.organization_id)
+    if (savedPinSession) allowedIds.push(savedPinSession.organizationId)
+    query = query.in('id', [...new Set(allowedIds)])
+  }
   const { data: stations, error: stationError } = await query
   if (stationError) throw stationError
   const station = id ? stations?.find(s => s.id === id) : null
   if (id && !station) notFound()
-  const role = memberships?.find(m => m.organization_id === id)?.role
-  return { db, user, stations: stations || [], station, admin: !!admin, canRequest: !!admin || ['owner', 'admin'].includes(role || '') }
+  const context = resolvePortalContext(id, !!admin, memberships || [], savedPinSession)
+  const pinSession = context.usePin ? savedPinSession : null
+  const portalUser = user || { id: `pin:${pinSession!.credentialId}`, email: pinSession!.displayName }
+  // Payout submission still requires the email identity checked by its database RPC.
+  const canRequest = !!admin || (!pinSession && !!user && ['owner', 'admin'].includes(context.role || ''))
+  return { db, user: portalUser, pinSession, stations: stations || [], station, admin: !!admin, canRequest }
 }
 
 export async function stationCollections(db: ReturnType<typeof createAdminClient>, organizationId: string): Promise<Array<{id:string;name:string;available:number;[key:string]:any}>> {

@@ -16,5 +16,5 @@ export default async function StationCollectionsPage({id,adminView=false}:{id:st
   const content=<><div className="agency-page-head"><div><h1>{d.station.name} · Collections</h1><p>Shopify products assigned to this station</p></div></div><StationCollectionManager stationId={id} stationName={d.station.name} funds={funds} canAssign={d.admin}/></>
   if(adminView)return content
   const lastSynced=funds.flatMap(f=>f.collections.map(c=>c.last_synced_at)).filter(Boolean).sort().at(-1)
-  return <PortalShell org={d.station} campaign={campaigns?.[0]} campaigns={campaigns||[]} organizationId={id} userEmail={d.user.email||''} platform={d.admin} lastSynced={lastSynced}>{content}</PortalShell>
+  return <PortalShell org={d.station} campaign={campaigns?.[0]} campaigns={campaigns||[]} organizationId={id} userEmail={d.user.email||''} platform={d.admin} pinAccess={!!d.pinSession} lastSynced={lastSynced}>{content}</PortalShell>
 }
