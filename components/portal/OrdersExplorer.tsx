@@ -8,14 +8,14 @@ function download(name:string,body:string,type="text/csv"){const a=document.crea
 export default function OrdersExplorer({rows}:{rows:any[]}){
   const [search,setSearch]=useState("");const [payment,setPayment]=useState("all");const [fulfillment,setFulfillment]=useState("all")
   const filtered=useMemo(()=>rows.filter(r=>{
-    const hay=(r.order+" "+r.customer+" "+r.email).toLowerCase()
+    const hay=(r.order+" "+r.customer+" "+r.email+" "+r.phone+" "+r.addressText).toLowerCase()
     return (!search||hay.includes(search.toLowerCase()))&&(payment==="all"||r.payment===payment)&&(fulfillment==="all"||r.fulfillment===fulfillment)
   }),[rows,search,payment,fulfillment])
   const pending=filtered.filter(r=>r.fulfillment==="unfulfilled"||r.fulfillment==="partial")
   const delivered=filtered.filter(r=>r.fulfillment==="fulfilled")
   function exportCsv(){
-    const head=["Order","Date","Customer","Items","Gross","Eligible","Refund","Fundraising","Payment","Fulfillment"]
-    const body=[head,...filtered.map(r=>[r.order,r.date,r.customer,r.items,r.gross,r.eligible,r.refund,r.raised,r.payment,r.fulfillment])].map(x=>x.map(csvCell).join(",")).join("\n")
+    const head=["Order","Date","Customer","Email","Phone","Shipping Address","Items","Gross","Eligible","Refund","Fundraising","Payment","Fulfillment"]
+    const body=[head,...filtered.map(r=>[r.order,r.date,r.customer,r.email,r.phone,(r.address||[]).join(", "),r.items,r.gross,r.eligible,r.refund,r.raised,r.payment,r.fulfillment])].map(x=>x.map(csvCell).join(",")).join("\n")
     download("campaign-orders.csv",body)
   }
   return <>
@@ -50,7 +50,12 @@ function OrderBlock({title,sub,rows}:{title:string;sub:string;rows:any[]}){
               <span>{line.sku||"—"}</span><span>{line.quantity}</span><span>{money(line.unitPrice)}</span><span><b>{money(line.total)}</b></span><span className="green"><b>{money(line.contribution)}</b></span>
             </div>)}
           </div>
-          {r.email&&<div className="agency-order-contact"><span>Customer email</span><b>{r.email}</b></div>}
+          <div className="agency-order-customer">
+            <div><span>Customer name</span><b>{r.customer||"Not provided"}</b></div>
+            <div><span>Email</span><b>{r.email||"Not provided"}</b></div>
+            <div><span>Phone</span><b>{r.phone||"Not provided"}</b></div>
+            <div className="agency-order-address"><span>Shipping address</span><b>{r.address?.length?r.address.map((line:string)=><span key={line}>{line}</span>):"Not provided"}</b></div>
+          </div>
         </div>
       </td></tr>}
     </Fragment>

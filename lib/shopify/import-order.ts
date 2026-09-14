@@ -245,15 +245,31 @@ export async function importShopifyOrder(
 
   const firstName =
     payload.shipping_address?.first_name ||
+    payload.shippingAddress?.firstName ||
     payload.billing_address?.first_name ||
+    payload.billingAddress?.firstName ||
     payload.customer?.first_name ||
+    payload.customer?.firstName ||
     null
 
   const lastName =
     payload.shipping_address?.last_name ||
+    payload.shippingAddress?.lastName ||
     payload.billing_address?.last_name ||
+    payload.billingAddress?.lastName ||
     payload.customer?.last_name ||
+    payload.customer?.lastName ||
     null
+
+  const address =
+    payload.shipping_address ||
+    payload.shippingAddress ||
+    payload.billing_address ||
+    payload.billingAddress ||
+    {}
+
+  const field = (snake: string, camel: string) =>
+    address?.[snake] ?? address?.[camel] ?? null
 
   const orderRecord = {
     organization_id:
@@ -266,6 +282,7 @@ export async function importShopifyOrder(
     customer_email:
       payload.email ||
       payload.customer?.email ||
+      payload.customer?.defaultEmailAddress?.emailAddress ||
       null,
     customer_first_name:
       firstName,
@@ -275,6 +292,21 @@ export async function importShopifyOrder(
       lastName
         ? `${String(lastName).trim().charAt(0).toUpperCase()}.`
         : null,
+    customer_phone:
+      payload.phone || field('phone', 'phone'),
+    shipping_first_name: field('first_name', 'firstName'),
+    shipping_last_name: field('last_name', 'lastName'),
+    shipping_company: field('company', 'company'),
+    shipping_address1: field('address1', 'address1'),
+    shipping_address2: field('address2', 'address2'),
+    shipping_city: field('city', 'city'),
+    shipping_province:
+      field('province', 'province') ||
+      field('province_code', 'provinceCode'),
+    shipping_postal_code: field('zip', 'zip'),
+    shipping_country:
+      field('country', 'country') ||
+      field('country_code', 'countryCodeV2'),
     currency:
       payload.currency ||
       payload.currencyCode ||

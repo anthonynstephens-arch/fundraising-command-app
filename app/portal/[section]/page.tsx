@@ -41,7 +41,13 @@ export default async function PortalSection({params,searchParams}:{params:Promis
       total:Number(i.unit_price||0)*Number(i.quantity||0),
       contribution:Number(i.contribution_amount||0)-Number(i.refunded_contribution_amount||0)
     }))
-    return {id:o.id,order:orderLabel(o.shopify_order_number),date:o.placed_at?new Date(o.placed_at).toLocaleDateString():"—",customer:customerName(o),email:o.customer_email||"",items,gross,eligible,refund,raised,payment:o.status||"pending",fulfillment:o.fulfillment_status||"unfulfilled",lines}
+    const address=[
+      o.shipping_address1,
+      o.shipping_address2,
+      [o.shipping_city,o.shipping_province,o.shipping_postal_code].filter(Boolean).join(", "),
+      o.shipping_country
+    ].filter(Boolean)
+    return {id:o.id,order:orderLabel(o.shopify_order_number),date:o.placed_at?new Date(o.placed_at).toLocaleDateString():"—",customer:customerName(o),email:o.customer_email||"",phone:o.customer_phone||"",address,addressText:address.join(" "),items,gross,eligible,refund,raised,payment:o.status||"pending",fulfillment:o.fulfillment_status||"unfulfilled",lines}
   })
 
   const productMap=new Map<string,any>()
