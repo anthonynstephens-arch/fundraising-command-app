@@ -28,21 +28,9 @@ export async function POST(request:Request){
   const {data:open}=await db.from("payout_requests").select("id,status,requested_amount").eq("campaign_id",campaignId).in("status",["requested","approved","processing"]).maybeSingle()
   if(open) return NextResponse.json({error:"A payout request is already open for this campaign.",request:open},{status:409})
 
-  const {data:products}=await db.from("campaign_products").select("id").eq("campaign_id",campaignId).eq("is_active",true)
-  const productIds=(products||[]).map((p:any)=>p.id)
-  if(!productIds.length) return NextResponse.json({error:"No campaign products are available for payout."},{status:400})
-
-  const {data:items}=await db.from("order_items").select("id,contribution_amount,refunded_contribution_amount").in("campaign_product_id",productIds)
-  const itemIds=(items||[]).map((i:any)=>i.id)
-  const paidOrReserved=new Set<string>()
-  if(itemIds.length){
-    const {data:used}=await db.from("payout_items").select("order_item_id,payout:payouts(status)").in("order_item_id",itemIds)
-    for(const row of used||[]){
-      const p=Array.isArray((row as any).payout)?(row as any).payout[0]:(row as any).payout
-      if(p&&p.status!=="cancelled"&&(row as any).order_item_id) paidOrReserved.add((row as any).order_item_id)
-    }
-  }
-  const available=(items||[]).filter((i:any)=>!paidOrReserved.has(i.id)).reduce((s:number,i:any)=>s+Number(i.contribution_amount||0)-Number(i.refunded_contribution_amount||0),0)
+  const {data:balances,error:balanceError}=await db.rpc('station_collection_balance',{target_campaign:campaignId})
+  if(balanceError)return NextResponse.json({error:balanceError.message},{status:500})
+  const available=Number(balances?.[0]?.available||0)
   if(available<=0) return NextResponse.json({error:"There are no unpaid fundraising proceeds available."},{status:400})
 
   const threshold=Number(campaign.min_payout_threshold||0)

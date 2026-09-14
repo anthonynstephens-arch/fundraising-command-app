@@ -1,0 +1,34 @@
+begin;
+do $$
+declare org uuid; camp uuid; prod uuid; n integer; bal record; pay record; original jsonb; oid uuid;
+begin
+ insert into organizations(name,slug,organization_type,reporting_start_date) values('Reporting regression','reporting-test-'||gen_random_uuid(),'detroit_fire_station','2026-09-01') returning id into org;
+ insert into campaigns(organization_id,name,slug,campaign_type,status) values(org,'Test','test-'||gen_random_uuid(),'department-store','active') returning id into camp;
+ insert into campaign_products(campaign_id,title,shopify_product_id,shopify_variant_id,retail_price,contribution_type,contribution_value) values(camp,'Test','test-product','test-variant',25,'fixed',10) returning id into prod;
+ original:=jsonb_build_object('id','test-order-'||gen_random_uuid(),'name','#TEST','createdAt','2026-09-01T04:00:00Z','currencyCode','USD','displayFinancialStatus','PAID','displayFulfillmentStatus','FULFILLED','lines',jsonb_build_array(jsonb_build_object('id','test-line','title','Test','quantity',20,'currentQuantity',20,'product',jsonb_build_object('id','test-product'),'variant',jsonb_build_object('id','test-variant'),'discountedUnitPriceAfterAllDiscountsSet',jsonb_build_object('shopMoney',jsonb_build_object('amount','25')))));
+ n:=import_department_order(org,original);
+ if n<>1 then raise exception 'Expected one imported item, got %',n;end if;
+ select id into oid from orders where shopify_order_id=original->>'id';
+ perform import_department_order(org,original);
+ if (select count(*) from order_items where order_id=oid)<>1 then raise exception 'Duplicate import';end if;
+ if order_in_department_period(org,'2026-09-01T03:59:59Z') then raise exception 'Before start included';end if;
+ if not order_in_department_period(org,'2026-09-01T04:00:00Z') then raise exception 'Start excluded';end if;
+ if order_in_department_period(org,now()+interval '2 days') then raise exception 'Future included';end if;
+ select * into bal from station_collection_balance(camp);
+ if bal.earned<>200 or bal.available<>200 then raise exception 'Bad balance %',row_to_json(bal);end if;
+ select * into pay from generate_campaign_payout(camp);
+ if pay.payout_amount<>200 then raise exception 'Bad payout';end if;
+ update organizations set reporting_start_date='2026-09-02' where id=org;
+ select * into bal from station_collection_balance(camp);
+ if bal.earned<>0 or bal.available<>0 or bal.pending<>200 then raise exception 'Date reset changed ledger %',row_to_json(bal);end if;
+ if (select count(*) from generate_campaign_payout(camp))<>0 then raise exception 'Generated out of range payout';end if;
+ update organizations set reporting_start_date='2026-09-01' where id=org;
+ perform import_department_order(org,original);
+ select * into bal from station_collection_balance(camp);
+ if bal.available<>0 or bal.earned<>200 then raise exception 'Paid item became payable';end if;
+ original:=jsonb_set(original,'{lines,0,currentQuantity}','15');
+ perform import_department_order(org,original);perform import_department_order(org,original);
+ if (select refunded_contribution_amount from order_items where order_id=oid)<>50 then raise exception 'Refund retry was not idempotent';end if;
+ if (select count(*) from payouts where campaign_id=camp)<>1 then raise exception 'Payout records changed';end if;
+end $$;
+rollback;

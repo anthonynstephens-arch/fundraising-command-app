@@ -72,7 +72,7 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
           <button type="button" className="agency-signout" onClick={signOut}>Sign out</button>
         </div>
       </header>
-      <main className="agency-content">{children}</main>
+      <main className="agency-content"><p className="fc-note">Reporting period: {org.reporting_start_date || "All history"} through today · Detroit time</p>{children}</main>
     </div>
   </div>
 }

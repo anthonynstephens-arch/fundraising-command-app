@@ -1,3 +1,5 @@
+import { inReportingPeriod } from '@/lib/portal/reporting-period'
+import DepartmentReporting from '@/components/admin/DepartmentReporting'
 import Link from "next/link"
 import OrganizationLogoUpload from "@/components/admin/OrganizationLogoUpload"
 import { notFound, redirect } from "next/navigation"
@@ -15,17 +17,17 @@ export default async function OrganizationDetailPage({params}:{params:Promise<{i
   if(!user) redirect("/login")
 
   const db=createAdminClient()
-  const {data:organization}=await db.from("organizations").select("id,name,slug,organization_type,contact_name,contact_email,contact_phone,logo_url,website_url,is_active,created_at").eq("id",id).maybeSingle()
+  const {data:organization}=await db.from("organizations").select("id,name,slug,organization_type,contact_name,contact_email,contact_phone,logo_url,website_url,is_active,created_at,reporting_start_date").eq("id",id).maybeSingle()
   if(!organization) notFound()
 
   const [{data:campaigns},{data:orders},{data:payouts},{data:members}]=await Promise.all([
     db.from("campaigns").select("id,name,status,goal_amount,starts_at,ends_at").eq("organization_id",id).order("created_at",{ascending:false}),
-    db.from("orders").select("id,total,status").eq("organization_id",id),
+    db.from("orders").select("id,total,status,placed_at").eq("organization_id",id),
     db.from("payouts").select("id,payout_amount,status").eq("organization_id",id),
     db.from("organization_members").select("id,user_id,role,created_at").eq("organization_id",id)
   ])
 
-  const gross=(orders||[]).filter((o:any)=>o.status!=="cancelled").reduce((s:number,o:any)=>s+Number(o.total||0),0)
+  const gross=(orders||[]).filter((o:any)=>o.status!=="cancelled"&&inReportingPeriod(o.placed_at,organization.reporting_start_date)).reduce((s:number,o:any)=>s+Number(o.total||0),0)
   const payout=(payouts||[]).reduce((s:number,p:any)=>s+Number(p.payout_amount||0),0)
 
   return <>
@@ -49,6 +51,7 @@ export default async function OrganizationDetailPage({params}:{params:Promise<{i
     </section>
 
     <section className="fc-card"><h2>Department / station logo</h2><OrganizationLogoUpload organizationId={id} name={organization.name} logoUrl={organization.logo_url} /></section>
+    <DepartmentReporting organizationId={id} startDate={organization.reporting_start_date} />
     <section className="fc-dashboard-grid">
       <div className="fc-panel">
         <div className="fc-panel-head"><div><div className="fc-kicker">PROFILE</div><h2>Department Details</h2></div></div>

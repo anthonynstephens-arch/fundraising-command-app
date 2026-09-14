@@ -1,3 +1,4 @@
+import { inReportingPeriod } from './reporting-period'
 import { resolvePortalContext } from './context'
 import { redirect, notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
@@ -28,11 +29,9 @@ export async function getPortalData(requestedOrg?:string, requestedCampaign?:str
   }
   if(!organizationId) redirect("/apply")
 
-  const [{data:org},{data:campaigns},{data:orders},{data:items},{data:payouts},{data:members},{data:pinMembers},{data:allOrgs},{data:lastWebhook}]=await Promise.all([
+  const [{data:org},{data:campaigns},{data:payouts},{data:members},{data:pinMembers},{data:allOrgs},{data:lastWebhook}]=await Promise.all([
     db.from("organizations").select("*").eq("id",organizationId).maybeSingle(),
     db.from("campaigns").select("*").eq("organization_id",organizationId).order("created_at",{ascending:false}),
-    db.from("orders").select("*").eq("organization_id",organizationId).order("placed_at",{ascending:false}),
-    db.from("order_items").select("*"),
     db.from("payouts").select("*").eq("organization_id",organizationId).order("created_at",{ascending:false}),
     db.from("organization_members").select("*").eq("organization_id",organizationId).order("created_at"),
     db.from("portal_pin_credentials").select("id,display_name,role,active,created_at").eq("organization_id",organizationId).order("created_at"),
@@ -61,19 +60,32 @@ export async function getPortalData(requestedOrg?:string, requestedCampaign?:str
     }
   }
 
-  const campaignProductIds=new Set(products.map((p:any)=>p.id))
-  products = products.filter((p:any)=>p.is_active)
-  const campaignItems=(items||[]).filter((i:any)=>{
-    if(!campaignId) return false
-    if(i.campaign_product_id) return campaignProductIds.has(i.campaign_product_id)
-    return false
-  })
-  const orderIds=new Set(campaignItems.map((i:any)=>i.order_id))
-  const campaignOrders=(orders||[]).filter((o:any)=>orderIds.has(o.id))
+  // Scope in the database and paginate: historical imports can exceed the default row cap.
+  const items:any[]=[]
+  if(campaignId){
+    for(let from=0;;from+=500){
+      const {data,error}=await db.from("order_items")
+        .select("*,campaign_products!inner(campaign_id),orders!inner(*)")
+        .eq("campaign_products.campaign_id",campaignId).order("id").range(from,from+499)
+      if(error)throw error
+      items.push(...(data||[]))
+      if((data||[]).length<500)break
+    }
+  }
+  products=products.filter((p:any)=>p.is_active)
+  const visibleItems=items.filter((i:any)=>inReportingPeriod(i.orders.placed_at,org.reporting_start_date))
+  const orderMap=new Map<string,any>()
+  for(const item of visibleItems)orderMap.set(item.orders.id,item.orders)
+  const campaignOrders=[...orderMap.values()].sort((a,b)=>String(b.placed_at).localeCompare(String(a.placed_at)))
+  // Cancelled orders remain visible, but never contribute to sales or earnings.
+  const campaignItems=visibleItems.filter((i:any)=>i.orders.status!=="cancelled").map(({orders,campaign_products,...item}:any)=>item)
 
   const campaignPayouts=(payouts||[]).filter((p:any)=>!campaignId||p.campaign_id===campaignId)
   const {data:payoutRequests}=campaignId?await db.from("payout_requests").select("*").eq("campaign_id",campaignId).order("requested_at",{ascending:false}):{data:[] as any[]}
 
+  const balanceResult=campaignId?await db.rpc('station_collection_balance',{target_campaign:campaignId}):{data:[],error:null}
+  if(balanceResult.error)throw balanceResult.error
+  const balance=balanceResult.data?.[0]||{earned:0,available:0,pending:0,paid:0}
   const memberRole=context.role
   const canManage=!!platform||memberRole==="owner"||memberRole==="admin"
   const userMap=new Map<string,string>()
@@ -96,7 +108,7 @@ export async function getPortalData(requestedOrg?:string, requestedCampaign?:str
   return {
     db,user:portalUser,pinSession,platform:!!platform,organizationId,org,campaigns:allCampaigns,campaign:selectedCampaign,
     orders:campaignOrders,items:campaignItems,products,payouts:campaignPayouts,payoutRequests:payoutRequests||[],members:members||[],pinMembers:pinMembers||[],allOrgs:allOrgs||[],
-    memberRole,canManage,userMap,lastWebhook:org.organization_type==='detroit_fire_station' ? (collectionSync?.last_synced_at ? {created_at:collectionSync.last_synced_at} : null) : lastWebhook||null
+    balance,memberRole,canManage,userMap,lastWebhook:org.organization_type==='detroit_fire_station' ? (collectionSync?.last_synced_at ? {created_at:collectionSync.last_synced_at} : null) : lastWebhook||null
   }
 }
 
