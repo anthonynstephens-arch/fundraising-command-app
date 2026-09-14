@@ -1,15 +1,16 @@
-import { redirect } from "next/navigation"
+import { resolvePortalContext } from './context'
+import { redirect, notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { getPortalPinSession } from "@/lib/pin-auth"
 
 export async function getPortalData(requestedOrg?:string, requestedCampaign?:string){
   const auth=await createClient()
-  const [{data:{user}},pinSession]=await Promise.all([
+  const [{data:{user}},savedPinSession]=await Promise.all([
     auth.auth.getUser(),
     getPortalPinSession()
   ])
-  if(!user&&!pinSession) redirect("/login")
+  if(!user&&!savedPinSession) redirect("/login")
   const db=createAdminClient()
 
   const [{data:platform},{data:memberships}]=await Promise.all([
@@ -17,9 +18,10 @@ export async function getPortalData(requestedOrg?:string, requestedCampaign?:str
     user?db.from("organization_members").select("organization_id,role").eq("user_id",user.id):Promise.resolve({data:[] as any[]})
   ])
 
-  let organizationId=pinSession?.organizationId||requestedOrg||memberships?.[0]?.organization_id||null
-  if(pinSession&&requestedOrg&&requestedOrg!==pinSession.organizationId) organizationId=pinSession.organizationId
-  if(organizationId&&!platform&&!pinSession&&!memberships?.some((m:any)=>m.organization_id===organizationId)) organizationId=null
+  const context = resolvePortalContext(requestedOrg, !!platform, memberships || [], savedPinSession)
+  if(context.denied) notFound()
+  const pinSession = context.usePin ? savedPinSession : null
+  let organizationId = context.organizationId
   if(!organizationId&&platform){
     const {data:first}=await db.from("organizations").select("id").eq("is_active",true).order("name").limit(1).maybeSingle()
     organizationId=first?.id||null
@@ -40,6 +42,7 @@ export async function getPortalData(requestedOrg?:string, requestedCampaign?:str
   if(!org) redirect("/apply")
 
   const allCampaigns=campaigns||[]
+  if(requestedCampaign && !allCampaigns.some((c:any)=>c.id===requestedCampaign)) notFound()
   const selectedCampaign=
     (requestedCampaign&&allCampaigns.find((c:any)=>c.id===requestedCampaign))||
     allCampaigns.find((c:any)=>c.status==="active")||
@@ -47,13 +50,19 @@ export async function getPortalData(requestedOrg?:string, requestedCampaign?:str
     null
 
   const campaignId=selectedCampaign?.id||null
+  const {data:collectionSync}=campaignId ? await db.from('campaign_shopify_collections').select('last_synced_at').eq('campaign_id',campaignId).order('last_synced_at',{ascending:false}).limit(1).maybeSingle() : {data:null}
   let products:any[]=[]
   if(campaignId){
-    const {data}=await db.from("campaign_products").select("*").eq("campaign_id",campaignId).eq("is_active",true).order("title")
-    products=data||[]
+    for(let from=0;;from+=1000){
+      const {data,error}=await db.from("campaign_products").select("*").eq("campaign_id",campaignId).order("id").range(from,from+999)
+      if(error)throw error
+      products.push(...(data||[]))
+      if((data||[]).length<1000)break
+    }
   }
 
   const campaignProductIds=new Set(products.map((p:any)=>p.id))
+  products = products.filter((p:any)=>p.is_active)
   const campaignItems=(items||[]).filter((i:any)=>{
     if(!campaignId) return false
     if(i.campaign_product_id) return campaignProductIds.has(i.campaign_product_id)
@@ -65,7 +74,7 @@ export async function getPortalData(requestedOrg?:string, requestedCampaign?:str
   const campaignPayouts=(payouts||[]).filter((p:any)=>!campaignId||p.campaign_id===campaignId)
   const {data:payoutRequests}=campaignId?await db.from("payout_requests").select("*").eq("campaign_id",campaignId).order("requested_at",{ascending:false}):{data:[] as any[]}
 
-  const memberRole=pinSession?.role||memberships?.find((m:any)=>m.organization_id===organizationId)?.role||null
+  const memberRole=context.role
   const canManage=!!platform||memberRole==="owner"||memberRole==="admin"
   const userMap=new Map<string,string>()
   if(canManage){
@@ -87,7 +96,7 @@ export async function getPortalData(requestedOrg?:string, requestedCampaign?:str
   return {
     db,user:portalUser,pinSession,platform:!!platform,organizationId,org,campaigns:allCampaigns,campaign:selectedCampaign,
     orders:campaignOrders,items:campaignItems,products,payouts:campaignPayouts,payoutRequests:payoutRequests||[],members:members||[],pinMembers:pinMembers||[],allOrgs:allOrgs||[],
-    memberRole,canManage,userMap,lastWebhook:lastWebhook||null
+    memberRole,canManage,userMap,lastWebhook:org.organization_type==='detroit_fire_station' ? (collectionSync?.last_synced_at ? {created_at:collectionSync.last_synced_at} : null) : lastWebhook||null
   }
 }
 

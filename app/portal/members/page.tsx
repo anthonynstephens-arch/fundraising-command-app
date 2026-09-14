@@ -26,7 +26,7 @@ export default async function PortalMembers({searchParams}:{searchParams:Promise
   const canManage=!!platform||own?.role==="owner"||own?.role==="admin"
   if(!canManage) redirect("/portal?org="+organizationId)
 
-  const {data:organization}=await db.from("organizations").select("id,name").eq("id",organizationId).maybeSingle()
+  const {data:organization}=await db.from("organizations").select("id,name,organization_type").eq("id",organizationId).maybeSingle()
   if(!organization) redirect("/portal")
 
   const [{data:members},{data:pinCredentials}]=await Promise.all([
@@ -64,7 +64,7 @@ export default async function PortalMembers({searchParams}:{searchParams:Promise
         <h1>{organization.name}</h1>
         <p>Add department users and control exactly what each role can do.</p>
       </div>
-      <Link href={"/portal?org="+organizationId} className="portal-secondary">Back to Overview</Link>
+      <Link href={organization.organization_type === "detroit_fire_station" ? "/station/"+organizationId : "/portal?org="+organizationId} className="portal-secondary">Back to Overview</Link>
     </div>
 
     <div className="portal-card">

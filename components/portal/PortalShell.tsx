@@ -1,4 +1,5 @@
 "use client"
+import { stationNavigation } from '@/lib/portal/context'
 import Link from "next/link"
 import { usePathname,useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
@@ -14,24 +15,25 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
   const router=useRouter()
   const stationMode = org.organization_type === "detroit_fire_station" || path.startsWith("/station")
   const stationHome = organizationId ? "/station/" + organizationId : "/station"
-  const navigation = stationMode ? (organizationId ? [
-    ["Overview", stationHome, "▦"], ["All Stations", "/station", "⌂"],
-    ...nav.filter(([label]) => !["Overview", "Payouts"].includes(label)),
-    ["Station Payouts", stationHome + "#payouts", "▣"],
-  ] : [["All Stations", "/station", "⌂"]]) : nav
+  const navigation = stationMode ? (organizationId ? stationNavigation(organizationId) : [["All Stations", "/station", "⌂"]]) : nav
+  function destination(href: string) {
+    if(!stationMode || !href.startsWith('/station')) return href + q
+    if(href === '/station' || href === stationHome || href.includes('#')) return href
+    return href + (campaign?.id ? '?campaign=' + encodeURIComponent(campaign.id) : '')
+  }
   const baseQ=new URLSearchParams({org:organizationId})
   if(campaign?.id) baseQ.set("campaign",campaign.id)
   const q="?"+baseQ.toString()
 
   function switchCampaign(id:string){
     const p=new URLSearchParams({org:organizationId,campaign:id})
-    router.push((path.startsWith("/station") ? "/portal" : path)+"?"+p.toString())
+    router.push(stationMode ? (path === stationHome ? stationHome + '/products' : path) + '?campaign=' + encodeURIComponent(id) : path + '?' + p.toString())
     router.refresh()
   }
 
   async function signOut(){
-    if(pinAccess) await fetch("/api/pin-session",{method:"DELETE"})
-    else await createClient().auth.signOut()
+    await fetch("/api/pin-session",{method:"DELETE"})
+    if(!pinAccess) await createClient().auth.signOut()
     router.push("/login")
     router.refresh()
   }
@@ -41,11 +43,11 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
       <div className="agency-wordmark"><strong>{stationMode ? "Firestation Command" : "Fundraiser Command"}</strong><span>DETROIT DECAL & APPAREL</span></div>
       <nav>{navigation.map(([label,href,icon])=>{
         const active=href.startsWith("/station") ? path===href : href==="/portal"?path==="/portal":path.startsWith(href)
-        return <Link key={href} href={href.startsWith("/station") ? href : href+q} className={active?"active":""}><i>{icon}</i><span>{label}</span></Link>
+        return <Link key={href} href={destination(href)} className={active?"active":""}><i>{icon}</i><span>{label}</span></Link>
       })}</nav>
       <div className="agency-side-bottom">
         <div className="agency-seal">{org.logo_url?<img src={org.logo_url} alt=""/>:<span>FC</span>}</div>
-        <div className="agency-live"><b>● Live Data</b><span>Shopify connected</span></div>
+        <div className="agency-live"><b>{stationMode ? (lastSynced ? "Collection synced" : "Collection setup") : "● Live Data"}</b><span>{stationMode ? (lastSynced ? "Assigned Shopify products" : "Assign and sync a collection") : "Shopify connected"}</span></div>
         {platform&&<Link href="/dashboard">Platform Admin ↗</Link>}
       </div>
     </aside>
@@ -65,7 +67,7 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
             </select>
             <b>SWITCH</b>
           </label>}
-          <div className="agency-sync"><span>↻</span><div><small>LAST SYNCED</small><strong>{lastSynced?new Date(lastSynced).toLocaleString():"No webhook yet"}</strong></div></div>
+          <div className="agency-sync"><span>↻</span><div><small>LAST SYNCED</small><strong>{lastSynced?new Date(lastSynced).toLocaleString():(stationMode ? "Not synced yet" : "No webhook yet")}</strong></div></div>
           <div className="agency-avatar" title={userEmail}>{(userEmail||"U").slice(0,2).toUpperCase()}</div>
           <button type="button" className="agency-signout" onClick={signOut}>Sign out</button>
         </div>

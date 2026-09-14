@@ -56,7 +56,7 @@ export async function GET() {
     let cursor: string | null = null
     let hasNextPage = true
 
-    while (hasNextPage && collections.length < 500) {
+    while (hasNextPage) {
       const data: CollectionsResponse =
         await shopifyGraphQL<CollectionsResponse>(
           `
@@ -84,7 +84,9 @@ export async function GET() {
       collections.push(...data.collections.nodes)
 
       hasNextPage = data.collections.pageInfo.hasNextPage
-      cursor = data.collections.pageInfo.endCursor
+      const nextCursor = data.collections.pageInfo.endCursor
+      if (hasNextPage && (!nextCursor || nextCursor === cursor)) throw new Error('Unable to load the next collection page. Please retry.')
+      cursor = nextCursor
     }
 
     return NextResponse.json({

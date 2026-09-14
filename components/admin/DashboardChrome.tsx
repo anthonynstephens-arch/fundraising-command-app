@@ -39,7 +39,7 @@ export default function DashboardChrome({ children }: { children: React.ReactNod
 
         <div className="fc-nav-label">PREVIEW</div>
         <nav className="fc-app-nav">
-          <Link href="/portal" target="_blank">Department Portal ↗</Link>
+          <Link href={pathname.startsWith("/dashboard/stations") ? "/station" : "/portal"} target="_blank">{pathname.startsWith("/dashboard/stations") ? "Station Portal ↗" : "Department Portal ↗"}</Link>
           <Link href="/demo/breast-cancer-awareness" target="_blank">BCA Demo ↗</Link>
         </nav>
 
