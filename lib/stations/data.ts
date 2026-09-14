@@ -11,7 +11,7 @@ export async function stationAccess(id?: string) {
   const [{ data: { user } }, savedPinSession] = await Promise.all([
     auth.auth.getUser(), getPortalPinSession()
   ])
-  if (!user && !savedPinSession) redirect('/login')
+  if (!user && !savedPinSession) redirect('/station/login')
   const db = createAdminClient()
   const { data: admin, error } = user ? await db.from('platform_admins').select('user_id').eq('user_id', user.id).eq('is_active', true).maybeSingle() : { data: null, error: null }
   if (error) throw error

@@ -34,13 +34,13 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
   async function signOut(){
     await fetch("/api/pin-session",{method:"DELETE"})
     if(!pinAccess) await createClient().auth.signOut()
-    router.push("/login")
+    router.push(stationMode ? "/station/login" : "/login")
     router.refresh()
   }
 
   return <div className="agency-shell">
     <aside className="agency-sidebar">
-      <div className="agency-wordmark"><strong>{stationMode ? "Firestation Command" : "Fundraiser Command"}</strong><span>DETROIT DECAL & APPAREL</span></div>
+      <div className="agency-wordmark"><strong>{stationMode ? <img src="/brand/firestation-command.webp" alt="Firestation Command" style={{width:"100%",maxWidth:200,height:"auto",display:"block",marginBottom:10}} /> : "Fundraiser Command"}</strong><span>DETROIT DECAL & APPAREL</span></div>
       <nav>{navigation.map(([label,href,icon])=>{
         const active=href.startsWith("/station") ? path===href : href==="/portal"?path==="/portal":path.startsWith(href)
         return <Link key={href} href={destination(href)} className={active?"active":""}><i>{icon}</i><span>{label}</span></Link>

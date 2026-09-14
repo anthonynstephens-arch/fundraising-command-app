@@ -29,7 +29,7 @@ const {stationAccess} = load('lib/stations/data.ts', {
   'next/navigation':{redirect:p=>{throw new Error('redirect:'+p)},notFound:()=>{throw new Error('notFound')}},
 })
 ;(async()=>{
-  await assert.rejects(()=>stationAccess('engine42'), /redirect:\/login/)
+  await assert.rejects(()=>stationAccess('engine42'), /redirect:\/station\/login/)
   pin={organizationId:'engine42',credentialId:'credential',displayName:'Brian',role:'admin'}
   const access=await stationAccess('engine42')
   assert.equal(access.station.id,'engine42')
@@ -50,6 +50,6 @@ const {stationAccess} = load('lib/stations/data.ts', {
   assert.equal((await stationAccess('engine17')).admin,true)
   assert.equal((await stationAccess('engine17')).pinSession,null)
   user=null;pin=null;isAdmin=false
-  await assert.rejects(()=>stationAccess(), /redirect:\/login/)
+  await assert.rejects(()=>stationAccess(), /redirect:\/station\/login/)
   console.log('PASS: PIN station navigation, directory isolation, other/inactive/non-station denial, email roles, mixed sessions, platform access, missing/expired session redirect.')
 })().catch(e=>{console.error(e);process.exitCode=1})
