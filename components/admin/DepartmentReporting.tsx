@@ -34,7 +34,7 @@ export default function DepartmentReporting({organizationId,startDate}:{organiza
       }while(cursor&&!stop.current)
       setMessage((stop.current&&cursor?'Import paused. Run again to safely continue. ':'Import complete. ')+imported+' matching orders imported or refreshed from '+(saved||'all available history')+' through '+through+'.')
       router.refresh()
-    }catch(error){setMessage((error instanceof Error?error.message:'Import failed.')+' Completed batches are saved. Run again to retry safely.');router.refresh()}
+    }catch(error){setMessage((error instanceof Error?error.message:'Import failed.')+(scanned>0?' Completed batches are saved. Run again to retry safely.':' No batches completed in this attempt.'));router.refresh()}
     finally{setBusy(false)}
   }
   return <section className="fc-card" style={{marginTop:20}}>

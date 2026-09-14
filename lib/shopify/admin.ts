@@ -4,6 +4,11 @@ const SHOPIFY_API_VERSION =
 let cachedAccessToken: string | null = null
 let accessTokenExpiresAt = 0
 
+export function clearShopifyAccessToken() {
+  cachedAccessToken = null
+  accessTokenExpiresAt = 0
+}
+
 export function getShopifyConfig() {
   const shopDomain = process.env.SHOPIFY_SHOP_DOMAIN
   const clientId = process.env.SHOPIFY_CLIENT_ID
