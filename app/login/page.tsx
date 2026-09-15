@@ -40,7 +40,6 @@ export default function Login() {
       return
     }
     window.location.assign(data.redirectTo === '/dashboard' ? '/dashboard' : '/portal')
-    router.refresh()
   }
 
   async function submitEmail(event: FormEvent) {
