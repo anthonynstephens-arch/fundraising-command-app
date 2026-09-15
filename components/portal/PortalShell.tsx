@@ -15,7 +15,7 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
   const router=useRouter()
   const stationMode = org.organization_type === "detroit_fire_station" || path.startsWith("/station")
   const stationHome = organizationId ? "/station/" + organizationId : "/station"
-  const navigation = stationMode ? (organizationId ? stationNavigation(organizationId) : [["All Stations", "/station", "⌂"]]) : nav
+  const navigation = stationMode ? (organizationId ? stationNavigation(organizationId) : []) : nav
   function destination(href: string) {
     if(!stationMode || !href.startsWith('/station')) return href + q
     if(href === '/station' || href === stationHome || href.includes('#')) return href

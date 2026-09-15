@@ -16,6 +16,6 @@ export function stationNavigation(id: string) {
     ['Products', home + '/products', '⬡'], ['Collection Progress', home + '/progress', '◎'],
     ['Payouts', home + '#payouts', '▣'], ['Reports', home + '/reports', '▤'],
     ['Marketing Tools', home + '/marketing', '⌁'], ['Help', home + '/help', '?'],
-    ['Station Settings', home + '/settings', '⚙'], ['All Stations', '/station', '⌂'],
+    ['Station Settings', home + '/settings', '⚙'],
   ]
 }

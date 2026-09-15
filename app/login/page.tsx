@@ -39,7 +39,7 @@ export default function Login() {
       setMsg(data.error || 'Incorrect PIN.')
       return
     }
-    router.push('/portal')
+    window.location.assign(data.redirectTo === '/dashboard' ? '/dashboard' : '/portal')
     router.refresh()
   }
 

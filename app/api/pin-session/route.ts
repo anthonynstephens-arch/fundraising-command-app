@@ -1,3 +1,5 @@
+import { establishPinIdentity } from "@/lib/admin/pin-login"
+import { createClient } from "@/lib/supabase/server"
 import { createHash } from "crypto"
 import { cookies, headers } from "next/headers"
 import { NextResponse } from "next/server"
@@ -34,6 +36,7 @@ export async function POST(request: Request) {
     }
 
     const result = data[0]
+    const platformAdmin = await establishPinIdentity(result.credential_id)
     const cookieStore = await cookies()
     cookieStore.set(PIN_COOKIE, result.session_token, {
       httpOnly: true,
@@ -47,6 +50,7 @@ export async function POST(request: Request) {
       ok: true,
       organizationId: result.organization_id,
       displayName: result.display_name,
+      redirectTo: platformAdmin ? "/dashboard" : "/portal",
     })
   } catch {
     return NextResponse.json(
@@ -69,5 +73,8 @@ export async function DELETE() {
     await db.from("portal_pin_sessions").delete().eq("token_hash", tokenHash)
   }
   cookieStore.delete(PIN_COOKIE)
+  const auth = await createClient()
+  const { error: signOutError } = await auth.auth.signOut({ scope: "local" })
+  if (signOutError) return NextResponse.json({ error: "Unable to finish signing out." }, { status: 500 })
   return NextResponse.json({ ok: true })
 }
