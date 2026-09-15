@@ -5,6 +5,7 @@ import OrganizationLogoUpload from "@/components/admin/OrganizationLogoUpload"
 import { notFound, redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { DeleteOrganizationButton } from "@/components/admin/OrganizationAdminActions"
 
 export const dynamic = "force-dynamic"
 
@@ -85,6 +86,9 @@ export default async function OrganizationDetailPage({params}:{params:Promise<{i
         </Link>)}
       </div>
       {!campaigns?.length&&<div className="fc-empty">No campaigns assigned to this department yet.</div>}
+    </section>
+    <section className="fc-card fc-section-gap fc-danger-zone">
+      <DeleteOrganizationButton organizationId={id} organizationName={organization.name} />
     </section>
   </>
 }

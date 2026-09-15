@@ -2,6 +2,7 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { CreateOrganizationForm } from "@/components/admin/OrganizationAdminActions"
 
 export const dynamic = "force-dynamic"
 
@@ -23,7 +24,15 @@ export default async function OrganizationsPage() {
         </div>
       </section>
 
-      <section className="fc-card">
+      <section className="fc-card fc-section-gap">
+        <div className="fc-card-head">
+          <div><div className="fc-kicker">MANUAL ENTRY</div><h2>Add an organization</h2></div>
+        </div>
+        <p className="fc-note">Create an organization directly, then add campaigns and member access from its dashboard.</p>
+        <CreateOrganizationForm />
+      </section>
+
+      <section className="fc-card fc-section-gap">
         <div className="fc-card-head">
           <div><div className="fc-kicker">DIRECTORY</div><h2>Organizations</h2></div>
           <span className="fc-count">{orgs?.length || 0}</span>

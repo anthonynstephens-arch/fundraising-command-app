@@ -1740,3 +1740,19 @@ input:focus,select:focus,textarea:focus{
 @media(max-width:900px){.fc-pin-create{grid-template-columns:1fr!important}.agency-line-head,.agency-line-item{grid-template-columns:minmax(180px,2fr) 55px 80px 80px}.agency-line-head span:nth-child(2),.agency-line-item>span:nth-child(2),.agency-line-head span:nth-child(4),.agency-line-item>span:nth-child(4){display:none}}
 
 .agency-order-customer{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}.agency-order-customer>div{display:grid;gap:5px;padding:12px 14px;border:1px solid #dfe8f1;border-radius:10px;background:#eef5fc;min-width:0}.agency-order-customer span{color:#60758d;font-size:10px;font-weight:700}.agency-order-customer b{color:#243e58;font-size:12px;overflow-wrap:anywhere}.agency-order-customer .agency-order-address{grid-column:1/-1}.agency-order-address b,.agency-order-address b span{display:block;color:#243e58;font-size:12px}.agency-order-address b span+span{margin-top:3px}@media(max-width:760px){.agency-order-customer{grid-template-columns:1fr}.agency-order-customer .agency-order-address{grid-column:auto}}
+
+/* Organization management */
+.fc-organization-form{display:grid;gap:16px;margin-top:16px}
+.fc-organization-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.fc-organization-fields label{display:grid;gap:7px;color:#7b8291!important;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.fc-organization-fields input,.fc-organization-fields select{width:100%;min-height:42px;padding:0 12px}
+.fc-organization-form-actions{display:flex;align-items:center;justify-content:flex-end;gap:14px}
+.fc-error{color:#be123c;font-size:12px;font-weight:700}
+.fc-danger-zone{border-color:#fecdd3!important;background:#fffafa!important}
+.fc-delete-organization{display:flex;align-items:center;justify-content:space-between;gap:24px}
+.fc-delete-organization h2{margin:0 0 6px;color:#9f1239;font-size:18px}
+.fc-delete-organization p{margin:0;color:#7c8496;font-size:12px}
+.fc-delete-organization-action{display:flex;align-items:center;gap:14px}
+.fc-btn.fc-btn-danger{background:#be123c!important;color:#fff!important;border:1px solid #be123c!important;box-shadow:none!important}
+@media(max-width:900px){.fc-organization-fields{grid-template-columns:1fr 1fr}.fc-delete-organization{align-items:flex-start;flex-direction:column}.fc-delete-organization-action{width:100%;align-items:flex-start;flex-direction:column}.fc-btn.fc-btn-danger{width:100%}}
+@media(max-width:620px){.fc-organization-fields{grid-template-columns:1fr}.fc-organization-form-actions{align-items:stretch;flex-direction:column}.fc-organization-form-actions .fc-btn{width:100%}}
