@@ -27,6 +27,7 @@ export default function StationLogin() {
         const data = await response.json()
         if (!response.ok) throw new Error(data.error || 'Unable to sign in. Check your PIN and try again.')
         window.location.assign(data.redirectTo === '/dashboard' ? '/dashboard' : '/station/' + encodeURIComponent(data.organizationId))
+        return
       } else {
         const { error } = await createClient().auth.signInWithPassword({ email, password })
         if (error) throw error
