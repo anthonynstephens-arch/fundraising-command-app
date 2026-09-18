@@ -8,6 +8,7 @@ import PayoutRequestPanel from "@/components/portal/PayoutRequestPanel"
 import CampaignGoalEditor from "@/components/portal/CampaignGoalEditor"
 import CampaignCollectionSyncButton from "@/components/portal/CampaignCollectionSyncButton"
 import CampaignProductContributionManager from "@/components/CampaignProductContributionManager"
+import PortalNotificationSettings from '@/components/portal/PortalNotificationSettings'
 import { getPortalData, money, portalStats } from "@/lib/portal/data"
 import { customerName, orderLabel } from "@/lib/orders/display"
 
@@ -87,12 +88,12 @@ export default async function PortalSection({params,searchParams}:{params:Promis
     <div className="agency-page-head"><div><h1>Products</h1><p>Campaign product performance and rankings from Shopify orders</p></div></div>
     {d.org.organization_type === 'detroit_fire_station' && <div className="agency-card" style={{padding:20,marginBottom:20}}><Link href={'/station/'+d.organizationId+'/collections'}>Manage assigned Shopify collections →</Link>{!d.products.length && <p>No products yet. Assign a Shopify collection and sync it to this station.</p>}</div>}
     {d.canEditCampaign&&d.campaign&&<CampaignCollectionSyncButton campaignId={d.campaign.id} organizationId={d.organizationId}/>}
-    {d.canManage&&<CampaignProductContributionManager products={d.products}/>}
+    {d.canEditContributions&&<CampaignProductContributionManager products={d.products}/>}
     <section className="agency-product-grid">{products.map((p:any,i:number)=><article className="agency-product-card" key={p.id}>
       <div className="agency-product-image">{p.image?<img src={p.image} alt=""/>:<span>PRODUCT</span>}{i===0&&p.gross>0&&<em>★ Top Earner</em>}</div>
       <div className="agency-product-body"><div className="agency-product-title"><strong>{p.title}</strong><span className="agency-pill active">Active</span></div><small>{p.price?money(p.price):"Campaign item"}</small>
       <div className="agency-product-stats"><div><span>Units</span><b>{p.qty}</b></div><div><span>Gross</span><b>{money(p.gross)}</b></div><div><span>Refunds</span><b className="red">{money(p.refund)}</b></div><div><span>Raised</span><b className="green">{money(p.raised)}</b></div></div>
-      <div className="agency-payout-rule"><span>Contribution rule</span><b>{d.products.find((x:any)=>String(x.shopify_product_id||x.id)===p.id)?.contribution_type==="fixed"?"Fixed contribution":"Percentage contribution"}</b></div></div>
+      <div className="agency-payout-rule"><span>Contribution rule</span><b>{(()=>{const rule=d.products.find((x:any)=>String(x.shopify_product_id||x.id)===p.id);return rule?.contribution_type==="fixed"?`${money(Number(rule.contribution_value||0))} per item`:`${Number(rule?.contribution_value||0)}% per item`})()}</b></div></div>
     </article>)}</section>
   </>
   else if(section==="progress") content=<>
@@ -111,6 +112,10 @@ export default async function PortalSection({params,searchParams}:{params:Promis
     <PayoutRequestPanel organizationId={d.organizationId} campaignId={d.campaign?.id||""} available={Number(d.balance.available)} threshold={Number(d.campaign?.min_payout_threshold||0)} canRequest={d.canManage} openRequest={d.payoutRequests.find((r:any)=>["requested","approved","processing"].includes(r.status))||null}/>
     <section className="agency-card"><header><div><h2>Payout Request History</h2><p>Every request and its status</p></div></header>{d.payoutRequests.length?<div className="agency-table-wrap"><table className="agency-table"><thead><tr><th>REQUESTED</th><th>AMOUNT</th><th>STATUS</th><th>REVIEWED</th><th>NOTE</th></tr></thead><tbody>{d.payoutRequests.map((r:any)=><tr key={r.id}><td>{new Date(r.requested_at).toLocaleDateString()}</td><td><b>{money(Number(r.requested_amount||0))}</b></td><td><span className={"agency-pill "+r.status}>{r.status}</span></td><td>{r.reviewed_at?new Date(r.reviewed_at).toLocaleDateString():"—"}</td><td>{r.admin_note||r.note||"—"}</td></tr>)}</tbody></table></div>:<div className="agency-empty">No payout requests yet.</div>}</section>
     <section className="agency-card"><header><div><h2>Payout Ledger</h2><p>Complete history of campaign disbursements</p></div></header>{d.payouts.length?<div className="agency-table-wrap"><table className="agency-table"><thead><tr><th>DATE</th><th>STATUS</th><th>GROSS</th><th>CONTRIBUTION</th><th>PAYOUT</th></tr></thead><tbody>{d.payouts.map((p:any)=><tr key={p.id}><td>{new Date(p.created_at).toLocaleDateString()}</td><td><span className="agency-pill">{p.status}</span></td><td>{money(Number(p.gross_sales||0))}</td><td>{money(Number(p.contribution_amount||0))}</td><td><b>{money(Number(p.payout_amount||0))}</b></td></tr>)}</tbody></table></div>:<div className="agency-empty big">No approved payouts yet.</div>}</section>
+  </>
+  else if(section==="notifications") content=<>
+    <div className="agency-page-head"><div><h1>Notifications</h1><p>Control campaign alerts and install Fundraiser Command on your device</p></div></div>
+    <PortalNotificationSettings organizationId={d.organizationId} userEmail={d.user.email||""}/>
   </>
   else if(section==="settings") content=<>
     <div className="agency-page-head"><div><h1>Account Settings</h1><p>Department portal access and profile information</p></div></div>
