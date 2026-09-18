@@ -1,19 +1,11 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { authorizeOrganizationManagement } from "@/lib/portal/authorize-organization-management"
 
 const roles = new Set(["owner", "admin", "manager", "viewer"])
 
 async function canManageOrganization(organizationId: string) {
-  const auth = await createClient()
-  const { data: { user } } = await auth.auth.getUser()
-  if (!user) return false
-  const db = createAdminClient()
-  const [{ data: platform }, { data: membership }] = await Promise.all([
-    db.from("platform_admins").select("user_id").eq("user_id", user.id).eq("is_active", true).maybeSingle(),
-    db.from("organization_members").select("role").eq("organization_id", organizationId).eq("user_id", user.id).maybeSingle(),
-  ])
-  return !!platform || membership?.role === "owner" || membership?.role === "admin"
+  return (await authorizeOrganizationManagement(organizationId)).ok
 }
 
 export async function GET(request: Request) {

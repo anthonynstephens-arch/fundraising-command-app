@@ -3,6 +3,7 @@ import { stationNavigation } from '@/lib/portal/context'
 import Link from "next/link"
 import { usePathname,useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
+import { useState } from "react"
 
 const nav=[
   ["Overview","/portal","▦"],["Sales","/portal/sales","⌑"],["Orders","/portal/orders","◇"],["Products","/portal/products","⬡"],
@@ -13,6 +14,7 @@ const nav=[
 export default function PortalShell({children,org,campaign,campaigns,userEmail,organizationId,platform,lastSynced,pinAccess=false}:{children:React.ReactNode;org:any;campaign:any;campaigns:any[];userEmail:string;organizationId:string;platform:boolean;lastSynced?:string|null;pinAccess?:boolean}){
   const path=usePathname()
   const router=useRouter()
+  const [menuOpen,setMenuOpen]=useState(false)
   const stationMode = org.organization_type === "detroit_fire_station" || path.startsWith("/station")
   const stationHome = organizationId ? "/station/" + organizationId : "/station"
   const navigation = stationMode ? (organizationId ? stationNavigation(organizationId) : []) : nav
@@ -40,10 +42,13 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
 
   return <div className="agency-shell">
     <aside className="agency-sidebar">
-      <div className="agency-wordmark"><strong>{stationMode ? <img src="/brand/firestation-command.webp" alt="Firestation Command" style={{width:"100%",maxWidth:200,height:"auto",display:"block",marginBottom:10}} /> : "Fundraiser Command"}</strong><span>DETROIT DECAL & APPAREL</span></div>
-      <nav>{navigation.map(([label,href,icon])=>{
+      <div className="agency-sidebar-head">
+        <div className="agency-wordmark"><strong>{stationMode ? <img src="/brand/firestation-command.webp" alt="Firestation Command" style={{width:"100%",maxWidth:200,height:"auto",display:"block",marginBottom:10}} /> : "Fundraiser Command"}</strong><span>DETROIT DECAL & APPAREL</span></div>
+        <button className="agency-menu-toggle" type="button" aria-expanded={menuOpen} aria-controls="agency-navigation" onClick={()=>setMenuOpen(open=>!open)}><span aria-hidden="true">{menuOpen?"×":"☰"}</span> Menu</button>
+      </div>
+      <nav id="agency-navigation" className={menuOpen?"mobile-open":""}>{navigation.map(([label,href,icon])=>{
         const active=href.startsWith("/station") ? path===href : href==="/portal"?path==="/portal":path.startsWith(href)
-        return <Link key={href} href={destination(href)} className={active?"active":""}><i>{icon}</i><span>{label}</span></Link>
+        return <Link key={href} href={destination(href)} className={active?"active":""} onClick={()=>setMenuOpen(false)}><i>{icon}</i><span>{label}</span></Link>
       })}</nav>
       <div className="agency-side-bottom">
         <div className="agency-seal">{org.logo_url?<img src={org.logo_url} alt=""/>:<span>FC</span>}</div>
