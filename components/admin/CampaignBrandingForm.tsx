@@ -44,6 +44,7 @@ export default function CampaignBrandingForm({ campaign }: { campaign: any }) {
       <div className="fc-admin-grid">
         <label>Public campaign name<input name="name" defaultValue={campaign.name || ""} required /></label>
         <label>Goal amount<input name="goal_amount" type="number" min="0" step="0.01" defaultValue={campaign.goal_amount || 0} /></label>
+        <label>Sales goal<input name="sales_goal" type="number" min="0" step="0.01" defaultValue={campaign.sales_goal || 0} /></label>
 
         <label>
           Campaign start date

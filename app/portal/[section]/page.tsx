@@ -5,6 +5,8 @@ import OrdersExplorer from "@/components/portal/OrdersExplorer"
 import ReportsTool from "@/components/portal/ReportsTool"
 import MarketingTools from "@/components/portal/MarketingTools"
 import PayoutRequestPanel from "@/components/portal/PayoutRequestPanel"
+import CampaignGoalEditor from "@/components/portal/CampaignGoalEditor"
+import CampaignCollectionSyncButton from "@/components/portal/CampaignCollectionSyncButton"
 import CampaignProductContributionManager from "@/components/CampaignProductContributionManager"
 import { getPortalData, money, portalStats } from "@/lib/portal/data"
 import { customerName, orderLabel } from "@/lib/orders/display"
@@ -17,7 +19,7 @@ export default async function PortalSection({params,searchParams}:{params:Promis
   const d=await getPortalData(org,campaign)
   const s=portalStats(d)
   const goal=Number(d.campaign?.goal_amount||0)
-  const salesGoal=10000
+  const salesGoal=Number(d.campaign?.sales_goal||0)
   const pct=goal?Math.min(100,(s.raised/goal)*100):0
   const salesPct=salesGoal?Math.min(100,(s.gross/salesGoal)*100):0
   const start=d.campaign?.starts_at?new Date(d.campaign.starts_at):null
@@ -84,6 +86,7 @@ export default async function PortalSection({params,searchParams}:{params:Promis
   else if(section==="products") content=<>
     <div className="agency-page-head"><div><h1>Products</h1><p>Campaign product performance and rankings from Shopify orders</p></div></div>
     {d.org.organization_type === 'detroit_fire_station' && <div className="agency-card" style={{padding:20,marginBottom:20}}><Link href={'/station/'+d.organizationId+'/collections'}>Manage assigned Shopify collections →</Link>{!d.products.length && <p>No products yet. Assign a Shopify collection and sync it to this station.</p>}</div>}
+    {d.canEditCampaign&&d.campaign&&<CampaignCollectionSyncButton campaignId={d.campaign.id} organizationId={d.organizationId}/>}
     {d.canManage&&<CampaignProductContributionManager products={d.products}/>}
     <section className="agency-product-grid">{products.map((p:any,i:number)=><article className="agency-product-card" key={p.id}>
       <div className="agency-product-image">{p.image?<img src={p.image} alt=""/>:<span>PRODUCT</span>}{i===0&&p.gross>0&&<em>★ Top Earner</em>}</div>
@@ -94,9 +97,10 @@ export default async function PortalSection({params,searchParams}:{params:Promis
   </>
   else if(section==="progress") content=<>
     <div className="agency-page-head"><div><h1>Campaign Progress</h1><p>Visual performance tracker using current campaign data</p></div></div>
+    {d.canEditCampaign&&d.campaign&&<CampaignGoalEditor campaignId={d.campaign.id} organizationId={d.organizationId} goalAmount={goal} salesGoalAmount={salesGoal}/>}
     <section className="agency-grid-2">
       <article className="agency-card agency-goal-card"><header><div><h2>Fundraising Goal</h2><p>Progress toward fundraising target</p></div></header><div><strong>{money(s.raised)}</strong><span>of {money(goal)}</span><b>{pct.toFixed(1)}%</b></div><div className="agency-progress"><i style={{width:pct+"%"}}/></div></article>
-      <article className="agency-card agency-goal-card"><header><div><h2>Sales Goal</h2><p>Progress toward total sales target</p></div></header><div><strong>{money(s.gross)}</strong><span>of {money(salesGoal)}</span><b>{salesPct.toFixed(1)}%</b></div><div className="agency-progress greenbar"><i style={{width:salesPct+"%"}}/></div></article>
+      <article className="agency-card agency-goal-card"><header><div><h2>Sales Goal</h2><p>Progress toward total sales target</p></div></header><div><strong>{money(s.gross)}</strong><span>{salesGoal?`of ${money(salesGoal)}`:"No sales goal set"}</span><b>{salesPct.toFixed(1)}%</b></div><div className="agency-progress greenbar"><i style={{width:salesPct+"%"}}/></div></article>
     </section>
     <section className="agency-kpis four"><div><span>DAYS ELAPSED</span><strong>{start?Math.max(0,Math.ceil((Date.now()-start.getTime())/86400000)):0}</strong></div><div><span>DAYS REMAINING</span><strong className="orange">{daysRemaining}</strong></div><div><span>REQUIRED DAILY SALES</span><strong>{money(daysRemaining?Math.max(0,salesGoal-s.gross)/daysRemaining:0)}</strong></div><div><span>AVG. DAILY SALES</span><strong className="green">{money(start?s.gross/Math.max(1,Math.ceil((Date.now()-start.getTime())/86400000)):0)}</strong></div></section>
   </>

@@ -1036,6 +1036,17 @@ input:focus,select:focus,textarea:focus{
 .agency-goal-list{padding:0 22px 22px;display:grid;gap:10px}
 .agency-goal-list>div,.agency-detail-list>div{display:flex;justify-content:space-between;align-items:center;gap:20px;font-size:12px}
 .agency-goal-list span,.agency-detail-list span{color:#667c96}
+.agency-goal-editor{margin-bottom:20px}
+.agency-goal-editor form{padding:20px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) auto;gap:14px;align-items:end}
+.agency-goal-editor form label{display:grid;gap:7px;color:#526983;font-size:12px;font-weight:850}
+.agency-goal-editor form label>div{display:flex;align-items:center;min-height:44px;border:1px solid #dfe6ee;border-radius:10px;background:#fff;overflow:hidden}
+.agency-goal-editor form label b{padding-left:12px;color:#7b8fa7;font-size:14px}
+.agency-goal-editor form input{width:100%;min-width:0;height:42px;padding:9px 12px 9px 6px;border:0;outline:0;background:transparent;color:#18263a;font:inherit;font-size:14px;font-weight:750}
+.agency-goal-editor form button,.agency-sync-control button{min-height:44px;padding:10px 16px;border:0;border-radius:10px;background:#0d65b8;color:#fff;font-size:12px;font-weight:900;cursor:pointer}
+.agency-goal-editor form button:disabled,.agency-sync-control button:disabled{opacity:.6;cursor:wait}
+.agency-form-message{margin:0;padding:0 20px 18px;color:#0b7a48;font-size:12px;font-weight:800}
+.agency-sync-control{display:flex;align-items:center;gap:12px;margin:0 0 20px}
+.agency-sync-control span{color:#5f748e;font-size:12px;font-weight:750}
 .agency-detail-list{padding:18px 20px;display:grid;gap:0}
 .agency-detail-list>div{min-height:48px;border-bottom:1px solid #edf1f5}.agency-detail-list>div:last-child{border-bottom:0}
 .agency-pill{
@@ -1756,3 +1767,4 @@ input:focus,select:focus,textarea:focus{
 .fc-btn.fc-btn-danger{background:#be123c!important;color:#fff!important;border:1px solid #be123c!important;box-shadow:none!important}
 @media(max-width:900px){.fc-organization-fields{grid-template-columns:1fr 1fr}.fc-delete-organization{align-items:flex-start;flex-direction:column}.fc-delete-organization-action{width:100%;align-items:flex-start;flex-direction:column}.fc-btn.fc-btn-danger{width:100%}}
 @media(max-width:620px){.fc-organization-fields{grid-template-columns:1fr}.fc-organization-form-actions{align-items:stretch;flex-direction:column}.fc-organization-form-actions .fc-btn{width:100%}}
+@media(max-width:760px){.agency-goal-editor form{grid-template-columns:1fr}.agency-sync-control{align-items:flex-start;flex-direction:column}}

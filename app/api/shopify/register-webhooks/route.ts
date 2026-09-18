@@ -7,6 +7,7 @@ const TOPICS = [
   'ORDERS_UPDATED',
   'ORDERS_CANCELLED',
   'REFUNDS_CREATE',
+  'COLLECTIONS_UPDATE',
 ]
 
 async function requirePlatformAdmin() {

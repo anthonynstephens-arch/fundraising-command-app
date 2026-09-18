@@ -1,10 +1,59 @@
 import crypto from 'crypto'
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { stripShopifyGid } from '@/lib/shopify/admin'
+import { syncCollection } from '@/lib/shopify/sync-collection'
 import {
   importShopifyOrder,
   applyShopifyRefund,
 } from '@/lib/shopify/import-order'
+import { revalidatePath } from 'next/cache'
+
+export const dynamic = 'force-dynamic'
+export const maxDuration = 300
+
+async function syncUpdatedCollection(payload: any, shopDomain: string) {
+  const collectionId = stripShopifyGid(payload?.admin_graphql_api_id || payload?.id)
+  if (!collectionId) throw new Error('Collection update did not include a collection ID.')
+
+  const db = createAdminClient()
+  const { data: stores, error: storeError } = await db
+    .from('shopify_stores')
+    .select('id,shop_domain,admin_domain')
+    .eq('is_active', true)
+
+  if (storeError) throw storeError
+  const normalizedDomain = shopDomain.toLowerCase()
+  const store = (stores || []).find((row: any) =>
+    row.shop_domain?.toLowerCase() === normalizedDomain ||
+    row.admin_domain?.toLowerCase() === normalizedDomain
+  )
+
+  if (!store) throw new Error(`Shopify store ${shopDomain} is not active in Fundraiser Command.`)
+
+  const { data: links, error: linkError } = await db
+    .from('campaign_shopify_collections')
+    .select('campaign_id')
+    .eq('shopify_store_id', store.id)
+    .eq('shopify_collection_id', collectionId)
+
+  if (linkError) throw linkError
+
+  const campaignIds = [...new Set((links || []).map((link: any) => String(link.campaign_id)))]
+  const results = []
+  for (const campaignId of campaignIds) {
+    results.push(await syncCollection(campaignId, collectionId))
+  }
+
+  if (campaignIds.length) {
+    revalidatePath('/portal', 'layout')
+    revalidatePath('/station', 'layout')
+    revalidatePath('/dashboard', 'layout')
+    revalidatePath('/fundraisers', 'layout')
+  }
+
+  return { collectionId, campaignsSynced: campaignIds.length, results }
+}
 
 function verifyWebhook(
   rawBody: string,
@@ -160,6 +209,13 @@ export async function POST(
         await applyShopifyRefund(
           payload
         )
+    } else if (
+      topic === 'collections/update'
+    ) {
+      result = await syncUpdatedCollection(
+        payload,
+        shopDomain
+      )
     }
 
     await supabase
