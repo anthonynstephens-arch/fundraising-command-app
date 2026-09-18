@@ -37,4 +37,15 @@ assert.ok(organizationGate.includes("'manager'"), 'Managers must be allowed to m
 assert.ok(organizationGate.includes('getPortalPinSession'), 'PIN managers must be authorized without an email session')
 assert.ok(portalMembers.includes('getPortalPinSession'), 'Manage Access must accept active PIN sessions')
 
+const productUpdate = read('app/api/campaign-products/update/route.ts')
+const portalData = read('lib/portal/data.ts')
+assert.ok(productUpdate.includes("pinSession?.role === 'owner'"), 'Only a PIN owner may change contribution rules')
+assert.ok(productUpdate.includes("member.role === 'owner'"), 'Only an organization owner may change contribution rules')
+assert.ok(portalData.includes('canEditContributions'), 'Contribution editing must have a separate owner-only permission')
+
+const preferencesRoute = read('app/api/portal/preferences/route.ts')
+const onboarding = read('components/portal/PortalOnboarding.tsx')
+assert.ok(preferencesRoute.includes('portal_notification_preferences'), 'Notification preferences must persist per portal identity')
+assert.ok(onboarding.includes('Add the app to your Home Screen'), 'First-login tutorial must include home-screen installation')
+
 console.log('PASS: campaign controls, Shopify sync, mobile navigation, and manager access are wired.')
