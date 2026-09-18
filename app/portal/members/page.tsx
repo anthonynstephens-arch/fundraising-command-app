@@ -2,6 +2,7 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { getPortalPinSession } from "@/lib/pin-auth"
 import OrganizationMemberManager from "@/components/admin/OrganizationMemberManager"
 import PinAccessManager from "@/components/admin/PinAccessManager"
 
@@ -10,20 +11,22 @@ export const dynamic="force-dynamic"
 export default async function PortalMembers({searchParams}:{searchParams:Promise<{org?:string}>}){
   const {org}=await searchParams
   const auth=await createClient()
-  const {data:{user}}=await auth.auth.getUser()
-  if(!user) redirect("/login")
+  const [{data:{user}},pinSession]=await Promise.all([auth.auth.getUser(),getPortalPinSession()])
+  if(!user&&!pinSession) redirect("/login")
 
   const db=createAdminClient()
   const [{data:platform},{data:memberships}]=await Promise.all([
-    db.from("platform_admins").select("role").eq("user_id",user.id).eq("is_active",true).maybeSingle(),
-    db.from("organization_members").select("organization_id,role").eq("user_id",user.id)
+    user?db.from("platform_admins").select("role").eq("user_id",user.id).eq("is_active",true).maybeSingle():Promise.resolve({data:null}),
+    user?db.from("organization_members").select("organization_id,role").eq("user_id",user.id):Promise.resolve({data:[] as any[]})
   ])
 
-  const organizationId=org||memberships?.[0]?.organization_id
+  const organizationId=org||pinSession?.organizationId||memberships?.[0]?.organization_id
   if(!organizationId) redirect("/portal")
 
   const own=memberships?.find((m:any)=>m.organization_id===organizationId)
-  const canManage=!!platform||own?.role==="owner"||own?.role==="admin"
+  const pinRole=pinSession&&pinSession.organizationId===organizationId?pinSession.role:null
+  const role=own?.role||pinRole
+  const canManage=!!platform||role==="owner"||role==="admin"||role==="manager"
   if(!canManage) redirect("/portal?org="+organizationId)
 
   const {data:organization}=await db.from("organizations").select("id,name,organization_type").eq("id",organizationId).maybeSingle()
