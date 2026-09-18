@@ -1,22 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { authorizeOrganizationManagement } from "@/lib/portal/authorize-organization-management"
 
 const allowedRoles=["owner","admin","manager","viewer"]
 
 async function access(organizationId:string){
-  const auth=await createClient()
-  const {data:{user}}=await auth.auth.getUser()
-  if(!user) return {ok:false as const,status:401,user:null,platform:false,role:null}
-  const db=createAdminClient()
-  const [{data:platform},{data:membership}]=await Promise.all([
-    db.from("platform_admins").select("role,is_active").eq("user_id",user.id).eq("is_active",true).maybeSingle(),
-    db.from("organization_members").select("role").eq("organization_id",organizationId).eq("user_id",user.id).maybeSingle()
-  ])
-  const platformOk=!!platform
-  const orgRole=membership?.role||null
-  const ok=platformOk || orgRole==="owner" || orgRole==="admin"
-  return {ok,status:ok?200:403,user,platform:platformOk,role:orgRole}
+  return authorizeOrganizationManagement(organizationId)
 }
 
 async function findUserByEmail(db:any,email:string){
