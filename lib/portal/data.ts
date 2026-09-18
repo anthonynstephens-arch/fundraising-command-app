@@ -87,8 +87,8 @@ export async function getPortalData(requestedOrg?:string, requestedCampaign?:str
   if(balanceResult.error)throw balanceResult.error
   const balance=balanceResult.data?.[0]||{earned:0,available:0,pending:0,paid:0}
   const memberRole=context.role
-  const canManage=!!platform||memberRole==="owner"||memberRole==="admin"
-  const canEditCampaign=canManage||memberRole==="manager"
+  const canManage=!!platform||memberRole==="owner"||memberRole==="admin"||memberRole==="manager"
+  const canEditCampaign=canManage
   const userMap=new Map<string,string>()
   if(canManage){
     let page=1
