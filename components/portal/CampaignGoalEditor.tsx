@@ -57,11 +57,11 @@ export default function CampaignGoalEditor({
       <form onSubmit={save}>
         <label>
           <span>Fundraising goal</span>
-          <div><b>$</b><input name="goalAmount" type="number" min="0" max="100000000" step="0.01" defaultValue={goalAmount} required /></div>
+          <div className="agency-money-input"><span aria-hidden="true">$</span><input aria-label="Fundraising goal in dollars" name="goalAmount" type="number" min="0" max="100000000" step="0.01" defaultValue={goalAmount} required /></div>
         </label>
         <label>
           <span>Sales goal</span>
-          <div><b>$</b><input name="salesGoalAmount" type="number" min="0" max="100000000" step="0.01" defaultValue={salesGoalAmount} required /></div>
+          <div className="agency-money-input"><span aria-hidden="true">$</span><input aria-label="Sales goal in dollars" name="salesGoalAmount" type="number" min="0" max="100000000" step="0.01" defaultValue={salesGoalAmount} required /></div>
         </label>
         <button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save Goals'}</button>
       </form>
