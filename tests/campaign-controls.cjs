@@ -27,4 +27,14 @@ const customerSync = read('app/api/portal/campaign-sync/route.ts')
 assert.ok(customerSync.includes('authorizeCampaignManagement'), 'Manual customer sync must be tenant-authorized')
 assert.ok(customerSync.includes('syncCollection('))
 
-console.log('PASS: admin/customer goal controls, authorized manual refresh, and automatic Shopify collection updates are wired.')
+const portalShell = read('components/portal/PortalShell.tsx')
+assert.ok(portalShell.includes('agency-menu-toggle'), 'Mobile portal navigation must use a menu toggle')
+assert.ok(portalShell.includes('mobile-open'), 'Mobile portal navigation must stay collapsed until opened')
+
+const organizationGate = read('lib/portal/authorize-organization-management.ts')
+const portalMembers = read('app/portal/members/page.tsx')
+assert.ok(organizationGate.includes("'manager'"), 'Managers must be allowed to manage organization access')
+assert.ok(organizationGate.includes('getPortalPinSession'), 'PIN managers must be authorized without an email session')
+assert.ok(portalMembers.includes('getPortalPinSession'), 'Manage Access must accept active PIN sessions')
+
+console.log('PASS: campaign controls, Shopify sync, mobile navigation, and manager access are wired.')
