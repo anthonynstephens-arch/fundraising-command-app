@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Fundraiser Command">
+  <rect width="512" height="512" rx="112" fill="#071b30"/>
+  <path d="M126 96h260v76H214v62h146v76H214v106h-88z" fill="#ffffff"/>
+  <circle cx="379" cy="386" r="55" fill="#1677d2"/>
+  <path d="M353 386l18 18 36-42" fill="none" stroke="#fff" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
