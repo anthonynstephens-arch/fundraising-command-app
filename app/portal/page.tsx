@@ -1,6 +1,7 @@
 import Link from "next/link"
 import PortalShell from "@/components/portal/PortalShell"
 import PortalMetricChart from "@/components/portal/PortalMetricChart"
+import CampaignGoalEditor from "@/components/portal/CampaignGoalEditor"
 import { getPortalData, money, portalStats, dailySeries } from "@/lib/portal/data"
 import { customerName, orderLabel } from "@/lib/orders/display"
 
@@ -12,6 +13,7 @@ export default async function PortalOverview({searchParams}:{searchParams:Promis
   const s=portalStats(d)
   const series=dailySeries(d)
   const goal=Number(d.campaign?.goal_amount||0)
+  const salesGoal=Number(d.campaign?.sales_goal||0)
   const pct=goal?Math.min(100,(s.raised/goal)*100):0
   const start=d.campaign?.starts_at?new Date(d.campaign.starts_at):null
   const end=d.campaign?.ends_at?new Date(d.campaign.ends_at):null
@@ -50,6 +52,8 @@ export default async function PortalOverview({searchParams}:{searchParams:Promis
       <div><span>AVAILABLE FOR PAYOUT</span><strong className="green">{money(d.payouts.filter((p:any)=>p.status==="approved").reduce((a:number,p:any)=>a+Number(p.payout_amount||0),0))}</strong><small>approved payout records</small></div>
       <div><span>AWAITING FULFILLMENT</span><strong className="orange">{s.awaiting}</strong><small>Shopify fulfillment status</small></div>
     </section>
+
+    {d.canEditCampaign&&d.campaign&&<CampaignGoalEditor campaignId={d.campaign.id} organizationId={d.organizationId} goalAmount={goal} salesGoalAmount={salesGoal}/>}
 
     <section className="agency-grid-2">
       <PortalMetricChart data={series}/>

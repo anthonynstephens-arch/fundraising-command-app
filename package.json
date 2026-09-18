@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm run test:reporting && next build",
+    "build": "npm run test:reporting && npm run test:campaign-controls && next build",
     "start": "next start",
-    "test:reporting": "node tests/department-reporting.cjs"
+    "test:reporting": "node tests/department-reporting.cjs",
+    "test:campaign-controls": "node tests/campaign-controls.cjs"
   },
   "dependencies": {
     "@supabase/ssr": "latest",

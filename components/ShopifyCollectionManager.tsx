@@ -230,7 +230,7 @@ export default function ShopifyCollectionManager({
       }
 
       setMessage(
-        '✓ Shopify order and refund webhooks registered.'
+        '✓ Shopify order, refund, and collection update webhooks registered.'
       )
     } catch (error: any) {
       setMessage(

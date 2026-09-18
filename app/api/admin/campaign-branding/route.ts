@@ -19,11 +19,16 @@ export async function POST(request: Request) {
     const end = new Date(endRaw + "T23:59:59")
     if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return NextResponse.json({ error: "Enter valid campaign dates." }, { status: 400 })
     if (end.getTime() < start.getTime()) return NextResponse.json({ error: "Campaign end date must be after the start date." }, { status: 400 })
+    const goalAmount = Number(body.goal_amount)
+    const salesGoal = Number(body.sales_goal)
+    if (!Number.isFinite(goalAmount) || goalAmount < 0) return NextResponse.json({ error: "Fundraising goal must be $0 or more." }, { status: 400 })
+    if (!Number.isFinite(salesGoal) || salesGoal < 0) return NextResponse.json({ error: "Sales goal must be $0 or more." }, { status: 400 })
 
     const allowed = {
       name: typeof body.name === "string" ? body.name.trim().slice(0, 180) : undefined,
       description: typeof body.description === "string" ? body.description.trim().slice(0, 4000) : undefined,
-      goal_amount: Number.isFinite(Number(body.goal_amount)) ? Number(body.goal_amount) : undefined,
+      goal_amount: goalAmount,
+      sales_goal: salesGoal,
       starts_at: start.toISOString(),
       ends_at: end.toISOString(),
       public_store_url: typeof body.public_store_url === "string" ? body.public_store_url.trim() || null : undefined,

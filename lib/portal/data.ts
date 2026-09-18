@@ -88,6 +88,7 @@ export async function getPortalData(requestedOrg?:string, requestedCampaign?:str
   const balance=balanceResult.data?.[0]||{earned:0,available:0,pending:0,paid:0}
   const memberRole=context.role
   const canManage=!!platform||memberRole==="owner"||memberRole==="admin"
+  const canEditCampaign=canManage||memberRole==="manager"
   const userMap=new Map<string,string>()
   if(canManage){
     let page=1
@@ -108,7 +109,7 @@ export async function getPortalData(requestedOrg?:string, requestedCampaign?:str
   return {
     db,user:portalUser,pinSession,platform:!!platform,organizationId,org,campaigns:allCampaigns,campaign:selectedCampaign,
     orders:campaignOrders,items:campaignItems,products,payouts:campaignPayouts,payoutRequests:payoutRequests||[],members:members||[],pinMembers:pinMembers||[],allOrgs:allOrgs||[],
-    balance,memberRole,canManage,userMap,lastWebhook:org.organization_type==='detroit_fire_station' ? (collectionSync?.last_synced_at ? {created_at:collectionSync.last_synced_at} : null) : lastWebhook||null
+    balance,memberRole,canManage,canEditCampaign,userMap,lastWebhook:org.organization_type==='detroit_fire_station' ? (collectionSync?.last_synced_at ? {created_at:collectionSync.last_synced_at} : null) : lastWebhook||null
   }
 }
 
