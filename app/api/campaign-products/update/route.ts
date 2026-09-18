@@ -28,7 +28,7 @@ async function canManageProducts(ids: string[]) {
   if (!campaigns || campaigns.length !== campaignIds.length) return false
 
   const organizationIds = [...new Set(campaigns.map(campaign => campaign.organization_id))]
-  if (pinSession && ['owner', 'admin'].includes(pinSession.role)) {
+  if (pinSession?.role === 'owner') {
     if (organizationIds.every(id => id === pinSession.organizationId)) return true
   }
   if (!user) return false
@@ -40,7 +40,7 @@ async function canManageProducts(ids: string[]) {
   if (platform) return true
 
   const manageable = new Set((memberships || [])
-    .filter(member => member.role === 'owner' || member.role === 'admin')
+    .filter(member => member.role === 'owner')
     .map(member => member.organization_id))
   return organizationIds.every(id => manageable.has(id))
 }
