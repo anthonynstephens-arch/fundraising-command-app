@@ -1806,3 +1806,14 @@ input:focus,select:focus,textarea:focus{
 @media(max-width:900px){.fc-organization-fields{grid-template-columns:1fr 1fr}.fc-delete-organization{align-items:flex-start;flex-direction:column}.fc-delete-organization-action{width:100%;align-items:flex-start;flex-direction:column}.fc-btn.fc-btn-danger{width:100%}}
 @media(max-width:620px){.fc-organization-fields{grid-template-columns:1fr}.fc-organization-form-actions{align-items:stretch;flex-direction:column}.fc-organization-form-actions .fc-btn{width:100%}}
 @media(max-width:760px){.agency-goal-editor form,.agency-storefront-editor>form{grid-template-columns:1fr}.agency-storefront-editor label,.agency-storefront-editor .agency-editor-actions{grid-column:1}.agency-sync-control{align-items:flex-start;flex-direction:column}}
+
+
+/* Public fundraiser directory slideshow */
+.pub-campaign-slideshow{position:relative;isolation:isolate}
+.pub-campaign-slideshow>img{position:absolute!important;inset:0;opacity:0;object-fit:cover;transition:opacity .7s ease}
+.pub-campaign-slideshow>img.is-active{opacity:1}
+.pub-campaign-slideshow>img.is-logo{object-fit:contain;background:linear-gradient(135deg,#f8f8ff,#eef1ff);padding:24px}
+.pub-slide-dots{position:absolute;z-index:2;right:12px;bottom:11px;display:flex;gap:5px;padding:6px 8px;border-radius:999px;background:rgba(17,24,39,.48);backdrop-filter:blur(8px)}
+.pub-slide-dots i{width:6px;height:6px;border-radius:999px;background:rgba(255,255,255,.45);transition:width .25s ease,background .25s ease}
+.pub-slide-dots i.is-active{width:18px;background:#fff}
+@media(prefers-reduced-motion:reduce){.pub-campaign-slideshow>img,.pub-slide-dots i{transition:none}}
