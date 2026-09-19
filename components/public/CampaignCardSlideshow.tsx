@@ -6,6 +6,7 @@ import { useEffect, useState } from "react"
 type Slide = {
   src: string
   alt: string
+  fit?: "contain" | "cover"
 }
 
 const passthroughLoader = ({ src }: { src: string }) => src
@@ -30,7 +31,7 @@ export function CampaignCardSlideshow({ slides }: { slides: Slide[] }) {
       {slides.map((slide, index) => (
         <Image
           key={slide.src}
-          className={index === active ? "is-active" : ""}
+          className={[index === active ? "is-active" : "", slide.fit === "contain" ? "is-logo" : ""].filter(Boolean).join(" ")}
           src={slide.src}
           alt={slide.alt}
           fill
