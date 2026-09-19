@@ -43,6 +43,7 @@ export async function getPublicCampaign(slug: string) {
     const price = n(row.retail_price)
     if (!grouped.has(key)) grouped.set(key, {
       productId:String(row.shopify_product_id || key),
+      handle:normalized?.handle || null,
       title:row.title,
       imageUrl:row.image_url || normalized?.image_url || null,
       productUrl:normalized?.handle ? `https://${shopDomain}/products/${normalized.handle}` : storeUrl,
@@ -50,7 +51,7 @@ export async function getPublicCampaign(slug: string) {
     })
     const g = grouped.get(key)
     g.minPrice = Math.min(g.minPrice, price); g.maxPrice = Math.max(g.maxPrice, price)
-    g.variants.push({id:row.id,title:row.variant_title,sku:row.sku,price,contributionType:row.contribution_type,contributionValue:n(row.contribution_value)})
+    g.variants.push({id:row.id,shopifyVariantId:String(row.shopify_variant_id),title:row.variant_title,sku:row.sku,price,contributionType:row.contribution_type,contributionValue:n(row.contribution_value)})
   }
 
   const orderIds = [...new Set((items ?? []).map((x:any)=>x.order_id).filter(Boolean))]

@@ -1,0 +1,22 @@
+const assert = require('node:assert/strict')
+const fs = require('node:fs')
+
+const read = file => fs.readFileSync(file, 'utf8')
+const storefront = read('components/storefront/CampaignStorefront.tsx')
+const campaignData = read('lib/public/storefront.ts')
+const checkout = read('app/api/storefront/checkout/route.ts')
+const publicCampaigns = read('lib/public/campaigns.ts')
+
+assert.ok(storefront.includes('fundraiser-command-cart:${campaign.id}'), 'Cart storage must be scoped to one campaign')
+assert.ok(storefront.includes('variantId:variant.id'), 'Cart items must store the selected Shopify variant ID')
+assert.ok(storefront.includes('/api/storefront/checkout'), 'Checkout must use the validated server handoff')
+assert.ok(storefront.includes('product.options.every'), 'Variant selection must match every Shopify option')
+assert.ok(campaignData.includes('variants(first: 250)'), 'Live Shopify variants must be loaded for product selection')
+assert.ok(campaignData.includes('inventoryPolicy'), 'Live inventory policy must control availability')
+assert.ok(publicCampaigns.includes('shopifyVariantId:String(row.shopify_variant_id)'), 'Campaign products must expose real Shopify variant IDs')
+assert.ok(checkout.includes('.eq("campaign_id",campaign.id).eq("is_active",true)'), 'Checkout must reject variants outside the campaign')
+assert.ok(checkout.includes('inventoryQuantity>=quantity'), 'Checkout must revalidate requested inventory quantity')
+assert.ok(checkout.includes('attributes[fundraiser_campaign_id]'), 'Shopify cart must retain campaign attribution')
+assert.ok(checkout.includes('variantIds.map(id=>`${id}:${consolidated.get(id)}`).join(",")'), 'Shopify cart permalink must preserve every variant and quantity')
+
+console.log('PASS: storefront variants, campaign-scoped cart, inventory validation, and Shopify handoff are wired.')
