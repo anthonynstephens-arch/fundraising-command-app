@@ -4,7 +4,7 @@ import Link from "next/link"
 import {useEffect,useMemo,useRef,useState} from "react"
 import type {StoreImage,StoreProduct,StoreVariant} from "@/lib/public/storefront"
 
-type Campaign={id:string;slug:string;name:string;description:string|null;status:string;starts_at:string|null;ends_at:string|null;goalAmount:number;organization_id:string;organization:{name:string;logoUrl:string|null};stats:{netRaised:number;progress:number};products:StoreProduct[];shopifyConnected:boolean}
+type Campaign={id:string;slug:string;name:string;description:string|null;status:string;starts_at:string|null;ends_at:string|null;storefront_eyebrow:string|null;storefront_supporting_text:string|null;storefront_header_message:string|null;goalAmount:number;organization_id:string;organization:{name:string;logoUrl:string|null};stats:{netRaised:number;progress:number};products:StoreProduct[];shopifyConnected:boolean}
 type CartItem={productId:string;variantId:string;productTitle:string;variantTitle:string;image:string|null;quantity:number;price:number;campaignId:string;organizationId:string}
 
 const money=(value:number)=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(value)
@@ -34,10 +34,11 @@ function useCampaignCart(campaign:Campaign){
 }
 
 function StoreHeader({campaign,count,onCart}:{campaign:Campaign;count:number;onCart:()=>void}){
+  const supporting=campaign.storefront_supporting_text||`Supporting ${campaign.organization.name}`
   return <header className="store-header"><div className="store-header-inner"><Link href={`/fundraisers/${campaign.slug}`} className="store-identity">
     {campaign.organization.logoUrl?<img src={campaign.organization.logoUrl} alt={`${campaign.organization.name} logo`}/>:<span>{campaign.organization.name.slice(0,2).toUpperCase()}</span>}
-    <div><strong>{campaign.name}</strong><small>Supporting {campaign.organization.name}</small></div>
-  </Link><button className="store-cart-button" onClick={onCart} aria-label={`Open cart with ${count} items`}><span aria-hidden="true">Bag</span><b>{count}</b></button></div></header>
+    <div><strong>{campaign.name}</strong><small>{supporting}</small></div>
+  </Link><button className="store-cart-button" onClick={onCart} aria-label={`Open cart with ${count} items`}><span aria-hidden="true">Bag</span><b>{count}</b></button></div>{campaign.storefront_header_message&&<div className="store-header-message">{campaign.storefront_header_message}</div>}</header>
 }
 
 function CartDrawer({campaign,cart,open,onClose}:{campaign:Campaign;cart:ReturnType<typeof useCampaignCart>;open:boolean;onClose:()=>void}){
@@ -76,7 +77,9 @@ function ProductCard({campaign,product}:{campaign:Campaign;product:StoreProduct}
 
 function CampaignIntro({campaign}:{campaign:Campaign}){
   const end=campaign.ends_at?new Date(campaign.ends_at):null
-  return <section className="store-intro"><div>{campaign.organization.logoUrl&&<img src={campaign.organization.logoUrl} alt=""/>}<div><small>OFFICIAL FUNDRAISER STORE</small><h1>{campaign.name}</h1><p>{campaign.description||`Shop official merchandise supporting ${campaign.organization.name}.`}</p><div className="store-intro-meta"><span>Supporting <b>{campaign.organization.name}</b></span>{end&&<span>Ends <b>{end.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</b></span>}</div></div></div>
+  const eyebrow=campaign.storefront_eyebrow||"OFFICIAL FUNDRAISER STORE"
+  const supporting=campaign.storefront_supporting_text||`Supporting ${campaign.organization.name}`
+  return <section className="store-intro"><div>{campaign.organization.logoUrl&&<img src={campaign.organization.logoUrl} alt=""/>}<div><small>{eyebrow}</small><h1>{campaign.name}</h1><p>{campaign.description||`Shop official merchandise supporting ${campaign.organization.name}.`}</p><div className="store-intro-meta"><span><b>{supporting}</b></span>{end&&<span>Ends <b>{end.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</b></span>}</div></div></div>
     {campaign.goalAmount>0&&<aside><div><span>Fundraiser progress</span><b>{money(campaign.stats.netRaised)} raised</b></div><div className="store-goal"><i style={{width:`${campaign.stats.progress}%`}}/></div><small>{Math.round(campaign.stats.progress)}% of {money(campaign.goalAmount)} goal</small></aside>}
   </section>
 }

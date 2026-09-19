@@ -7,6 +7,7 @@ import MarketingTools from "@/components/portal/MarketingTools"
 import PayoutRequestPanel from "@/components/portal/PayoutRequestPanel"
 import CampaignGoalEditor from "@/components/portal/CampaignGoalEditor"
 import CampaignCollectionSyncButton from "@/components/portal/CampaignCollectionSyncButton"
+import StorefrontHeaderEditor from "@/components/portal/StorefrontHeaderEditor"
 import CampaignProductContributionManager from "@/components/CampaignProductContributionManager"
 import PortalNotificationSettings from '@/components/portal/PortalNotificationSettings'
 import { getPortalData, money, portalStats } from "@/lib/portal/data"
@@ -119,6 +120,7 @@ export default async function PortalSection({params,searchParams}:{params:Promis
   </>
   else if(section==="settings") content=<>
     <div className="agency-page-head"><div><h1>Account Settings</h1><p>Department portal access and profile information</p></div></div>
+    {d.canEditStorefront&&d.campaign&&<StorefrontHeaderEditor campaign={d.campaign} organizationName={d.org.name}/>}
     <section className="agency-grid-2"><article className="agency-card"><header><div><h2>Department Profile</h2></div></header><div className="agency-detail-list"><div><span>Organization</span><b>{d.org.name}</b></div><div><span>Contact</span><b>{d.org.contact_name||"—"}</b></div><div><span>Email</span><b>{d.org.contact_email||"—"}</b></div><div><span>Your role</span><b>{d.memberRole||"Platform preview"}</b></div></div></article>{d.canManage&&<article className="agency-card"><header><div><h2>Access Management</h2><p>Add users and change department roles</p></div></header><Link className="agency-primary-link" href={d.org.organization_type === "detroit_fire_station" ? "/station/"+d.organizationId+"/members" : "/portal/members?org="+d.organizationId}>Manage Members →</Link></article>}</section>
   </>
   else content=<><div className="agency-page-head"><div><h1>Help Center</h1><p>Support for your fundraiser</p></div></div><section className="agency-card"><header><div><h2>Campaign Support</h2></div></header><div className="agency-detail-list"><div><span>Fundraising calculation</span><b>Based on contribution rules stored with each campaign product</b></div><div><span>Customer checkout</span><b>Shopify</b></div><div><span>Order synchronization</span><b>Shopify webhooks</b></div></div></section></>

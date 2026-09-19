@@ -7,6 +7,7 @@ export async function getPublicCampaign(slug: string) {
 
   const { data: campaign, error } = await db.from("campaigns").select(`
     id,name,slug,description,status,goal_amount,starts_at,ends_at,hero_image_url,
+    storefront_eyebrow,storefront_supporting_text,storefront_header_message,
     public_store_url,custom_domain,organization_id,
     organization:organizations(name,slug,logo_url,website_url)
   `).eq("slug", slug).in("status", ["active","completed"]).maybeSingle()

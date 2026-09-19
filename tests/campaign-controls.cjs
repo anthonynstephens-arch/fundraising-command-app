@@ -17,6 +17,13 @@ assert.ok(goalRoute.includes('authorizeCampaignManagement'), 'Goal changes must 
 assert.ok(goalRoute.includes('goal_amount: goalAmount'))
 assert.ok(goalRoute.includes('sales_goal: salesGoalAmount'))
 
+const storefrontEditor = read('components/portal/StorefrontHeaderEditor.tsx')
+const storefrontRoute = read('app/api/portal/storefront-header/route.ts')
+const storefront = read('components/storefront/CampaignStorefront.tsx')
+assert.ok(storefrontEditor.includes('/api/portal/storefront-header'), 'Portal users must have a storefront header editor')
+assert.ok(storefrontRoute.includes('authorizeCampaignStorefrontEditing'), 'Storefront header changes must be tenant-authorized')
+assert.ok(storefront.includes('storefront_header_message'), 'The public store must render the editable header announcement')
+
 const registeredTopics = read('app/api/shopify/register-webhooks/route.ts')
 const webhookHandler = read('app/api/shopify/webhooks/route.ts')
 assert.ok(registeredTopics.includes("'COLLECTIONS_UPDATE'"), 'Collection updates must be registered with Shopify')

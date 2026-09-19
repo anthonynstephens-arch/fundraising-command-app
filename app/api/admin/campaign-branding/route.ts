@@ -27,6 +27,9 @@ export async function POST(request: Request) {
     const allowed = {
       name: typeof body.name === "string" ? body.name.trim().slice(0, 180) : undefined,
       description: typeof body.description === "string" ? body.description.trim().slice(0, 4000) : undefined,
+      storefront_eyebrow: typeof body.storefront_eyebrow === "string" ? body.storefront_eyebrow.trim().slice(0, 80) || null : undefined,
+      storefront_supporting_text: typeof body.storefront_supporting_text === "string" ? body.storefront_supporting_text.trim().slice(0, 160) || null : undefined,
+      storefront_header_message: typeof body.storefront_header_message === "string" ? body.storefront_header_message.trim().slice(0, 240) || null : undefined,
       goal_amount: goalAmount,
       sales_goal: salesGoal,
       starts_at: start.toISOString(),

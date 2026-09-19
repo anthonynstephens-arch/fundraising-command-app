@@ -56,6 +56,9 @@ export default function CampaignBrandingForm({ campaign }: { campaign: any }) {
         </label>
 
         <label className="fc-span-2">Description<textarea name="description" rows={4} defaultValue={campaign.description || ""} /></label>
+        <label>Store header label<input name="storefront_eyebrow" maxLength={80} defaultValue={campaign.storefront_eyebrow || ""} placeholder="OFFICIAL FUNDRAISER STORE" /></label>
+        <label>Store supporting line<input name="storefront_supporting_text" maxLength={160} defaultValue={campaign.storefront_supporting_text || ""} placeholder="Supporting department name" /></label>
+        <label className="fc-span-2">Store announcement<input name="storefront_header_message" maxLength={240} defaultValue={campaign.storefront_header_message || ""} placeholder="Optional message shown below the store header" /></label>
         <label className="fc-span-2">Shopify collection URL<input name="public_store_url" type="url" defaultValue={campaign.public_store_url || ""} /></label>
         <label>Hero image URL<input name="hero_image_url" type="url" defaultValue={campaign.hero_image_url || ""} /></label>
         <label>Custom domain<input name="custom_domain" placeholder="fundraiser.example.org" defaultValue={campaign.custom_domain || ""} /></label>
