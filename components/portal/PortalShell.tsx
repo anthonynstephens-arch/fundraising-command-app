@@ -1,5 +1,6 @@
 "use client"
 import { stationNavigation } from '@/lib/portal/context'
+import Image from "next/image"
 import Link from "next/link"
 import { usePathname,useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
@@ -45,7 +46,10 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
     <aside className="agency-sidebar">
       <div className="agency-sidebar-head">
         <button className="agency-menu-toggle" type="button" aria-expanded={menuOpen} aria-controls="agency-navigation" onClick={()=>setMenuOpen(open=>!open)}><span aria-hidden="true">{menuOpen?"×":"☰"}</span> Menu</button>
-        <div className="agency-wordmark"><strong>{stationMode ? <img src="/brand/firestation-command.webp" alt="Firestation Command" style={{width:"100%",maxWidth:200,height:"auto",display:"block",marginBottom:10}} /> : <><span className="agency-brand-mark">F</span> Fundraiser Command</>}</strong><span>DETROIT DECAL & APPAREL</span></div>
+        <div className="agency-wordmark">
+          <strong>{stationMode ? <img src="/brand/firestation-command.webp" alt="Firestation Command" style={{width:"100%",maxWidth:200,height:"auto",display:"block",marginBottom:10}} /> : <><span className="agency-desktop-wordmark"><span className="agency-brand-mark">F</span> Fundraiser Command</span><Image className="agency-mobile-wordmark" src="/brand/fundraiser-command-header.webp" alt="Fundraiser Command" width={678} height={203} priority /></>}</strong>
+          <span className="agency-wordmark-byline">DETROIT DECAL & APPAREL</span>
+        </div>
         <div className="agency-mobile-account"><div className="agency-avatar" title={userEmail}>{(userEmail||"U").slice(0,2).toUpperCase()}</div><button type="button" onClick={signOut}>Sign out</button></div>
       </div>
       <nav id="agency-navigation" className={menuOpen?"mobile-open":""}>{navigation.map(([label,href,icon])=>{
