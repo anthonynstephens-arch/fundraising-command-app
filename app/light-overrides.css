@@ -885,6 +885,7 @@ input:focus,select:focus,textarea:focus{
 .agency-wordmark strong{color:#fff;font-size:14px;letter-spacing:-.01em}
 .agency-wordmark span{color:#7fb2eb;font-size:10px;letter-spacing:.16em}
 .agency-wordmark strong{display:flex;align-items:center;gap:8px}.agency-brand-mark{width:24px;height:24px;border-radius:8px;background:linear-gradient(135deg,#2884df,#0b5aa5);display:grid!important;place-items:center;color:#fff!important;font-size:13px!important;letter-spacing:0!important;box-shadow:0 4px 12px rgba(0,91,183,.3)}
+/* Fundraiser Command mobile logo header */
 .agency-desktop-wordmark{display:flex;align-items:center;gap:8px;color:#fff!important;font-size:14px!important;letter-spacing:-.01em!important}
 .agency-mobile-wordmark{display:none;width:100%;height:auto}
 .agency-menu-toggle{display:none}
