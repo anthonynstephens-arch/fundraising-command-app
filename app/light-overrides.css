@@ -909,6 +909,14 @@ input:focus,select:focus,textarea:focus{
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 5px 14px rgba(0,89,183,.16);
 }
 .agency-sidebar nav a.active i{color:#fff}
+.agency-sidebar nav a.agency-storefront-link{
+  margin-top:8px;
+  border:1px solid rgba(78,180,255,.32);
+  background:#0d2946;
+  color:#fff;
+}
+.agency-sidebar nav a.agency-storefront-link i{color:#4eb4ff}
+.agency-sidebar nav a.agency-storefront-link:hover{background:#123b62;border-color:rgba(78,180,255,.58)}
 .agency-side-bottom{
   margin-top:auto;
   border-top:1px solid rgba(255,255,255,.07);

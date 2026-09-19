@@ -20,6 +20,7 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
   const stationMode = org.organization_type === "detroit_fire_station" || path.startsWith("/station")
   const stationHome = organizationId ? "/station/" + organizationId : "/station"
   const navigation = stationMode ? (organizationId ? stationNavigation(organizationId) : []) : nav
+  const storefrontHref = campaign?.slug ? "/fundraisers/" + encodeURIComponent(campaign.slug) : "/fundraisers"
   function destination(href: string) {
     if(!stationMode || !href.startsWith('/station')) return href + q
     if(href === '/station' || href === stationHome || href.includes('#')) return href
@@ -52,10 +53,13 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
         </div>
         <div className="agency-mobile-account"><div className="agency-avatar" title={userEmail}>{(userEmail||"U").slice(0,2).toUpperCase()}</div><button type="button" onClick={signOut}>Sign out</button></div>
       </div>
-      <nav id="agency-navigation" className={menuOpen?"mobile-open":""}>{navigation.map(([label,href,icon])=>{
-        const active=href.startsWith("/station") ? path===href : href==="/portal"?path==="/portal":path.startsWith(href)
-        return <Link key={href} href={destination(href)} className={active?"active":""} onClick={()=>setMenuOpen(false)}><i>{icon}</i><span>{label}</span></Link>
-      })}</nav>
+      <nav id="agency-navigation" className={menuOpen?"mobile-open":""}>
+        {navigation.map(([label,href,icon])=>{
+          const active=href.startsWith("/station") ? path===href : href==="/portal"?path==="/portal":path.startsWith(href)
+          return <Link key={href} href={destination(href)} className={active?"active":""} onClick={()=>setMenuOpen(false)}><i>{icon}</i><span>{label}</span></Link>
+        })}
+        <Link className="agency-storefront-link" href={storefrontHref} target="_blank" rel="noopener noreferrer" onClick={()=>setMenuOpen(false)}><i aria-hidden="true">↗</i><span>View Storefront</span></Link>
+      </nav>
       <div className={"agency-side-bottom "+(menuOpen?"mobile-open":"")}>
         <div className="agency-menu-org"><div className="agency-seal">{org.logo_url?<img src={org.logo_url} alt=""/>:<span>FC</span>}</div><div><strong>{org.name}</strong><span>{stationMode ? "Station Portal" : "Agency Portal"}</span></div></div>
         {campaigns.length > 0 && <label className="agency-menu-campaign"><span>Campaign</span><select aria-label="Switch campaign" value={campaign?.id||""} onChange={e=>switchCampaign(e.target.value)}>{campaigns.map((c:any)=><option key={c.id} value={c.id}>{c.name}</option>)}</select><small>{campaign?.status||"No status"}</small></label>}

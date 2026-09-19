@@ -30,6 +30,8 @@ assert.ok(customerSync.includes('syncCollection('))
 const portalShell = read('components/portal/PortalShell.tsx')
 assert.ok(portalShell.includes('agency-menu-toggle'), 'Mobile portal navigation must use a menu toggle')
 assert.ok(portalShell.includes('mobile-open'), 'Mobile portal navigation must stay collapsed until opened')
+assert.ok(portalShell.includes('View Storefront'), 'Agency navigation must link to the public storefront')
+assert.ok(portalShell.includes('campaign?.slug'), 'The storefront link must follow the selected campaign')
 
 const organizationGate = read('lib/portal/authorize-organization-management.ts')
 const portalMembers = read('app/portal/members/page.tsx')
