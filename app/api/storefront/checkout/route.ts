@@ -4,11 +4,11 @@ import {getShopifyConfig,shopifyGraphQL,toShopifyGid} from "@/lib/shopify/admin"
 
 export const dynamic="force-dynamic"
 
-type CheckoutVariant={id:string;inventoryQuantity:number|null;inventoryPolicy:"DENY"|"CONTINUE";product:{status:string}}
+type CheckoutVariant={id:string;price:string;inventoryQuantity:number|null;inventoryPolicy:"DENY"|"CONTINUE";product:{status:string}}
 const checkoutQuery=`query ValidateCampaignCart($ids: [ID!]!) {
   nodes(ids: $ids) {
     ... on ProductVariant {
-      id inventoryQuantity inventoryPolicy
+      id price inventoryQuantity inventoryPolicy
       product { status }
     }
   }
@@ -47,6 +47,12 @@ export async function POST(request:Request){
       const available=variant&&variant.product.status==="ACTIVE"&&(variant.inventoryPolicy==="CONTINUE"||variant.inventoryQuantity===null||variant.inventoryQuantity>=quantity)
       if(!available)return NextResponse.json({error:"An item in your cart just became unavailable. Please return to the product and choose another option."},{status:409})
     }
+    const freshItems=variantIds.map(id=>({variantId:id,price:Number(liveMap.get(id)!.price)}))
+    const pricesChanged=requested.some((item:any)=>{
+      const fresh=liveMap.get(String(item?.variantId))
+      return fresh && (!Number.isFinite(Number(item.price)) || Math.round(Number(item.price)*100)!==Math.round(Number(fresh.price)*100))
+    })
+    if(pricesChanged)return NextResponse.json({pricesChanged:true,items:freshItems})
     const {shopDomain}=getShopifyConfig()
     const lines=variantIds.map(id=>`${id}:${consolidated.get(id)}`).join(",")
     const params=new URLSearchParams()

@@ -1,0 +1,10 @@
+.pub-campaign-card{display:flex;flex-direction:column;min-width:0}
+.pub-campaign-card .pub-card-body{display:flex;flex:1;flex-direction:column;text-decoration:none;color:inherit}
+.pub-card-body .campaign-status{min-height:0;margin:7px 0;font-size:12px}
+.pub-card-body .pub-progress{margin-top:auto}
+.pub-card-body>p:not(.campaign-status){margin-bottom:18px}
+.pub-slide-pause{position:absolute;z-index:3;left:12px;bottom:10px;min-width:44px;min-height:44px;padding:8px 12px;border:1px solid #d8dae2;border-radius:10px;background:#fff;color:#222;font:inherit;font-size:12px;cursor:pointer}
+.pub-page :focus-visible,.store-page :focus-visible{outline:3px solid #5147ca;outline-offset:4px}
+@media(max-width:720px){.pub-header-inner{flex-wrap:wrap}.pub-nav{flex-wrap:wrap;gap:14px}.pub-brand{max-width:100%}}
+
+.pub-slide-link{position:absolute;inset:0;z-index:1}

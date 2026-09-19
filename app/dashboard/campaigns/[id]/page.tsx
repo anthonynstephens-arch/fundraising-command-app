@@ -46,6 +46,9 @@ export default async function CampaignPage({ params }: { params: Promise<{ id: s
   const net = Math.max(0, raised - refunded)
   const goal = Number(campaign.goal_amount || 0)
   const progress = goal > 0 ? Math.min(100, net / goal * 100) : 0
+  const {data:balanceRows,error:balanceError}=await db.rpc("station_collection_balance",{target_campaign:id})
+  if(balanceError)throw balanceError
+  const balance=balanceRows?.[0]||{earned:0,paid:0,pending:0,available:0}
   const org = Array.isArray(campaign.organization) ? campaign.organization[0] : campaign.organization
 
   return (
@@ -76,9 +79,10 @@ export default async function CampaignPage({ params }: { params: Promise<{ id: s
 
       <div className="fc-panel">
         <div className="fc-panel-head">
-          <div><span className="fc-eyebrow">PAYOUT ENGINE</span><h2>{money(net)} currently payable</h2></div>
+          <div><span className="fc-eyebrow">PAYOUT ENGINE</span><h2>{money(Number(balance.available))} available for payout</h2></div>
           <PayoutGenerator campaignId={campaign.id} />
         </div>
+        <p className="fc-muted">Total earned: {money(Number(balance.earned))} · Already paid: {money(Number(balance.paid))} · Pending payouts: {money(Number(balance.pending))}</p>
         <p className="fc-muted">Refunded contribution is deducted from the payout amount. Historical contribution snapshots are not rewritten.</p>
       </div>
 
