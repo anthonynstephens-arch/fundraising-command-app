@@ -21,11 +21,14 @@ export async function POST(request: Request) {
     if (end.getTime() < start.getTime()) return NextResponse.json({ error: "Campaign end date must be after the start date." }, { status: 400 })
     const goalAmount = Number(body.goal_amount)
     const salesGoal = Number(body.sales_goal)
+    const status = typeof body.status === "string" ? body.status.trim() : ""
+    if (!["draft", "active", "completed"].includes(status)) return NextResponse.json({ error: "Choose a valid campaign status." }, { status: 400 })
     if (!Number.isFinite(goalAmount) || goalAmount < 0) return NextResponse.json({ error: "Fundraising goal must be $0 or more." }, { status: 400 })
     if (!Number.isFinite(salesGoal) || salesGoal < 0) return NextResponse.json({ error: "Sales goal must be $0 or more." }, { status: 400 })
 
     const allowed = {
       name: typeof body.name === "string" ? body.name.trim().slice(0, 180) : undefined,
+      status,
       description: typeof body.description === "string" ? body.description.trim().slice(0, 4000) : undefined,
       storefront_eyebrow: typeof body.storefront_eyebrow === "string" ? body.storefront_eyebrow.trim().slice(0, 80) || null : undefined,
       storefront_supporting_text: typeof body.storefront_supporting_text === "string" ? body.storefront_supporting_text.trim().slice(0, 160) || null : undefined,
