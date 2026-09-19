@@ -1,24 +1,6 @@
 node_modules
 .next
+*.tsbuildinfo
 .env*
 !.env.example
-.vercel
-*.tsbuildinfo
-
-# Local secrets / deployment state
-.env
-.env.local
-.env.*.local
-.vercel
-
-# Local secrets / deployment state
-.env
-.env.local
-.env.*.local
-.vercel
-
-# Local secrets / deployment state
-.env
-.env.local
-.env.*.local
 .vercel
