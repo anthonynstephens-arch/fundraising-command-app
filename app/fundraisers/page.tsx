@@ -20,7 +20,7 @@ export default async function Page(){
    <div className="pub-campaign-grid">
     {campaigns.length?campaigns.map(c=>{
      const slides=[
-      ...(c.organization.logoUrl?[{src:c.organization.logoUrl,alt:`${c.organization.name} logo`}]:c.hero_image_url?[{src:c.hero_image_url,alt:`${c.name} campaign`}]:[]),
+      ...(c.organization.logoUrl?[{src:c.organization.logoUrl,alt:`${c.organization.name} logo`,fit:"contain" as const}]:c.hero_image_url?[{src:c.hero_image_url,alt:`${c.name} campaign`}]:[]),
       ...c.products.flatMap((product:any)=>(product.images||[]).map((image:any)=>({src:image.url,alt:image.altText||product.title}))),
      ].filter((slide,index,all)=>all.findIndex(item=>item.src===slide.src)===index)
 
