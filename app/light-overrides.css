@@ -1817,3 +1817,8 @@ input:focus,select:focus,textarea:focus{
 .pub-slide-dots i{width:6px;height:6px;border-radius:999px;background:rgba(255,255,255,.45);transition:width .25s ease,background .25s ease}
 .pub-slide-dots i.is-active{width:18px;background:#fff}
 @media(prefers-reduced-motion:reduce){.pub-campaign-slideshow>img,.pub-slide-dots i{transition:none}}
+
+
+/* Square fundraiser slideshow tiles with uncropped artwork */
+.pub-campaign-card .pub-campaign-image{width:100%;height:auto!important;aspect-ratio:1/1;background:linear-gradient(135deg,#f8f8ff,#eef1ff)}
+.pub-campaign-card .pub-campaign-slideshow>img{object-fit:contain!important;padding:18px;background:transparent}
