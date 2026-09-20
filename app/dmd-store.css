@@ -1460,3 +1460,6 @@
     transform: none;
   }
 }
+
+/* Keep editorial copy readable on each branded color field. */
+.dmd-cinema p { color: inherit; }
