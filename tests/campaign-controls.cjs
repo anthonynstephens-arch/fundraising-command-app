@@ -57,4 +57,11 @@ const onboarding = read('components/portal/PortalOnboarding.tsx')
 assert.ok(preferencesRoute.includes('portal_notification_preferences'), 'Notification preferences must persist per portal identity')
 assert.ok(onboarding.includes('<InstallGuide/>') && read('components/portal/InstallGuide.tsx').includes('Add to Home Screen'), 'First-login tutorial must include home-screen installation')
 
+const pinLogin = read('components/LoginForm.tsx')
+const pinSession = read('lib/pin-auth.ts')
+const pinChangeRoute = read('app/api/pin-session/change-pin/route.ts')
+assert.ok(pinLogin.includes('data.mustChangePin'), 'Issued member PINs must route through private PIN setup')
+assert.ok(pinSession.includes('allowPendingPinChange') && pinSession.includes('must_change_pin'), 'Pending PIN changes must be blocked from normal portal access')
+assert.ok(pinChangeRoute.includes('change_portal_pin') && pinChangeRoute.includes('neq("id", session.sessionId)'), 'PIN replacement must use the protected RPC and revoke older sessions')
+
 console.log('PASS: campaign controls, Shopify sync, mobile navigation, and manager access are wired.')

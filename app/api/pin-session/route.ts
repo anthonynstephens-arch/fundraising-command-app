@@ -37,6 +37,12 @@ export async function POST(request: Request) {
 
     const result = data[0]
     const platformAdmin = await establishPinIdentity(result.credential_id)
+    const { data: credential, error: credentialError } = await db
+      .from("portal_pin_credentials")
+      .select("must_change_pin")
+      .eq("id", result.credential_id)
+      .single()
+    if (credentialError) throw credentialError
     const cookieStore = await cookies()
     cookieStore.set(PIN_COOKIE, result.session_token, {
       httpOnly: true,
@@ -51,6 +57,7 @@ export async function POST(request: Request) {
       organizationId: result.organization_id,
       displayName: result.display_name,
       redirectTo: platformAdmin ? "/dashboard" : "/portal",
+      mustChangePin: !platformAdmin && credential.must_change_pin,
     })
   } catch {
     return NextResponse.json(
@@ -61,7 +68,7 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE() {
-  const session = await getPortalPinSession()
+  const session = await getPortalPinSession({ allowPendingPinChange: true })
   const db = createAdminClient()
   if (session) {
     await db.from("portal_pin_sessions").delete().eq("id", session.sessionId)

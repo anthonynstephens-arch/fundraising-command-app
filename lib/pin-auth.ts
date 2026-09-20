@@ -11,9 +11,10 @@ export type PortalPinSession = {
   displayName: string
   role: "owner" | "admin" | "manager" | "viewer"
   expiresAt: string
+  mustChangePin: boolean
 }
 
-export async function getPortalPinSession(): Promise<PortalPinSession | null> {
+export async function getPortalPinSession({ allowPendingPinChange = false } = {}): Promise<PortalPinSession | null> {
   const token = (await cookies()).get(PIN_COOKIE)?.value
   if (!token) return null
 
@@ -29,7 +30,8 @@ export async function getPortalPinSession(): Promise<PortalPinSession | null> {
         organization_id,
         display_name,
         role,
-        active
+        active,
+        must_change_pin
       )
     `)
     .eq("token_hash", tokenHash)
@@ -40,7 +42,7 @@ export async function getPortalPinSession(): Promise<PortalPinSession | null> {
     ? data.credential[0]
     : data?.credential
 
-  if (!data || !credential?.active) return null
+  if (!data || !credential?.active || (credential.must_change_pin && !allowPendingPinChange)) return null
 
   return {
     sessionId: data.id,
@@ -49,5 +51,6 @@ export async function getPortalPinSession(): Promise<PortalPinSession | null> {
     displayName: credential.display_name,
     role: credential.role,
     expiresAt: data.expires_at,
+    mustChangePin: credential.must_change_pin,
   }
 }

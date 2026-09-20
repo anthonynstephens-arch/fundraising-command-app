@@ -42,6 +42,10 @@ export default function LoginForm({branded=false}:{branded?:boolean}) {
       setMsg(data.error || 'Incorrect PIN.')
       return
     }
+    if (data.mustChangePin) {
+      window.location.assign(branded ? '/stores/dmd/change-pin' : '/change-pin')
+      return
+    }
     window.location.assign(branded ? '/stores/dmd/portal' : data.redirectTo === '/dashboard' ? '/dashboard' : '/portal')
     } catch { setMsg('Unable to connect. Please try again.'); setBusy(false) }
   }
