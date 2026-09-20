@@ -1,6 +1,6 @@
-@font-face{font-family:DMD Feature;src:url('/brand/dmd/feature-regular.woff') format('woff');font-weight:400;font-style:normal;font-display:swap}
-@font-face{font-family:DMD Feature;src:url('/brand/dmd/feature-italic.woff') format('woff');font-weight:400;font-style:italic;font-display:swap}
-@font-face{font-family:DMD Grotesk;src:url('/brand/dmd/scto-medium.woff') format('woff');font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:DMD Feature;src:url('/brand/dmd/feature-regular.otf') format('opentype');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:DMD Feature;src:url('/brand/dmd/feature-italic.otf') format('opentype');font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:DMD Grotesk;src:url('/brand/dmd/scto-medium.otf') format('opentype');font-weight:500;font-style:normal;font-display:swap}
 .dmd-theme{--fc-bg:#faf0de;--fc-surface:#fffdf7;--fc-surface-2:#faf0de;--fc-border:#d0d6c6;--fc-text:#435136;--fc-muted:#576946;--fc-primary:#576946;--fc-primary-2:#435136;--fc-blue:#435136;--fc-green:#576946;--fc-amber:#715622;--fc-shadow:none;font-family:'DMD Grotesk',sans-serif!important;font-weight:500;color:#435136!important;background:#faf0de!important}
 .dmd-theme :is(button,input,select,textarea){font-family:'DMD Grotesk',sans-serif}
 .dmd-theme :is(h1,h2,h3){font-family:'DMD Feature',Georgia,serif!important;font-weight:400!important;letter-spacing:0!important;color:#435136}

@@ -23,7 +23,7 @@ const post=(price)=>routeExports.POST({json:async()=>({campaignSlug:"test",items
  result=await post(45);assert.equal(result.status,200);assert.match(result.body.checkoutUrl,/cart\/123:1/);assert.match(result.body.checkoutUrl,/fundraiser_campaign_id/)
  available=false;assert.equal((await post(45)).status,409)
  available=true;assigned=false;assert.equal((await post(45)).status,409)
- const gallery=fs.readFileSync("components/storefront/CampaignStorefront.tsx","utf8")
+ const gallery=fs.readFileSync("components/storefront/BaseStorefront.tsx","utf8")
  assert.match(gallery,/imageIndex >= 0 \? product.images\[imageIndex\]/)
  assert.ok(!gallery.includes('value="newest"'))
  const directory=fs.readFileSync("app/fundraisers/page.tsx","utf8")

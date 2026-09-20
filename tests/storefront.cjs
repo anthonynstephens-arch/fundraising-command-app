@@ -2,7 +2,7 @@ const assert = require('node:assert/strict')
 const fs = require('node:fs')
 
 const read = file => fs.readFileSync(file, 'utf8')
-const storefront = read('components/storefront/CampaignStorefront.tsx')
+const storefront = read('components/storefront/BaseStorefront.tsx')
 const campaignData = read('lib/public/storefront.ts')
 const checkout = read('app/api/storefront/checkout/route.ts')
 const publicCampaigns = read('lib/public/campaigns.ts')

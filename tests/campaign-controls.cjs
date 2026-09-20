@@ -19,7 +19,7 @@ assert.ok(goalRoute.includes('sales_goal: salesGoalAmount'))
 
 const storefrontEditor = read('components/portal/StorefrontHeaderEditor.tsx')
 const storefrontRoute = read('app/api/portal/storefront-header/route.ts')
-const storefront = read('components/storefront/CampaignStorefront.tsx')
+const storefront = read('components/storefront/BaseStorefront.tsx')
 assert.ok(storefrontEditor.includes('/api/portal/storefront-header'), 'Portal users must have a storefront header editor')
 assert.ok(storefrontRoute.includes('authorizeCampaignStorefrontEditing'), 'Storefront header changes must be tenant-authorized')
 assert.ok(storefront.includes('storefront_header_message'), 'The public store must render the editable header announcement')
