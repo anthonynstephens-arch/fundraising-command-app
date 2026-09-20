@@ -1,3 +1,6 @@
+// React component tests require the test runtime even when Vercel builds with NODE_ENV=production.
+// This setting is isolated to this test process; the subsequent Next.js build stays in production mode.
+process.env.NODE_ENV="test"
 // Isolated DOM tests: these synthetic variants are test fixtures, never catalog data.
 const assert=require('node:assert/strict')
 const fs=require('node:fs')
