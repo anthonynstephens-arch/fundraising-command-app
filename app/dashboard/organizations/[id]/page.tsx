@@ -21,13 +21,15 @@ export default async function OrganizationDetailPage({params}:{params:Promise<{i
   const {data:organization}=await db.from("organizations").select("id,name,slug,organization_type,contact_name,contact_email,contact_phone,logo_url,website_url,is_active,created_at,reporting_start_date").eq("id",id).maybeSingle()
   if(!organization) notFound()
 
-  const [{data:campaigns},{data:orders},{data:payouts},{data:members}]=await Promise.all([
+  const [{data:campaigns},{data:orders},{data:payouts},{data:members},{count:pinMemberCount,error:pinMemberError}]=await Promise.all([
     db.from("campaigns").select("id,name,status,goal_amount,starts_at,ends_at").eq("organization_id",id).order("created_at",{ascending:false}),
     db.from("orders").select("id,total,status,placed_at").eq("organization_id",id),
     db.from("payouts").select("id,payout_amount,status").eq("organization_id",id),
-    db.from("organization_members").select("id,user_id,role,created_at").eq("organization_id",id)
+    db.from("organization_members").select("id,user_id,role,created_at").eq("organization_id",id),
+    db.from("portal_pin_credentials").select("id",{count:"exact",head:true}).eq("organization_id",id)
   ])
 
+  if(pinMemberError) throw pinMemberError
   const gross=(orders||[]).filter((o:any)=>o.status!=="cancelled"&&inReportingPeriod(o.placed_at,organization.reporting_start_date)).reduce((s:number,o:any)=>s+Number(o.total||0),0)
   const payout=(payouts||[]).reduce((s:number,p:any)=>s+Number(p.payout_amount||0),0)
 
@@ -46,7 +48,7 @@ export default async function OrganizationDetailPage({params}:{params:Promise<{i
 
     <section className="fc-stat-grid">
       <div className="fc-stat-card"><span>Campaigns</span><strong>{campaigns?.length||0}</strong></div>
-      <div className="fc-stat-card"><span>Members</span><strong>{members?.length||0}</strong></div>
+      <div className="fc-stat-card"><span>Members</span><strong>{(members?.length||0)+(pinMemberCount||0)}</strong></div>
       <div className="fc-stat-card"><span>Gross Sales</span><strong>{money(gross)}</strong></div>
       <div className="fc-stat-card"><span>Payouts</span><strong>{money(payout)}</strong></div>
     </section>

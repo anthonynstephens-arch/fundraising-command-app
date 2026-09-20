@@ -38,7 +38,7 @@ export default async function PortalOverview({searchParams}:{searchParams:Promis
         <b>◎ Viewing Campaign: {d.campaign?.name||"No active campaign"}</b>
         <b>▣ {start&&end?("Runs "+start.toLocaleDateString()+" — "+end.toLocaleDateString()):"Campaign schedule not set"}</b>
         <em>{d.campaign?.status||"No campaign"}</em>
-        <em>◉ Shopify data · last sync {d.lastWebhook?.created_at?new Date(d.lastWebhook.created_at).toLocaleString():"not yet received"}</em>
+        <em>◉ Shopify data · last sync {d.lastWebhook?.created_at?new Date(d.lastWebhook.created_at).toLocaleString("en-US",{timeZone:"America/Detroit",timeZoneName:"short"}):"not yet received"}</em>
       </div>
     </section>
 
@@ -49,7 +49,7 @@ export default async function PortalOverview({searchParams}:{searchParams:Promis
       <div><span>ORDERS</span><strong>{d.orders.length}</strong><small>Shopify campaign orders</small></div>
       <div><span>ITEMS SOLD</span><strong>{s.units}</strong><small>campaign items</small></div>
       <div><span>AVG. ORDER VALUE</span><strong>{money(s.avg)}</strong><small>eligible campaign orders</small></div>
-      <div><span>AVAILABLE FOR PAYOUT</span><strong className="green">{money(d.payouts.filter((p:any)=>p.status==="approved").reduce((a:number,p:any)=>a+Number(p.payout_amount||0),0))}</strong><small>approved payout records</small></div>
+      <div><span>AVAILABLE FOR PAYOUT</span><strong className="green">{money(Number(d.balance.available||0))}</strong><small>unpaid, unreserved campaign proceeds</small></div>
       <div><span>AWAITING FULFILLMENT</span><strong className="orange">{s.awaiting}</strong><small>Shopify fulfillment status</small></div>
     </section>
 
@@ -91,7 +91,7 @@ export default async function PortalOverview({searchParams}:{searchParams:Promis
       </article>
       <article className="agency-card">
         <header><div><h2>Data Source</h2><p>What this dashboard is reading</p></div></header>
-        <div className="agency-detail-list"><div><span>Commerce</span><b>Shopify</b></div><div><span>Order sync</span><b>Shopify webhooks</b></div><div><span>Campaign accounting</span><b>Supabase snapshots</b></div><div><span>Last processed webhook</span><b>{d.lastWebhook?.created_at?new Date(d.lastWebhook.created_at).toLocaleString():"—"}</b></div></div>
+        <div className="agency-detail-list"><div><span>Commerce</span><b>Shopify</b></div><div><span>Order sync</span><b>Shopify webhooks</b></div><div><span>Campaign accounting</span><b>Supabase snapshots</b></div><div><span>Last campaign collection sync</span><b>{d.lastWebhook?.created_at?new Date(d.lastWebhook.created_at).toLocaleString("en-US",{timeZone:"America/Detroit",timeZoneName:"short"}):"—"}</b></div></div>
       </article>
     </section>
 

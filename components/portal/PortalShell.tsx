@@ -63,7 +63,7 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
       <div className={"agency-side-bottom "+(menuOpen?"mobile-open":"")}>
         <div className="agency-menu-org"><div className="agency-seal">{org.logo_url?<img src={org.logo_url} alt=""/>:<span>FC</span>}</div><div><strong>{org.name}</strong><span>{stationMode ? "Station Portal" : "Agency Portal"}</span></div></div>
         {campaigns.length > 0 && <label className="agency-menu-campaign"><span>Campaign</span><select aria-label="Switch campaign" value={campaign?.id||""} onChange={e=>switchCampaign(e.target.value)}>{campaigns.map((c:any)=><option key={c.id} value={c.id}>{c.name}</option>)}</select><small>{campaign?.status||"No status"}</small></label>}
-        <div className="agency-menu-sync"><span>↻</span><div><small>LAST CAMPAIGN SYNC</small><strong>{lastSynced?new Date(lastSynced).toLocaleString():(stationMode ? "Not synced yet" : "No campaign sync recorded")}</strong></div></div>
+        <div className="agency-menu-sync"><span>↻</span><div><small>LAST CAMPAIGN SYNC</small><strong>{lastSynced?new Date(lastSynced).toLocaleString("en-US",{timeZone:"America/Detroit",timeZoneName:"short"}):(stationMode ? "Not synced yet" : "No campaign sync recorded")}</strong></div></div>
         <div className="agency-live"><b>{!lastSynced?"Sync not verified":Date.now()-new Date(lastSynced).getTime()>86400000?"Sync may be out of date":"Recent campaign sync"}</b><span>{lastSynced?"Last recorded collection sync; not a live connection check":"Open Products to check the collection and sync"}</span></div>
         {platform&&<Link href="/dashboard">Platform Admin ↗</Link>}
       </div>
