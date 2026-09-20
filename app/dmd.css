@@ -1,0 +1,63 @@
+@font-face{font-family:DMD Feature;src:url('/brand/dmd/feature-regular.woff') format('woff');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:DMD Feature;src:url('/brand/dmd/feature-italic.woff') format('woff');font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:DMD Grotesk;src:url('/brand/dmd/scto-medium.woff') format('woff');font-weight:500;font-style:normal;font-display:swap}
+.dmd-theme{--fc-bg:#faf0de;--fc-surface:#fffdf7;--fc-surface-2:#faf0de;--fc-border:#d0d6c6;--fc-text:#435136;--fc-muted:#576946;--fc-primary:#576946;--fc-primary-2:#435136;--fc-blue:#435136;--fc-green:#576946;--fc-amber:#715622;--fc-shadow:none;font-family:'DMD Grotesk',sans-serif!important;font-weight:500;color:#435136!important;background:#faf0de!important}
+.dmd-theme :is(button,input,select,textarea){font-family:'DMD Grotesk',sans-serif}
+.dmd-theme :is(h1,h2,h3){font-family:'DMD Feature',Georgia,serif!important;font-weight:400!important;letter-spacing:0!important;color:#435136}
+.dmd-theme :is(button,a,input,select):focus-visible{outline:3px solid #435136;outline-offset:4px}
+.store-header-actions{display:flex;align-items:center;gap:24px}
+.dmd-theme .store-header{background:#faf0de;border-color:#576946;backdrop-filter:none}
+.dmd-theme .store-header-inner{height:105px}
+.dmd-theme .store-identity>img{width:185px;height:76px;flex-basis:auto;background:transparent;border-radius:0}
+.dmd-theme .store-identity>div{display:none}
+.dmd-member-link{color:#435136;font-size:14px;text-underline-offset:5px}
+.dmd-theme .store-cart-button{border:1px solid #576946;border-radius:0;background:transparent;color:#435136}
+.dmd-theme .store-cart-button b,.dmd-theme .store-header-message{background:#576946;color:#faf0de}
+.dmd-store-intro{max-width:1240px;margin:auto;padding:64px 28px 56px;display:grid;grid-template-columns:1.2fr 1fr;gap:50px;align-items:center;border-bottom:1px solid #576946}
+.dmd-store-intro small{font-size:14px;letter-spacing:.09em}
+.dmd-store-intro h1{font-size:clamp(56px,7vw,96px);line-height:1.02;margin:22px 0}
+.dmd-store-intro p{font-size:17px;line-height:1.5;max-width:400px;margin:0}
+.dmd-store-intro>img{width:100%;height:auto;padding:36px 16px}
+.dmd-theme .store-products{padding-top:36px}
+.dmd-theme .store-products-head h2{font-size:32px}
+.dmd-theme :is(.store-products-head small,.store-product-info>small,.store-cart-head small){color:#576946;font-size:13px}
+.dmd-theme .store-product-photo{aspect-ratio:1;border-radius:0;border-color:#d0d6c6;background:#f3f1e8}
+.dmd-theme .store-product-photo img{object-fit:contain}
+.dmd-theme :is(.store-product-card,.store-back,.store-product-summary p,.store-detail-price){color:#435136}
+.dmd-theme .store-product-summary h2{font-size:23px;line-height:1.2}
+.dmd-theme .store-product-summary small{font-size:13px}
+.dmd-theme :is(.store-notice,.store-empty){background:#cfeccb;color:#435136;border-radius:0}
+.dmd-theme .store-empty{padding:60px 24px;text-align:center}
+.dmd-theme .store-empty h2{font-size:36px}
+.dmd-theme .store-footer{background:#435136;color:#faf0de;border:0;font-size:14px}
+.dmd-theme :is(.store-cart,.store-cart-footer,.store-add-area){background:#faf0de;color:#435136}
+.dmd-theme :is(.store-main-image,.store-thumbnails button,.store-option button,.store-detail-quantity select){border-radius:0;border-color:#b5bfaa}
+.dmd-theme :is(.store-add,.store-checkout,.store-option button.selected){background:#576946;color:#faf0de;border-radius:0;box-shadow:none}
+.dmd-theme .store-add:disabled{background:#7a806f}
+.dmd-theme :is(.store-description,.store-secure,.store-cart-footer p,.store-product-message,.store-product-message a,.store-product-message button){color:#435136}
+.dmd-login{display:grid!important;grid-template-columns:1fr 1fr;gap:64px;padding:64px max(28px,calc((100vw - 1200px)/2))!important;align-items:center}
+.dmd-login-brand img{width:min(460px,100%);height:auto}
+.dmd-login-brand h1{font-size:clamp(40px,4.5vw,66px);line-height:1.1;margin:44px 0 32px}
+.dmd-login-brand>a{color:#435136;font-size:16px}
+.dmd-login .fc-login-card{width:100%;max-width:460px;padding:36px;border:1px solid #576946!important;border-radius:0!important;background:#fffdf7!important;box-shadow:none!important}
+.dmd-login .fc-login-card h2{font-size:36px}
+.dmd-login .fc-login-card p{color:#435136!important;font-size:16px}
+.dmd-login :is(.fc-login-tabs button.active,.primary,.fc-pin-display span.filled){background:#576946!important;border-color:#576946!important;color:#faf0de!important}
+.dmd-login :is(.fc-pin-pad button,.fc-login-tabs button,.fc-pin-submit,input){border-radius:0!important}
+.dmd-login :is(.fc-pin-pad button,.fc-login-tabs button){color:#435136}
+.dmd-login :is(.eyebrow,.fc-pin-security){color:#576946!important}
+.dmd-portal-logo{width:210px;height:auto;display:block}
+.dmd-theme .agency-sidebar,.dmd-theme .agency-topbar{background:#faf0de!important;border-color:#d0d6c6!important}
+.dmd-theme .agency-workspace{background:#faf0de!important}
+.dmd-theme :is(.agency-hero,.agency-card,.agency-kpis>div){background:#fffdf7!important;border:1px solid #d0d6c6!important;border-radius:4px!important;box-shadow:none!important}
+.dmd-theme .agency-sidebar nav a.active{background:#576946!important;color:#faf0de!important}
+.dmd-theme .agency-sidebar nav a:not(.active){color:#435136!important}
+.dmd-theme :is(.agency-avatar,.agency-prod-thumb){background:#cfeccb!important;color:#435136!important}
+.dmd-theme .agency-wordmark-byline{font-size:12px;color:#576946}
+.dmd-theme :is(.agency-org-logo,.agency-seal){background:transparent!important;border-radius:0}
+.dmd-theme :is(.agency-org-logo img,.agency-seal img){object-fit:contain}
+.dmd-theme .agency-bar i{background:#576946!important}
+.dmd-theme .agency-goal-ring{background:conic-gradient(#576946 var(--pct),#cfeccb 0)!important}
+.dmd-theme :is(.blue,.green){color:#576946!important}
+@media(max-width:740px){.dmd-theme .store-header-inner{height:90px}.dmd-theme .store-identity>img{width:142px;height:65px}.store-header-actions{gap:14px}.dmd-member-link{font-size:13px}.dmd-store-intro{padding:36px 20px;grid-template-columns:1fr;gap:0}.dmd-store-intro>img{display:none}.dmd-store-intro h1{font-size:64px}.dmd-theme .store-product-summary h2{font-size:20px}.dmd-login{grid-template-columns:1fr;gap:32px;padding:32px 20px!important}.dmd-login-brand{max-width:460px;width:100%;margin:auto}.dmd-login-brand img{width:220px}.dmd-login-brand h1{display:none}.dmd-login-brand>a:last-child{display:block;margin-top:16px;font-size:14px}.dmd-login .fc-login-card{margin:auto;padding:24px}.dmd-portal-logo{width:150px;max-height:65px}.dmd-theme .agency-wordmark-byline{display:none}}
+@media(prefers-reduced-motion:reduce){.dmd-theme *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}

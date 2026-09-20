@@ -1,6 +1,7 @@
 "use client"
 import { stationNavigation } from '@/lib/portal/context'
 import Image from "next/image"
+import {isDmdOrganization,DMD_LOGO,DMD_LOGIN} from "@/lib/branding/dmd"
 import Link from "next/link"
 import { usePathname,useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
@@ -15,6 +16,7 @@ const nav=[
 ]
 
 export default function PortalShell({children,org,campaign,campaigns,userEmail,organizationId,platform,lastSynced,pinAccess=false}:{children:React.ReactNode;org:any;campaign:any;campaigns:any[];userEmail:string;organizationId:string;platform:boolean;lastSynced?:string|null;pinAccess?:boolean}){
+  const dmd=isDmdOrganization(org)
   const path=usePathname()
   const router=useRouter()
   const [menuOpen,setMenuOpen]=useState(false)
@@ -40,17 +42,17 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
   async function signOut(){
     await fetch("/api/pin-session",{method:"DELETE"})
     if(!pinAccess) await createClient().auth.signOut()
-    router.push(stationMode ? "/station/login" : "/login")
+    router.push(dmd ? DMD_LOGIN : stationMode ? "/station/login" : "/login")
     router.refresh()
   }
 
-  return <div className="agency-shell">
+  return <div className={"agency-shell"+(dmd?" dmd-theme":"")}>
     <aside className="agency-sidebar">
       <div className="agency-sidebar-head">
         <button className="agency-menu-toggle" type="button" aria-expanded={menuOpen} aria-controls="agency-navigation" onClick={()=>setMenuOpen(open=>!open)}><span aria-hidden="true">{menuOpen?"×":"☰"}</span> Menu</button>
         <div className="agency-wordmark">
-          <strong>{stationMode ? <img src="/brand/firestation-command.webp" alt="Firestation Command" style={{width:"100%",maxWidth:200,height:"auto",display:"block",marginBottom:10}} /> : <><span className="agency-desktop-wordmark"><span className="agency-brand-mark">F</span> Fundraiser Command</span><Image className="agency-mobile-wordmark" src="/brand/fundraiser-command-header.webp" alt="Fundraiser Command" width={678} height={203} priority /></>}</strong>
-          <span className="agency-wordmark-byline">DETROIT DECAL & APPAREL</span>
+          <strong>{dmd ? <img className="dmd-portal-logo" src={DMD_LOGO} alt="Detroit Metropolitan Dance"/> : stationMode ? <img src="/brand/firestation-command.webp" alt="Firestation Command" style={{width:"100%",maxWidth:200,height:"auto",display:"block",marginBottom:10}} /> : <><span className="agency-desktop-wordmark"><span className="agency-brand-mark">F</span> Fundraiser Command</span><Image className="agency-mobile-wordmark" src="/brand/fundraiser-command-header.webp" alt="Fundraiser Command" width={678} height={203} priority /></>}</strong>
+          <span className="agency-wordmark-byline">{dmd?"MEMBER WORKSPACE":"DETROIT DECAL & APPAREL"}</span>
         </div>
         <div className="agency-mobile-account"><div className="agency-avatar" title={userEmail}>{(userEmail||"U").slice(0,2).toUpperCase()}</div><button type="button" onClick={signOut}>Sign out</button></div>
       </div>
@@ -62,7 +64,7 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
         <Link className="agency-storefront-link" href={storefrontHref} target="_blank" rel="noopener noreferrer" onClick={()=>setMenuOpen(false)}><i aria-hidden="true">↗</i><span>View Storefront</span></Link>
       </nav>
       <div className={"agency-side-bottom "+(menuOpen?"mobile-open":"")}>
-        <div className="agency-menu-org"><div className="agency-seal">{org.logo_url?<img src={org.logo_url} alt=""/>:<span>FC</span>}</div><div><strong>{org.name}</strong><span>{stationMode ? "Station Portal" : "Agency Portal"}</span></div></div>
+        <div className="agency-menu-org"><div className="agency-seal">{org.logo_url?<img src={org.logo_url} alt=""/>:<span>FC</span>}</div><div><strong>{org.name}</strong><span>{dmd ? "Merchandise Portal" : stationMode ? "Station Portal" : "Agency Portal"}</span></div></div>
         {campaigns.length > 0 && <label className="agency-menu-campaign"><span>Campaign</span><select aria-label="Switch campaign" value={campaign?.id||""} onChange={e=>switchCampaign(e.target.value)}>{campaigns.map((c:any)=><option key={c.id} value={c.id}>{c.name}</option>)}</select><small>{campaign?.status||"No status"}</small></label>}
         <div className="agency-menu-sync"><span>↻</span><div><small>LAST CAMPAIGN SYNC</small><strong>{lastSynced?new Date(lastSynced).toLocaleString("en-US",{timeZone:"America/Detroit",timeZoneName:"short"}):(stationMode ? "Not synced yet" : "No campaign sync recorded")}</strong></div></div>
         <div className="agency-live"><b>{!lastSynced?"Sync not verified":Date.now()-new Date(lastSynced).getTime()>86400000?"Sync may be out of date":"Recent campaign sync"}</b><span>{lastSynced?"Last recorded collection sync; not a live connection check":"Open Products to check the collection and sync"}</span></div>
@@ -76,7 +78,7 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
       <header className="agency-topbar">
         <div className="agency-org">
           <div className="agency-org-logo">{org.logo_url?<img src={org.logo_url} alt=""/>:<span>FC</span>}</div>
-          <div><strong>{org.name}</strong><span>{stationMode ? "Station Portal" : "Agency Portal"}</span></div>
+          <div><strong>{org.name}</strong><span>{dmd ? "Merchandise Portal" : stationMode ? "Station Portal" : "Agency Portal"}</span></div>
         </div>
         <div className="agency-top-actions">
           <NotificationInbox organizationId={organizationId}/>
