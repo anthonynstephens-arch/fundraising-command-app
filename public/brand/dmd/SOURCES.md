@@ -10,3 +10,5 @@ Authentic company photography sourced September 20, 2026 from the official DMD w
 - performance.webp: https://detroitmetdance.org/company — 1136_DG_EDD_BeyondatDIA_ThursdayShow_-1229.jpg
 
 Photographs resized and encoded as WebP. No generated dancer imagery.
+
+Rounded monogram: original vector paths extracted from page 20 of the supplied standards; green and cream solid-fill versions, original proportions preserved.

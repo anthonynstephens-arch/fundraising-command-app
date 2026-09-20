@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { preload } from "react-dom";
 import { DMD_LOGO, DMD_LOGIN } from "@/lib/branding/dmd";
 import { useDialogAccessibility } from "@/components/public/useDialogAccessibility";
@@ -397,10 +397,10 @@ function Footer({
       <div className="dmd-footer-bottom">
         <Link href={root(campaign)}>
           <img
-            src="/brand/dmd/wordmark-cream.svg"
+            src="/brand/dmd/monogram-cream.svg"
             alt="Detroit Metropolitan Dance"
-            width="240"
-            height="100"
+            width="90"
+            height="82"
           />
         </Link>
         <nav aria-label="Footer">
@@ -459,6 +459,7 @@ export function DmdStorefront({
     type: "font/otf",
     crossOrigin: "anonymous",
   });
+  const cinema = useRef<HTMLDivElement>(null);
   const cart = useCampaignCart(campaign);
   const [cartOpen, setCartOpen] = useState(false);
   const [overlay, setOverlay] = useState<"menu" | "search" | null>(null);
@@ -495,6 +496,37 @@ export function DmdStorefront({
       .toLowerCase()
       .includes(query.trim().toLowerCase()),
   );
+  useLayoutEffect(() => {
+    // Fresh storefront links start at the opening frame; explicit section links
+    // and browser back/forward keep their expected positions.
+    const navigation = window.performance.getEntriesByType?.("navigation")[0] as PerformanceNavigationTiming | undefined;
+    if (window.location.hash || navigation?.type === "back_forward") return;
+    const previous = window.history.scrollRestoration;
+    window.history.scrollRestoration = "manual";
+    const top = () => window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    top();
+    const frame = window.requestAnimationFrame(top);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.history.scrollRestoration = previous;
+    };
+  }, [campaign.slug, product?.id]);
+  useEffect(() => {
+    const surface = cinema.current;
+    if (!surface || product || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const targets = surface.querySelectorAll(".dmd-statement h2, .dmd-statement > div, .dmd-section-head, .dmd-lookbook-title, .dmd-culture > div, .dmd-footer-statement");
+    if (!("IntersectionObserver" in window)) return;
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-revealed");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    targets.forEach(target => { target.classList.add("dmd-reveal"); observer.observe(target); });
+    return () => { observer.disconnect(); targets.forEach(target => target.classList.remove("dmd-reveal", "is-revealed")); };
+  }, [product?.id]);
   useEffect(() => {
     const update = () => setScrolled(window.scrollY > 40);
     update();
@@ -533,6 +565,7 @@ export function DmdStorefront({
   }
   return (
     <div
+      ref={cinema}
       className={
         "store-page dmd-theme dmd-cinema" + (product ? " dmd-pdp" : "")
       }

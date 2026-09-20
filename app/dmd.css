@@ -56,17 +56,17 @@
 .dmd-theme :is(.agency-hero,.agency-card,.agency-kpis>div){background:#fffdf7!important;border:1px solid #d0d6c6!important;border-radius:4px!important;box-shadow:none!important}
 .dmd-theme .agency-sidebar .dmd-portal-logo{filter:brightness(0) saturate(100%) invert(96%) sepia(9%) saturate(567%) hue-rotate(331deg) brightness(105%) contrast(96%)}
 .dmd-theme .agency-sidebar nav{gap:7px}
-.dmd-theme .agency-sidebar nav a,.dmd-theme .agency-sidebar nav a:not(.active),.dmd-theme .agency-sidebar nav a.active{background:#10120f!important;color:#faf0de!important;border:1px solid #10120f!important;border-radius:4px!important;box-shadow:none!important}
-.dmd-theme .agency-sidebar nav a:hover{background:#050605!important;border-color:#faf0de!important}
-.dmd-theme .agency-sidebar nav a.active{border-color:#faf0de!important;box-shadow:inset 4px 0 0 #faf0de!important}
+.dmd-theme .agency-sidebar nav a,.dmd-theme .agency-sidebar nav a:not(.active),.dmd-theme .agency-sidebar nav a.active{background:transparent!important;color:#faf0de!important;border:1px solid transparent!important;border-radius:4px!important;box-shadow:none!important}
+.dmd-theme .agency-sidebar nav a:hover{background:#faf0de14!important;border-color:#faf0de42!important}
+.dmd-theme .agency-sidebar nav a.active{background:#faf0de!important;color:#435136!important;border-color:#faf0de!important;box-shadow:none!important}
 .dmd-theme .agency-sidebar nav a i,.dmd-theme .agency-sidebar nav a.active i,.dmd-theme .agency-sidebar nav a.agency-storefront-link i{color:#faf0de!important}
 .dmd-theme .agency-sidebar nav a.agency-storefront-link{margin-top:10px}
 .dmd-theme .agency-sidebar .agency-side-bottom{border-color:#faf0de42}
 .dmd-theme .agency-sidebar :is(.agency-menu-org strong,.agency-menu-org span,.agency-wordmark-byline,.agency-live b,.agency-live span,.agency-menu-sync small,.agency-menu-sync strong,.agency-menu-campaign>span){color:#faf0de!important}
-.dmd-theme .agency-sidebar :is(.agency-menu-campaign,.agency-menu-sync){background:#10120f!important;border-color:#faf0de33!important;color:#faf0de!important}
-.dmd-theme .agency-sidebar .agency-menu-campaign select{background:#10120f!important;border-color:#faf0de66!important;color:#faf0de!important}
+.dmd-theme .agency-sidebar :is(.agency-menu-campaign,.agency-menu-sync){background:transparent!important;border-color:#faf0de33!important;color:#faf0de!important}
+.dmd-theme .agency-sidebar .agency-menu-campaign select{background:transparent!important;border-color:#faf0de66!important;color:#faf0de!important}
 .dmd-theme .agency-sidebar .agency-menu-campaign small{color:#cfeccb!important}
-.dmd-theme .agency-sidebar .agency-menu-toggle{background:#10120f!important;border-color:#faf0de!important;color:#faf0de!important}
+.dmd-theme .agency-sidebar .agency-menu-toggle{background:transparent!important;border-color:#faf0de!important;color:#faf0de!important}
 .dmd-theme :is(.agency-avatar,.agency-prod-thumb){background:#cfeccb!important;color:#435136!important}
 .dmd-theme .agency-wordmark-byline{font-size:12px;color:#faf0de}
 .dmd-theme :is(.agency-org-logo,.agency-seal){background:transparent!important;border-radius:0}
@@ -77,3 +77,9 @@
 @media(max-width:740px){.dmd-theme .store-header-inner{height:90px}.dmd-theme .store-identity>img{width:142px;height:65px}.store-header-actions{gap:14px}.dmd-member-link{font-size:13px}.dmd-store-intro{padding:36px 20px;grid-template-columns:1fr;gap:0}.dmd-store-intro>img{display:none}.dmd-store-intro h1{font-size:64px}.dmd-theme .store-product-summary h2{font-size:20px}.dmd-login{grid-template-columns:1fr;gap:32px;padding:32px 20px!important}.dmd-login-brand{max-width:460px;width:100%;margin:auto}.dmd-login-brand img{width:220px}.dmd-login-brand h1{display:none}.dmd-login-brand>a:last-child{display:block;margin-top:16px;font-size:14px}.dmd-login .fc-login-card{margin:auto;padding:24px}.dmd-portal-logo{width:150px;max-height:65px}.dmd-theme .agency-wordmark-byline{display:none}}
 .dmd-price-builder>:nth-child(3),.dmd-price-builder>:nth-child(4){border-bottom:1px solid #c9d0c1}
 @media(prefers-reduced-motion:reduce){.dmd-theme *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+/* Quiet navigation; the selected destination is the cream accent. */
+.dmd-theme .agency-sidebar nav a.active i{color:#435136!important}
+.dmd-theme .agency-sidebar :is(a,button,select):focus-visible{outline-color:#faf0de!important}
+.dmd-theme .agency-sidebar .agency-seal{border:0}
+.dmd-theme .agency-sidebar .agency-seal img{filter:brightness(0) saturate(100%) invert(96%) sepia(9%) saturate(567%) hue-rotate(331deg) brightness(105%) contrast(96%)}

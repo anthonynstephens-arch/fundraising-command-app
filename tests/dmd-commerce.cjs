@@ -10,6 +10,10 @@ const babel=require('next/dist/compiled/babel/core')
 const {JSDOM}=require('jsdom')
 const dom=new JSDOM('<!doctype html><html><body><div id="app"></div></body></html>',{url:'http://localhost/'})
 Object.assign(global,{window:dom.window,document:dom.window.document,localStorage:dom.window.localStorage,sessionStorage:dom.window.sessionStorage,HTMLElement:dom.window.HTMLElement,CustomEvent:dom.window.CustomEvent,IS_REACT_ACT_ENVIRONMENT:true})
+let scrollCalls=[]
+window.scrollTo=options=>scrollCalls.push(options)
+window.requestAnimationFrame=callback=>{callback();return 1}
+window.cancelAnimationFrame=()=>{}
 window.matchMedia=()=>({matches:true,addEventListener(){},removeEventListener(){}})
 window.HTMLElement.prototype.scrollIntoView=function(){}
 window.HTMLElement.prototype.getClientRects=function(){return [this.getBoundingClientRect()]}
@@ -41,6 +45,7 @@ const click=async el=>{assert.ok(el,'Control exists');assert.equal(el.disabled,f
 async function render(props={}){await act(()=>root.render(React.createElement(DmdStorefront,{campaign,...props})))}
 async function run(){
  await render()
+ assert.ok(scrollCalls.some(call=>call.top===0),"Fresh storefront opens at the top")
  await click(button('Tees'))
  assert.equal(document.querySelectorAll('.dmd-product-card').length,1)
  assert.equal(document.querySelector('.dmd-product-caption a').getAttribute('href'),'/fundraisers/detroit-metropolitan-dance/products/qa-tee')

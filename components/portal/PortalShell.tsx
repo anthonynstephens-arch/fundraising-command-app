@@ -1,7 +1,7 @@
 "use client"
 import { stationNavigation } from '@/lib/portal/context'
 import Image from "next/image"
-import {isDmdOrganization,DMD_LOGO,DMD_LOGIN} from "@/lib/branding/dmd"
+import {isDmdOrganization,DMD_LOGO,DMD_LOGIN,DMD_MONOGRAM} from "@/lib/branding/dmd"
 import Link from "next/link"
 import { usePathname,useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
@@ -52,7 +52,7 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
         <button className="agency-menu-toggle" type="button" aria-expanded={menuOpen} aria-controls="agency-navigation" onClick={()=>setMenuOpen(open=>!open)}><span aria-hidden="true">{menuOpen?"×":"☰"}</span> Menu</button>
         <div className="agency-wordmark">
           <strong>{dmd ? <img className="dmd-portal-logo" src={DMD_LOGO} alt="Detroit Metropolitan Dance"/> : stationMode ? <img src="/brand/firestation-command.webp" alt="Firestation Command" style={{width:"100%",maxWidth:200,height:"auto",display:"block",marginBottom:10}} /> : <><span className="agency-desktop-wordmark"><span className="agency-brand-mark">F</span> Fundraiser Command</span><Image className="agency-mobile-wordmark" src="/brand/fundraiser-command-header.webp" alt="Fundraiser Command" width={678} height={203} priority /></>}</strong>
-          <span className="agency-wordmark-byline">{dmd?"MEMBER WORKSPACE":"DETROIT DECAL & APPAREL"}</span>
+          {!dmd && <span className="agency-wordmark-byline">DETROIT DECAL & APPAREL</span>}
         </div>
         <div className="agency-mobile-account"><div className="agency-avatar" title={userEmail}>{(userEmail||"U").slice(0,2).toUpperCase()}</div><button type="button" onClick={signOut}>Sign out</button></div>
       </div>
@@ -64,7 +64,7 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
         <Link className="agency-storefront-link" href={storefrontHref} target="_blank" rel="noopener noreferrer" onClick={()=>setMenuOpen(false)}><i aria-hidden="true">↗</i><span>View Storefront</span></Link>
       </nav>
       <div className={"agency-side-bottom "+(menuOpen?"mobile-open":"")}>
-        <div className="agency-menu-org"><div className="agency-seal">{org.logo_url?<img src={org.logo_url} alt=""/>:<span>FC</span>}</div><div><strong>{org.name}</strong><span>{dmd ? "Merchandise Portal" : stationMode ? "Station Portal" : "Agency Portal"}</span></div></div>
+        <div className="agency-menu-org"><div className="agency-seal">{dmd?<img src={DMD_MONOGRAM} alt=""/>:org.logo_url?<img src={org.logo_url} alt=""/>:<span>FC</span>}</div><div><strong>{org.name}</strong><span>{dmd ? "Merchandise Portal" : stationMode ? "Station Portal" : "Agency Portal"}</span></div></div>
         {campaigns.length > 0 && <label className="agency-menu-campaign"><span>Campaign</span><select aria-label="Switch campaign" value={campaign?.id||""} onChange={e=>switchCampaign(e.target.value)}>{campaigns.map((c:any)=><option key={c.id} value={c.id}>{c.name}</option>)}</select><small>{campaign?.status||"No status"}</small></label>}
         <div className="agency-menu-sync"><span>↻</span><div><small>LAST CAMPAIGN SYNC</small><strong>{lastSynced?new Date(lastSynced).toLocaleString("en-US",{timeZone:"America/Detroit",timeZoneName:"short"}):(stationMode ? "Not synced yet" : "No campaign sync recorded")}</strong></div></div>
         <div className="agency-live"><b>{!lastSynced?"Sync not verified":Date.now()-new Date(lastSynced).getTime()>86400000?"Sync may be out of date":"Recent campaign sync"}</b><span>{lastSynced?"Last recorded collection sync; not a live connection check":"Open Products to check the collection and sync"}</span></div>
@@ -77,7 +77,7 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
     <div className="agency-workspace">
       <header className="agency-topbar">
         <div className="agency-org">
-          <div className="agency-org-logo">{org.logo_url?<img src={org.logo_url} alt=""/>:<span>FC</span>}</div>
+          <div className="agency-org-logo">{dmd?<img src={DMD_MONOGRAM} alt=""/>:org.logo_url?<img src={org.logo_url} alt=""/>:<span>FC</span>}</div>
           <div><strong>{org.name}</strong><span>{dmd ? "Merchandise Portal" : stationMode ? "Station Portal" : "Agency Portal"}</span></div>
         </div>
         <div className="agency-top-actions">
@@ -86,7 +86,7 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
           <button type="button" className="agency-signout" onClick={signOut}>Sign out</button>
         </div>
       </header>
-      <main className="agency-content"><p className="fc-note">Reporting period: {org.reporting_start_date || "All history"} through today · Detroit time</p>{children}</main>
+      <main className="agency-content">{!dmd && <p className="fc-note">Reporting period: {org.reporting_start_date || "All history"} through today · Detroit time</p>}{children}</main>
     </div>
     {organizationId&&<PortalOnboarding organizationId={organizationId} query={q}/>}
   </div>

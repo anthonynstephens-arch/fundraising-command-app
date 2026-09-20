@@ -1463,3 +1463,25 @@
 
 /* Keep editorial copy readable on each branded color field. */
 .dmd-cinema p { color: inherit; }
+
+/* Editorial motion follows the photography and respects reduced-motion preferences. */
+.dmd-footer-bottom img[src*="monogram"] { width: 90px; height: auto; }
+.dmd-hero { overflow: hidden; }
+.dmd-hero-shade { background: linear-gradient(180deg, #26331fe0 0%, #43513645 38%, #26331f14 58%, #26331fe6 100%); }
+.dmd-hero-heading > .dmd-label { letter-spacing: .16em; }
+.dmd-hero-bottom { padding-top: 25px; border-top: 1px solid #faf0de55; }
+.dmd-lookbook-photo { overflow: hidden; }
+.dmd-reveal { opacity: 0; transform: translateY(32px); transition: opacity 1s ease, transform 1.2s cubic-bezier(.16,1,.3,1); }
+.dmd-reveal.is-revealed { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .dmd-hero-media { animation: dmd-cinematic-drift 24s ease-in-out infinite alternate; }
+  .dmd-hero-heading h1 > span { animation-duration: 1.5s; }
+  .dmd-hero-heading h1 > .dmd-hero-second { animation-delay: .25s; }
+  .dmd-hero-bottom { animation: dmd-title 1.3s .4s both; }
+  @supports (animation-timeline: view()) {
+    .dmd-lookbook-photo > img { animation: dmd-photo-travel linear both; animation-timeline: view(); animation-range: entry 0% exit 100%; }
+  }
+}
+@keyframes dmd-cinematic-drift { from { transform: scale(1.04) translateX(-.5%); } to { transform: scale(1.13) translateX(.5%); } }
+@keyframes dmd-photo-travel { from { transform: scale(1.12) translateY(-4%); } to { transform: scale(1.12) translateY(4%); } }
+@media (prefers-reduced-motion: reduce) { .dmd-reveal { opacity: 1; transform: none; } }
