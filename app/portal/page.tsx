@@ -18,7 +18,11 @@ export default async function PortalOverview({searchParams}:{searchParams:Promis
   const start=d.campaign?.starts_at?new Date(d.campaign.starts_at):null
   const end=d.campaign?.ends_at?new Date(d.campaign.ends_at):null
   const daysLeft=end?Math.max(0,Math.ceil((end.getTime()-Date.now())/86400000)):0
-  const firstName=(d.user.user_metadata?.full_name||d.user.email||"there").split(" ")[0]
+  const metadata=d.user.user_metadata as Record<string,unknown>
+  const profileName=String(metadata?.first_name||metadata?.full_name||metadata?.name||"").trim()
+  const emailName=String(d.user.email||"").split("@")[0].split(/[._-]+/)[0]
+  const rawFirstName=(profileName.split(/\s+/)[0]||emailName||"there").trim()
+  const firstName=rawFirstName.charAt(0).toUpperCase()+rawFirstName.slice(1)
 
   const productTotals=new Map<string,{title:string,gross:number,raised:number,qty:number}>()
   for(const i of d.items){

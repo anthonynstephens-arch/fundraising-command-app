@@ -54,6 +54,8 @@
 .dmd-theme .agency-topbar{background:#faf0de!important;border-color:#d0d6c6!important}
 .dmd-theme .agency-workspace{background:#faf0de!important}
 .dmd-theme :is(.agency-hero,.agency-card,.agency-kpis>div){background:#fffdf7!important;border:1px solid #d0d6c6!important;border-radius:4px!important;box-shadow:none!important}
+.dmd-theme .agency-hero>span{color:#576946!important}
+.dmd-theme .agency-hero h1{color:#435136!important}
 .dmd-theme .agency-sidebar .dmd-portal-logo{filter:brightness(0) saturate(100%) invert(96%) sepia(9%) saturate(567%) hue-rotate(331deg) brightness(105%) contrast(96%)}
 .dmd-theme .agency-sidebar nav{gap:7px}
 .dmd-theme .agency-sidebar nav a,.dmd-theme .agency-sidebar nav a:not(.active),.dmd-theme .agency-sidebar nav a.active{background:transparent!important;color:#faf0de!important;border:1px solid transparent!important;border-radius:4px!important;box-shadow:none!important}
