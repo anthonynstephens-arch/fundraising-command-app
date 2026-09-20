@@ -14,6 +14,8 @@ const defaults = {
   campaign_milestones: true,
   sync_issues: true,
   onboarding_completed_at: null as string | null,
+  onboarding_version: 0,
+  notifications_read_at: null as string | null,
 }
 
 async function identityFor(organizationId: string) {
@@ -42,13 +44,13 @@ export async function GET(request: Request) {
   if (!identity) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { data, error } = await identity.db.from('portal_notification_preferences')
-    .select('email_enabled,browser_enabled,in_app_enabled,new_sales,payout_updates,campaign_milestones,sync_issues,onboarding_completed_at')
+    .select('email_enabled,browser_enabled,in_app_enabled,new_sales,payout_updates,campaign_milestones,sync_issues,onboarding_completed_at,onboarding_version,notifications_read_at')
     .eq('organization_id', organizationId)
     .eq('identity_type', identity.identityType)
     .eq('identity_id', identity.identityId)
     .maybeSingle()
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
-  return NextResponse.json({ preferences: data || defaults })
+  return NextResponse.json({ preferences: data || defaults,identityKey:identity.identityType+':'+identity.identityId },{headers:{'Cache-Control':'no-store'}})
 }
 
 export async function POST(request: Request) {
@@ -66,7 +68,8 @@ export async function POST(request: Request) {
   for (const key of ['email_enabled', 'browser_enabled', 'in_app_enabled', 'new_sales', 'payout_updates', 'campaign_milestones', 'sync_issues']) {
     if (typeof body[key] === 'boolean') payload[key] = body[key]
   }
-  if (body.onboardingCompleted === true) payload.onboarding_completed_at = new Date().toISOString()
+  if (body.onboardingCompleted === true) {payload.onboarding_completed_at = new Date().toISOString();payload.onboarding_version=2}
+  if (body.markNotificationsRead === true) payload.notifications_read_at = new Date().toISOString()
 
   const { error } = await identity.db.from('portal_notification_preferences')
     .upsert(payload, { onConflict: 'organization_id,identity_type,identity_id' })

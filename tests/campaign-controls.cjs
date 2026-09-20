@@ -55,6 +55,6 @@ assert.ok(portalData.includes('canEditContributions'), 'Contribution editing mus
 const preferencesRoute = read('app/api/portal/preferences/route.ts')
 const onboarding = read('components/portal/PortalOnboarding.tsx')
 assert.ok(preferencesRoute.includes('portal_notification_preferences'), 'Notification preferences must persist per portal identity')
-assert.ok(onboarding.includes('Add the app to your Home Screen'), 'First-login tutorial must include home-screen installation')
+assert.ok(onboarding.includes('<InstallGuide/>') && read('components/portal/InstallGuide.tsx').includes('Add to Home Screen'), 'First-login tutorial must include home-screen installation')
 
 console.log('PASS: campaign controls, Shopify sync, mobile navigation, and manager access are wired.')

@@ -4,12 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm run test:reporting && npm run test:campaign-controls && npm run test:storefront && npm run test:ui-audit && next build",
+    "build": "npm run test:reporting && npm run test:campaign-controls && npm run test:storefront && npm run test:ui-audit && npm run test:notifications && next build",
     "start": "next start",
     "test:reporting": "node tests/department-reporting.cjs",
     "test:campaign-controls": "node tests/campaign-controls.cjs",
     "test:storefront": "node tests/storefront.cjs",
-    "test:ui-audit": "node tests/ui-audit.cjs"
+    "test:ui-audit": "node tests/ui-audit.cjs",
+    "test:notifications": "node tests/notifications.cjs"
   },
   "dependencies": {
     "@supabase/ssr": "latest",

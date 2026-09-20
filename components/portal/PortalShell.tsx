@@ -6,6 +6,7 @@ import { usePathname,useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { useState } from "react"
 import PortalOnboarding from '@/components/portal/PortalOnboarding'
+import NotificationInbox from '@/components/portal/NotificationInbox'
 
 const nav=[
   ["Overview","/portal","▦"],["Sales","/portal/sales","⌑"],["Orders","/portal/orders","◇"],["Products","/portal/products","⬡"],
@@ -65,6 +66,8 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
         {campaigns.length > 0 && <label className="agency-menu-campaign"><span>Campaign</span><select aria-label="Switch campaign" value={campaign?.id||""} onChange={e=>switchCampaign(e.target.value)}>{campaigns.map((c:any)=><option key={c.id} value={c.id}>{c.name}</option>)}</select><small>{campaign?.status||"No status"}</small></label>}
         <div className="agency-menu-sync"><span>↻</span><div><small>LAST CAMPAIGN SYNC</small><strong>{lastSynced?new Date(lastSynced).toLocaleString("en-US",{timeZone:"America/Detroit",timeZoneName:"short"}):(stationMode ? "Not synced yet" : "No campaign sync recorded")}</strong></div></div>
         <div className="agency-live"><b>{!lastSynced?"Sync not verified":Date.now()-new Date(lastSynced).getTime()>86400000?"Sync may be out of date":"Recent campaign sync"}</b><span>{lastSynced?"Last recorded collection sync; not a live connection check":"Open Products to check the collection and sync"}</span></div>
+        <button type="button" className="fc-replay-tour" onClick={()=>{setMenuOpen(false);window.dispatchEvent(new Event('fc-replay-tour'))}}>↻ Guided walkthrough</button>
+        <div className="fc-mobile-bell"><NotificationInbox organizationId={organizationId}/></div>
         {platform&&<Link href="/dashboard">Platform Admin ↗</Link>}
       </div>
     </aside>
@@ -76,6 +79,7 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
           <div><strong>{org.name}</strong><span>{stationMode ? "Station Portal" : "Agency Portal"}</span></div>
         </div>
         <div className="agency-top-actions">
+          <NotificationInbox organizationId={organizationId}/>
           <div className="agency-avatar" title={userEmail}>{(userEmail||"U").slice(0,2).toUpperCase()}</div>
           <button type="button" className="agency-signout" onClick={signOut}>Sign out</button>
         </div>

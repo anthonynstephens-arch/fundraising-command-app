@@ -6,9 +6,11 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: 'Fundraiser',
     description: 'Live campaign sales, goals, progress, and payout management.',
     start_url: '/portal',
+    id: '/portal',
+    scope: '/',
     display: 'standalone',
     background_color: '#f7f9fc',
     theme_color: '#071b30',
-    icons: [{ src: '/brand/fundraiser-command-icon.svg', sizes: 'any', type: 'image/svg+xml' }],
+    icons: [{ src: '/icon', sizes: '512x512', type: 'image/png', purpose: 'any' }],
   }
 }
