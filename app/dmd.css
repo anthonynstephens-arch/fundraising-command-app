@@ -50,13 +50,25 @@
 .dmd-login :is(.fc-pin-pad button,.fc-login-tabs button){color:#435136}
 .dmd-login :is(.eyebrow,.fc-pin-security){color:#576946!important}
 .dmd-portal-logo{width:210px;height:auto;display:block}
-.dmd-theme .agency-sidebar,.dmd-theme .agency-topbar{background:#faf0de!important;border-color:#d0d6c6!important}
+.dmd-theme .agency-sidebar{background:#435136!important;border-color:#435136!important;color:#faf0de!important}
+.dmd-theme .agency-topbar{background:#faf0de!important;border-color:#d0d6c6!important}
 .dmd-theme .agency-workspace{background:#faf0de!important}
 .dmd-theme :is(.agency-hero,.agency-card,.agency-kpis>div){background:#fffdf7!important;border:1px solid #d0d6c6!important;border-radius:4px!important;box-shadow:none!important}
-.dmd-theme .agency-sidebar nav a.active{background:#576946!important;color:#faf0de!important}
-.dmd-theme .agency-sidebar nav a:not(.active){color:#435136!important}
+.dmd-theme .agency-sidebar .dmd-portal-logo{filter:brightness(0) saturate(100%) invert(96%) sepia(9%) saturate(567%) hue-rotate(331deg) brightness(105%) contrast(96%)}
+.dmd-theme .agency-sidebar nav{gap:7px}
+.dmd-theme .agency-sidebar nav a,.dmd-theme .agency-sidebar nav a:not(.active),.dmd-theme .agency-sidebar nav a.active{background:#10120f!important;color:#faf0de!important;border:1px solid #10120f!important;border-radius:4px!important;box-shadow:none!important}
+.dmd-theme .agency-sidebar nav a:hover{background:#050605!important;border-color:#faf0de!important}
+.dmd-theme .agency-sidebar nav a.active{border-color:#faf0de!important;box-shadow:inset 4px 0 0 #faf0de!important}
+.dmd-theme .agency-sidebar nav a i,.dmd-theme .agency-sidebar nav a.active i,.dmd-theme .agency-sidebar nav a.agency-storefront-link i{color:#faf0de!important}
+.dmd-theme .agency-sidebar nav a.agency-storefront-link{margin-top:10px}
+.dmd-theme .agency-sidebar .agency-side-bottom{border-color:#faf0de42}
+.dmd-theme .agency-sidebar :is(.agency-menu-org strong,.agency-menu-org span,.agency-wordmark-byline,.agency-live b,.agency-live span,.agency-menu-sync small,.agency-menu-sync strong,.agency-menu-campaign>span){color:#faf0de!important}
+.dmd-theme .agency-sidebar :is(.agency-menu-campaign,.agency-menu-sync){background:#10120f!important;border-color:#faf0de33!important;color:#faf0de!important}
+.dmd-theme .agency-sidebar .agency-menu-campaign select{background:#10120f!important;border-color:#faf0de66!important;color:#faf0de!important}
+.dmd-theme .agency-sidebar .agency-menu-campaign small{color:#cfeccb!important}
+.dmd-theme .agency-sidebar .agency-menu-toggle{background:#10120f!important;border-color:#faf0de!important;color:#faf0de!important}
 .dmd-theme :is(.agency-avatar,.agency-prod-thumb){background:#cfeccb!important;color:#435136!important}
-.dmd-theme .agency-wordmark-byline{font-size:12px;color:#576946}
+.dmd-theme .agency-wordmark-byline{font-size:12px;color:#faf0de}
 .dmd-theme :is(.agency-org-logo,.agency-seal){background:transparent!important;border-radius:0}
 .dmd-theme :is(.agency-org-logo img,.agency-seal img){object-fit:contain}
 .dmd-theme .agency-bar i{background:#576946!important}
