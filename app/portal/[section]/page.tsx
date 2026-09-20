@@ -10,8 +10,10 @@ import CampaignCollectionSyncButton from "@/components/portal/CampaignCollection
 import StorefrontHeaderEditor from "@/components/portal/StorefrontHeaderEditor"
 import CampaignProductContributionManager from "@/components/CampaignProductContributionManager"
 import PortalNotificationSettings from '@/components/portal/PortalNotificationSettings'
+import DmdProductReview from '@/components/portal/DmdProductReview'
 import { getPortalData, money, portalStats } from "@/lib/portal/data"
 import { customerName, orderLabel } from "@/lib/orders/display"
+import {isDmdOrganization} from "@/lib/branding/dmd"
 
 export const dynamic="force-dynamic"
 
@@ -86,16 +88,16 @@ export default async function PortalSection({params,searchParams}:{params:Promis
   else if(section==="reports") content=<ReportsTool org={d.org.name} campaign={d.campaign?.name||"Campaign"} orders={orderRows} products={products} payouts={payoutRows} totals={s}/>
   else if(section==="marketing") content=<MarketingTools campaignId={d.campaign?.id||""} organizationId={d.organizationId} url={d.campaign?.public_store_url||""} orgName={d.org.name} orgLogo={d.org.logo_url||null} campaignName={d.campaign?.name||"Campaign"} daysRemaining={daysRemaining} pct={pct} raised={money(s.raised)} goal={money(goal)} startsAt={d.campaign?.starts_at||null} endsAt={d.campaign?.ends_at||null} products={products.slice(0,8)} last3Sales={last3Sales} previous3Sales={previous3Sales}/>
   else if(section==="products") content=<>
-    <div className="agency-page-head"><div><h1>Products</h1><p>Campaign product performance and rankings from Shopify orders</p></div></div>
+    {isDmdOrganization(d.org)?<DmdProductReview organizationId={d.organizationId}/>:<div className="agency-page-head"><div><h1>Products</h1><p>Campaign product performance and rankings from Shopify orders</p></div></div>}
     {d.org.organization_type === 'detroit_fire_station' && <div className="agency-card" style={{padding:20,marginBottom:20}}><Link href={'/station/'+d.organizationId+'/collections'}>Manage assigned Shopify collections →</Link>{!d.products.length && <p>No products yet. Assign a Shopify collection and sync it to this station.</p>}</div>}
     {d.canEditCampaign&&d.campaign&&<CampaignCollectionSyncButton campaignId={d.campaign.id} organizationId={d.organizationId}/>}
     {d.canEditContributions&&<CampaignProductContributionManager products={d.products}/>}
-    <section className="agency-product-grid">{products.map((p:any,i:number)=><article className="agency-product-card" key={p.id}>
+    {!!products.length&&<section className="agency-product-grid">{products.map((p:any,i:number)=><article className="agency-product-card" key={p.id}>
       <div className="agency-product-image">{p.image?<img src={p.image} alt=""/>:<span>PRODUCT</span>}{i===0&&p.gross>0&&<em>★ Top Earner</em>}</div>
       <div className="agency-product-body"><div className="agency-product-title"><strong>{p.title}</strong><span className="agency-pill active">Active</span></div><small>{p.price?money(p.price):"Campaign item"}</small>
       <div className="agency-product-stats"><div><span>Units</span><b>{p.qty}</b></div><div><span>Gross</span><b>{money(p.gross)}</b></div><div><span>Refunds</span><b className="red">{money(p.refund)}</b></div><div><span>Raised</span><b className="green">{money(p.raised)}</b></div></div>
       <div className="agency-payout-rule"><span>Contribution rule</span><b>{(()=>{const rule=d.products.find((x:any)=>String(x.shopify_product_id||x.id)===p.id);return rule?.contribution_type==="fixed"?`${money(Number(rule.contribution_value||0))} per item`:`${Number(rule?.contribution_value||0)}% per item`})()}</b></div></div>
-    </article>)}</section>
+    </article>)}</section>}
   </>
   else if(section==="progress") content=<>
     <div className="agency-page-head"><div><h1>Campaign Progress</h1><p>Visual performance tracker using current campaign data</p></div></div>
