@@ -85,3 +85,38 @@
 .dmd-theme .agency-sidebar :is(a,button,select):focus-visible{outline-color:#faf0de!important}
 .dmd-theme .agency-sidebar .agency-seal{border:0}
 .dmd-theme .agency-sidebar .agency-seal img{filter:brightness(0) saturate(100%) invert(96%) sepia(9%) saturate(567%) hue-rotate(331deg) brightness(105%) contrast(96%)}
+
+/* Keep the mobile masthead on the same dark brand surface as its logo. */
+.dmd-theme .agency-sidebar-head{background:#435136;border-color:#faf0de42;box-shadow:none}
+.dmd-theme .agency-mobile-account button{color:#faf0de;font-size:12px;min-height:44px}
+.dmd-theme .agency-sidebar .agency-menu-toggle{min-height:44px;font-size:13px}
+.dmd-theme .agency-sidebar .agency-menu-campaign option{background:#435136;color:#faf0de}
+
+/* Legible dashboard metrics, including secondary descriptions. */
+.dmd-theme .agency-kpis>div{min-width:0;aspect-ratio:auto;min-height:154px;gap:12px}
+.dmd-theme .agency-kpis span{color:#576946;font-size:13px;line-height:1.4;letter-spacing:.025em}
+.dmd-theme .agency-kpis strong{margin-top:0;max-width:100%;color:#435136;font-size:34px;line-height:1.12;overflow-wrap:anywhere}
+.dmd-theme .agency-kpis small{color:#576946;font-size:12px;line-height:1.45}
+.dmd-theme .agency-kpis .orange{color:#965018!important}
+.dmd-theme .agency-hero-tags :is(b,em){max-width:100%;padding:9px 12px;background:#e8edde;color:#435136;line-height:1.45;font-size:13px}
+.dmd-theme .agency-card>header h2{color:#435136!important;font-size:22px!important}
+.dmd-theme .agency-card>header :is(p,span,b){color:#576946!important;font-size:13px;line-height:1.45}
+.dmd-theme :is(.agency-goal-ring span,.agency-goal-list span,.agency-detail-list span){color:#576946;font-size:13px}
+@media(max-width:900px){
+  .dmd-theme .agency-sidebar-head{grid-template-columns:auto minmax(0,1fr) auto;gap:12px}
+  .dmd-theme .agency-sidebar-head .dmd-portal-logo{width:100%;max-width:190px;max-height:65px;object-fit:contain}
+  .dmd-theme .agency-mobile-account{flex-direction:column;gap:0}
+  .dmd-theme .agency-mobile-account button{min-height:28px}
+}
+@media(max-width:620px){
+  .dmd-theme .agency-kpis>div{padding:16px 14px;min-height:164px}
+  .dmd-theme .agency-kpis span{font-size:12px}
+  .dmd-theme .agency-kpis strong{font-size:30px}
+  .dmd-theme .agency-hero{padding:22px 20px}
+  .dmd-theme .agency-hero-tags{gap:8px}
+  .dmd-theme .agency-sidebar-head{padding:12px;gap:10px}
+  .dmd-theme .agency-sidebar .agency-menu-toggle{padding:0 9px}
+}
+@media(max-width:360px){
+  .dmd-theme .agency-kpis,.dmd-theme .agency-kpis.four{grid-template-columns:1fr}
+}
