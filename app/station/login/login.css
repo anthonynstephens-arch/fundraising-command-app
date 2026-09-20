@@ -27,7 +27,8 @@
 .fs-login .fs-keypad button{height:43px;border:1px solid #dce4eb;background:#fff;color:#183449;border-radius:8px;font-size:18px;font-weight:700}
 .fs-login .fs-keypad button:hover{background:#edf3f8;border-color:#9dafbf}
 .fs-login .fs-keypad .fs-key-action{font-size:12px;color:#6a7c8c}
-.fs-login .fs-login-submit{width:min(100%,360px);display:flex;justify-content:center;align-items:center;gap:10px;background:#d93c35;color:white;border:0;border-radius:8px;min-height:48px;font-size:14px;font-weight:700;margin:20px auto 0;padding:12px;text-align:center}
+.fs-login .fs-login-submit{position:relative;width:100%;display:flex;justify-content:center;align-items:center;background:#d93c35;color:white;border:0;border-radius:8px;min-height:48px;font-size:14px;font-weight:700;margin-top:20px;padding:12px 48px;text-align:center}
+.fs-login .fs-login-submit span{position:absolute;right:18px}
 .fs-login .fs-login-submit:hover{background:#bc302a}.fs-login button:disabled{opacity:.55;cursor:not-allowed}
 .fs-login .fs-login-card .fs-login-help{font-size:12px;text-align:center;color:#778898;border-top:1px solid #e7ecf0;margin-top:22px;padding-top:18px}
 .fs-login .fs-login-error{background:#fff0ee;color:#a3221c!important;padding:12px;border-radius:8px;font-size:14px;line-height:1.5}
