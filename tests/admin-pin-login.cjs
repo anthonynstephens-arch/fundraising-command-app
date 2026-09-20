@@ -13,7 +13,7 @@ vm.runInNewContext(swc.transformSync(fs.readFileSync('lib/admin/pin-login.ts','u
  active=true;lookupError=new Error('database unavailable');calls=[];await assert.rejects(()=>login('owner'),/database unavailable/);assert.deepEqual(calls,[])
  lookupError=null;wrongUser=true;calls=[];await assert.rejects(()=>login('owner'),/verify/);assert.equal(calls.at(-1),'signOut')
  const context=fs.readFileSync('lib/portal/context.ts','utf8');assert.ok(!context.includes('All Stations'))
- const commandLogin=fs.readFileSync('app/login/page.tsx','utf8')
+ const commandLogin=fs.readFileSync('components/LoginForm.tsx','utf8')
  const stationLogin=fs.readFileSync('app/station/login/StationLogin.tsx','utf8')
  for(const source of [commandLogin,stationLogin])assert.ok(source.includes("data.redirectTo === '/dashboard'"))
  const commandPinSuccess=commandLogin.slice(commandLogin.indexOf('window.location.assign'),commandLogin.indexOf('async function submitEmail'))
