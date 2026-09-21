@@ -43,7 +43,7 @@ export default function PinChangeForm({ branded = false, macac = false }: { bran
   }
 
   return <main className={macac ? 'center fc-login-page macac-theme macac-login' : branded ? 'center fc-login-page dmd-theme dmd-login' : 'center fc-login-page'}>
-    {macac && <aside className="macac-login-brand"><Link href="/stores/macac" className="macac-portal-wordmark">MACAC<span>Michigan Association for College Admission Counseling</span></Link><h1>Your community.<br/><em>Your private access.</em></h1><Link href="/stores/macac">← Back to the collection</Link></aside>}
+    {macac && <aside className="macac-login-brand"><Link href="/stores/macac" className="macac-portal-wordmark"><img src="/brand/macac/logo-white.png" alt="MACAC — Michigan Association for College Admission Counseling" className="macac-official-logo" /></Link><h1>Your community.<br/><em>Your private access.</em></h1><Link href="/stores/macac">← Back to the collection</Link></aside>}
     {branded && <aside className="dmd-login-brand">
       <Link href={'/fundraisers/' + DMD_SLUG}><img src={DMD_LOGO} alt="Detroit Metropolitan Dance" /></Link>
       <h1>Your community.<br/><em>In motion.</em></h1>
