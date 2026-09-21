@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {DMD_LOGO,DMD_SLUG} from '@/lib/branding/dmd'
 
-export default function LoginForm({branded=false}:{branded?:boolean}) {
+export default function LoginForm({branded=false,macac=false}:{branded?:boolean;macac?:boolean}) {
   const [mode, setMode] = useState<'pin' | 'email'>('pin')
   const [pin, setPin] = useState('')
   const [email, setEmail] = useState('')
@@ -43,10 +43,10 @@ export default function LoginForm({branded=false}:{branded?:boolean}) {
       return
     }
     if (data.mustChangePin) {
-      window.location.assign(branded ? '/stores/dmd/change-pin' : '/change-pin')
+      window.location.assign(macac ? '/stores/macac/change-pin' : branded ? '/stores/dmd/change-pin' : '/change-pin')
       return
     }
-    window.location.assign(branded ? '/stores/dmd/portal' : data.redirectTo === '/dashboard' ? '/dashboard' : '/portal')
+    window.location.assign(macac ? '/stores/macac/portal' : branded ? '/stores/dmd/portal' : data.redirectTo === '/dashboard' ? '/dashboard' : '/portal')
     } catch { setMsg('Unable to connect. Please try again.'); setBusy(false) }
   }
 
@@ -60,16 +60,17 @@ export default function LoginForm({branded=false}:{branded?:boolean}) {
       setMsg(error.message)
       return
     }
-    router.push(branded ? '/stores/dmd/portal' : '/home')
+    router.push(macac ? '/stores/macac/portal' : branded ? '/stores/dmd/portal' : '/home')
     router.refresh()
   }
 
-  return <main className={branded?"center fc-login-page dmd-theme dmd-login":"center fc-login-page"}>
+  return <main className={macac?"center fc-login-page macac-theme macac-login":branded?"center fc-login-page dmd-theme dmd-login":"center fc-login-page"}>
+    {macac&&<aside className="macac-login-brand"><Link href="/stores/macac" className="macac-portal-wordmark">MACAC<span>Michigan Association for College Admission Counseling</span></Link><h1>Supporting students.<br/><em>Connecting professionals.</em></h1><p>Your merchandise, community, and campaign activity—all in one place.</p><Link href="/stores/macac">← Back to the collection</Link></aside>}
     {branded&&<aside className="dmd-login-brand"><Link href={"/fundraisers/"+DMD_SLUG}><img src={DMD_LOGO} alt="Detroit Metropolitan Dance"/></Link><h1>Your community.<br/><em>In motion.</em></h1><Link href={"/fundraisers/"+DMD_SLUG}>← Back to the apparel store</Link></aside>}
     <section className="card login fc-login-card">
-      <div className="eyebrow">{branded?"DMD MEMBER ACCESS":"FUNDRAISING COMMAND"}</div>
+      <div className="eyebrow">{macac?"MACAC MEMBER ACCESS":branded?"DMD MEMBER ACCESS":"FUNDRAISING COMMAND"}</div>
       <h2>{mode === 'pin' ? 'Enter your access PIN' : 'Welcome back'}</h2>
-      <p>{mode === 'pin' ? 'Use the PIN provided by your department or organization.' : branded?'Sign in to your Detroit Metropolitan Dance workspace.':'Sign in to your Fundraising Command workspace.'}</p>
+      <p>{mode === 'pin' ? 'Use the PIN provided by your department or organization.' : macac?'Sign in to your MACAC merchandise portal.':branded?'Sign in to your Detroit Metropolitan Dance workspace.':'Sign in to your Fundraising Command workspace.'}</p>
 
       <div className="fc-login-tabs" role="tablist" aria-label="Sign-in method">
         <button type="button" className={mode === 'pin' ? 'active' : ''} onClick={() => { setMode('pin'); setMsg('') }}>PIN Login</button>

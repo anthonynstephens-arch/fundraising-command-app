@@ -29,7 +29,7 @@ export default async function PortalMembers({searchParams}:{searchParams:Promise
   const canManage=!!platform||role==="owner"||role==="admin"||role==="manager"
   if(!canManage) redirect("/portal?org="+organizationId)
 
-  const {data:organization}=await db.from("organizations").select("id,name,organization_type").eq("id",organizationId).maybeSingle()
+  const {data:organization}=await db.from("organizations").select("id,name,slug,organization_type").eq("id",organizationId).maybeSingle()
   if(!organization) redirect("/portal")
 
   const [{data:members},{data:pinCredentials}]=await Promise.all([
@@ -60,7 +60,7 @@ export default async function PortalMembers({searchParams}:{searchParams:Promise
   }
   const pins=(pinCredentials||[]).map((credential:any)=>({...credential,...(pinStats.get(credential.id)||{loginCount:0,lastLogin:null})}))
 
-  return <div className="portal-page">
+  return <div className={"portal-page"+(organization.slug==="macac"?" macac-theme":"")}>
     <div className="portal-page-top">
       <div>
         <div className="portal-kicker">MEMBER ACCESS</div>

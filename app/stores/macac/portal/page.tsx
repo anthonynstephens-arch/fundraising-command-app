@@ -1,0 +1,26 @@
+import { redirect, notFound } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { getPortalPinSession } from '@/lib/pin-auth'
+import { resolvePortalContext } from '@/lib/portal/context'
+export const dynamic = 'force-dynamic'
+export default async function Page() {
+  const auth = await createClient()
+  const [{ data: { user } }, pin] = await Promise.all([
+    auth.auth.getUser(), getPortalPinSession({ allowPendingPinChange: true }),
+  ])
+  if (!user && !pin) redirect('/stores/macac/login')
+  const db = createAdminClient()
+  const { data: org, error } = await db.from('organizations').select('id').eq('slug', 'macac').eq('is_active', true).maybeSingle()
+  if (error) throw error
+  if (!org) notFound()
+  const [{ data: platform }, { data: memberships }] = await Promise.all([
+    user ? db.from('platform_admins').select('user_id').eq('user_id', user.id).eq('is_active', true).maybeSingle() : Promise.resolve({ data: null }),
+    user ? db.from('organization_members').select('organization_id,role').eq('user_id', user.id) : Promise.resolve({ data: [] }),
+  ])
+  const context = resolvePortalContext(org.id, !!platform, memberships || [], pin)
+  if (context.denied) notFound()
+  if (context.usePin && pin?.mustChangePin) redirect('/stores/macac/change-pin')
+  // Shared portal pages and APIs independently enforce organization membership.
+  redirect('/portal?org=' + encodeURIComponent(org.id))
+}

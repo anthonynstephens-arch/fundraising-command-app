@@ -4,7 +4,7 @@ import { FormEvent, useState } from 'react'
 import Link from 'next/link'
 import { DMD_LOGO, DMD_SLUG } from '@/lib/branding/dmd'
 
-export default function PinChangeForm({ branded = false }: { branded?: boolean }) {
+export default function PinChangeForm({ branded = false, macac = false }: { branded?: boolean; macac?: boolean }) {
   const [pin, setPin] = useState('')
   const [confirmPin, setConfirmPin] = useState('')
   const [message, setMessage] = useState('')
@@ -35,21 +35,22 @@ export default function PinChangeForm({ branded = false }: { branded?: boolean }
         setBusy(false)
         return
       }
-      window.location.assign(branded ? '/stores/dmd/portal' : '/portal')
+      window.location.assign(macac ? '/stores/macac/portal' : branded ? '/stores/dmd/portal' : '/portal')
     } catch {
       setMessage('Unable to connect. Please try again.')
       setBusy(false)
     }
   }
 
-  return <main className={branded ? 'center fc-login-page dmd-theme dmd-login' : 'center fc-login-page'}>
+  return <main className={macac ? 'center fc-login-page macac-theme macac-login' : branded ? 'center fc-login-page dmd-theme dmd-login' : 'center fc-login-page'}>
+    {macac && <aside className="macac-login-brand"><Link href="/stores/macac" className="macac-portal-wordmark">MACAC<span>Michigan Association for College Admission Counseling</span></Link><h1>Your community.<br/><em>Your private access.</em></h1><Link href="/stores/macac">← Back to the collection</Link></aside>}
     {branded && <aside className="dmd-login-brand">
       <Link href={'/fundraisers/' + DMD_SLUG}><img src={DMD_LOGO} alt="Detroit Metropolitan Dance" /></Link>
       <h1>Your community.<br/><em>In motion.</em></h1>
       <Link href={'/fundraisers/' + DMD_SLUG}>← Back to the apparel store</Link>
     </aside>}
     <section className="card login fc-login-card">
-      <div className="eyebrow">{branded ? 'DMD MEMBER ACCESS' : 'FUNDRAISING COMMAND'}</div>
+      <div className="eyebrow">{macac ? 'MACAC MEMBER ACCESS' : branded ? 'DMD MEMBER ACCESS' : 'FUNDRAISING COMMAND'}</div>
       <h2>Create your private PIN</h2>
       <p>The PIN you received was temporary. Replace it now before opening your portal.</p>
       <form className="fc-email-login fc-change-pin-form" onSubmit={submit}>
