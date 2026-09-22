@@ -1,9 +1,5 @@
 import LoginForm from '@/components/LoginForm'
-import { createAdminClient } from '@/lib/supabase/admin'
-import { PLYMOUTH_SLUG } from '@/lib/branding/plymouth'
-export const dynamic = 'force-dynamic'
 export const metadata = {title: 'Member Portal | Plymouth Township Fire Department'}
-export default async function Page() {
- const {data:org}=await createAdminClient().from('organizations').select('logo_url').eq('slug',PLYMOUTH_SLUG).eq('is_active',true).single()
- return <LoginForm plymouth logoUrl={org?.logo_url}/>
+export default function Page() {
+ return <LoginForm plymouth logoUrl="https://cuzxnryslupnrlasntxl.supabase.co/storage/v1/object/public/portal-assets/organization-logos/f2694ffd-fd01-4c55-b719-483bc9853a92/b309b4d2-8e26-40ce-b0cb-97f5340006b3.png"/>
 }
