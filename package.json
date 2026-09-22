@@ -18,12 +18,14 @@
     "@supabase/supabase-js": "latest",
     "jspdf": "^3.0.3",
     "next": "latest",
+    "nodemailer": "10.0.10",
     "qrcode": "^1.5.4",
     "react": "latest",
     "react-dom": "latest"
   },
   "devDependencies": {
     "@types/node": "latest",
+    "@types/nodemailer": "8.0.2",
     "@types/qrcode": "^1.5.5",
     "@types/react": "latest",
     "@types/react-dom": "latest",

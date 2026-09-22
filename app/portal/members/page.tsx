@@ -34,7 +34,7 @@ export default async function PortalMembers({searchParams}:{searchParams:Promise
 
   const [{data:members},{data:pinCredentials}]=await Promise.all([
     db.from("organization_members").select("id,user_id,role,created_at").eq("organization_id",organizationId).order("created_at"),
-    db.from("portal_pin_credentials").select("id,display_name,role,active,created_at").eq("organization_id",organizationId).order("created_at")
+    db.from("portal_pin_credentials").select("id,display_name,email,access_status,role,active,created_at").eq("organization_id",organizationId).order("created_at")
   ])
 
   const users=new Map<string,{email:string;confirmed:boolean}>()
@@ -80,10 +80,10 @@ export default async function PortalMembers({searchParams}:{searchParams:Promise
 
     <div className="portal-card">
       <div className="portal-card-head">
-        <div><span>QUICK ACCESS</span><h2>PIN Members</h2><p>Create portal access without requiring an email account.</p></div>
+        <div><span>QUICK ACCESS</span><h2>PIN Members</h2><p>Approve requested access or create a department PIN.</p></div>
         <strong>{pins.length}</strong>
       </div>
-      <PinAccessManager organizationId={organizationId} credentials={pins}/>
+      <PinAccessManager organizationId={organizationId} credentials={pins} canApprove={!!platform||role==="owner"||role==="admin"}/>
     </div>
   </div>
 }

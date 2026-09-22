@@ -20,7 +20,7 @@ export async function GET(request: Request) {
   const db = createAdminClient()
   const { data: credentials, error } = await db
     .from("portal_pin_credentials")
-    .select("id,display_name,role,active,created_at")
+    .select("id,display_name,email,access_status,role,active,created_at")
     .eq("organization_id", organizationId)
     .order("created_at")
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
@@ -75,10 +75,11 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Invalid PIN login update." }, { status: 400 })
   }
   const db = createAdminClient()
-  const { data: credential } = await db.from("portal_pin_credentials").select("organization_id").eq("id", id).maybeSingle()
+  const { data: credential } = await db.from("portal_pin_credentials").select("organization_id,access_status").eq("id", id).maybeSingle()
   if (!credential || !await canManageOrganization(credential.organization_id)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
+  if (credential.access_status === "pending") return NextResponse.json({ error: "Use Approve to activate this access request." }, { status: 400 })
   const { error } = await db
     .from("portal_pin_credentials")
     .update({ active, updated_at: new Date().toISOString() })
@@ -93,7 +94,7 @@ export async function DELETE(request: Request) {
   const { id } = await request.json()
   if (!id) return NextResponse.json({ error: "PIN login is required." }, { status: 400 })
   const db = createAdminClient()
-  const { data: credential } = await db.from("portal_pin_credentials").select("organization_id").eq("id", id).maybeSingle()
+  const { data: credential } = await db.from("portal_pin_credentials").select("organization_id,access_status").eq("id", id).maybeSingle()
   if (!credential || !await canManageOrganization(credential.organization_id)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }

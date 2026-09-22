@@ -14,7 +14,7 @@ export default async function MembersPage({params}:{params:Promise<{id:string}>}
 
   const [{data:members},{data:pinCredentials}]=await Promise.all([
     db.from("organization_members").select("id,user_id,role,created_at").eq("organization_id",id).order("created_at"),
-    db.from("portal_pin_credentials").select("id,display_name,role,active,created_at").eq("organization_id",id).order("created_at")
+    db.from("portal_pin_credentials").select("id,display_name,email,access_status,role,active,created_at").eq("organization_id",id).order("created_at")
   ])
   const users=new Map<string,string>()
   let page=1
