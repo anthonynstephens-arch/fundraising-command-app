@@ -9,7 +9,7 @@ const nav = [
   { href: "/dashboard/organizations", label: "Departments" },
   { href: "/dashboard/campaigns", label: "Campaigns" },
   { href: "/dashboard/orders", label: "Orders" },
-  { href: "/dashboard/payouts", label: "Payouts" },
+  { href: "/dashboard/payouts", label: "Payout Engine" },
   { href: "/dashboard/applications", label: "Applications" },
   { href: "/dashboard/shopify", label: "Shopify" },
   { href: "/dashboard/launch-check", label: "Launch Check" },

@@ -11,8 +11,8 @@ import NotificationInbox from '@/components/portal/NotificationInbox'
 
 const nav=[
   ["Overview","/portal","▦"],["Sales","/portal/sales","⌑"],["Orders","/portal/orders","◇"],["Products","/portal/products","⬡"],
-  ["Campaign Progress","/portal/progress","◎"],["Payouts","/portal/payouts","▣"],["Reports","/portal/reports","▤"],["Marketing Tools","/portal/marketing","⌁"],
-  ["Notifications","/portal/notifications","◉"],["Help","/portal/help","?"],["Account Settings","/portal/settings","⚙"],
+  ["Campaign Progress","/portal/progress","◎"],["Payout Engine","/portal/payouts","▣"],["Reports","/portal/reports","▤"],["Marketing Tools","/portal/marketing","⌁"],
+  ["Agency Contacts","/portal/contacts","♙"],["Notifications","/portal/notifications","◉"],["Help","/portal/help","?"],["Account Settings","/portal/settings","⚙"],
 ]
 
 export default function PortalShell({children,org,campaign,campaigns,userEmail,organizationId,platform,lastSynced,pinAccess=false}:{children:React.ReactNode;org:any;campaign:any;campaigns:any[];userEmail:string;organizationId:string;platform:boolean;lastSynced?:string|null;pinAccess?:boolean}){
@@ -63,7 +63,7 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
           const active=href.startsWith("/station") ? path===href : href==="/portal"?path==="/portal":path.startsWith(href)
           return <Link key={href} href={destination(href)} className={active?"active":""} onClick={()=>setMenuOpen(false)}><i>{icon}</i><span>{label}</span></Link>
         })}
-        {(macac||plymouth)&&<Link href={"/portal/members?org="+encodeURIComponent(organizationId)} onClick={()=>setMenuOpen(false)}><i aria-hidden="true">♙</i><span>{plymouth ? "Users & Access" : "Member Access"}</span></Link>}
+        {<Link href={"/portal/members?org="+encodeURIComponent(organizationId)} onClick={()=>setMenuOpen(false)}><i aria-hidden="true">♙</i><span>Users & Access</span></Link>}
         <Link className="agency-storefront-link" href={storefrontHref} target="_blank" rel="noopener noreferrer" onClick={()=>setMenuOpen(false)}><i aria-hidden="true">↗</i><span>View Storefront</span></Link>
       </nav>
       <div className={"agency-side-bottom "+(menuOpen?"mobile-open":"")}>

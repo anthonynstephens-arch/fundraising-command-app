@@ -14,8 +14,8 @@ export function stationNavigation(id: string) {
     ['Overview', home, '▦'], ['Collections', home + '/collections', '⬡'],
     ['Sales', home + '/sales', '⌑'], ['Orders', home + '/orders', '◇'],
     ['Products', home + '/products', '⬡'], ['Collection Progress', home + '/progress', '◎'],
-    ['Payouts', home + '#payouts', '▣'], ['Reports', home + '/reports', '▤'],
-    ['Marketing Tools', home + '/marketing', '⌁'], ['Notifications', home + '/notifications', '◉'], ['Help', home + '/help', '?'],
+    ['Payout Engine', home + '/payouts', '▣'], ['Reports', home + '/reports', '▤'],
+    ['Agency Contacts', home + '/contacts', '♙'], ['Marketing Tools', home + '/marketing', '⌁'], ['Notifications', home + '/notifications', '◉'], ['Help', home + '/help', '?'],
     ['Station Settings', home + '/settings', '⚙'],
   ]
 }

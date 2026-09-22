@@ -1,0 +1,8 @@
+'use client'
+import {useState} from 'react'
+export default function DepartmentPortalSettings({org}:{org:any}){
+ const [enabled,setEnabled]=useState(org.access_requests_enabled!==false),[color,setColor]=useState(/^#[0-9a-f]{6}$/i.test(org.brand_primary_color||'')?org.brand_primary_color:'#102238'),[busy,setBusy]=useState(false),[message,setMessage]=useState('')
+ const url='https://www.fundraisercommand.com/departments/'+encodeURIComponent(org.slug)+'/login'
+ async function save(){setBusy(true);try{const r=await fetch('/api/organizations/portal-settings',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({organizationId:org.id,accessRequestsEnabled:enabled,primaryColor:color})}),j=await r.json();if(!r.ok)throw new Error(j.error);setMessage('Portal settings saved.')}catch(e){setMessage(e instanceof Error?e.message:'Unable to save.')}finally{setBusy(false)}}
+ return <section className="agency-card pe-card"><h2>Department portal setup</h2><p>Share this link for member login and access requests.</p><a className="pe-portal-link" href={url} target="_blank" rel="noreferrer">{url}</a><div className="pe-grid"><label>Access requests<select value={enabled?'yes':'no'} onChange={e=>setEnabled(e.target.value==='yes')}><option value="yes">Enabled — admin approval required</option><option value="no">Disabled — invite only</option></select></label><label>Brand color<input type="color" value={color} onChange={e=>setColor(e.target.value)}/></label></div><p className="pe-help">All departments share the same tools. Custom DMD, MACAC, and Plymouth branding is preserved.</p><button className="pe-button" disabled={busy} onClick={save}>{busy?'Saving…':'Save portal settings'}</button><p role="status">{message}</p></section>
+}

@@ -36,14 +36,14 @@ export async function POST(request: Request) {
     }
 
     const result = data[0]
-    if (organizationSlug) {
+    const platformAdmin = await establishPinIdentity(result.credential_id)
+    if (organizationSlug && !platformAdmin) {
       const { data: org } = await db.from("organizations").select("id").eq("slug", organizationSlug).eq("is_active", true).maybeSingle()
       if (!org || org.id !== result.organization_id) {
         await db.from("portal_pin_sessions").delete().eq("token_hash", createHash("sha256").update(result.session_token).digest("hex"))
         return NextResponse.json({ error: "This PIN does not have access to this department." }, { status: 403 })
       }
     }
-    const platformAdmin = await establishPinIdentity(result.credential_id)
     const { data: credential, error: credentialError } = await db
       .from("portal_pin_credentials")
       .select("must_change_pin")

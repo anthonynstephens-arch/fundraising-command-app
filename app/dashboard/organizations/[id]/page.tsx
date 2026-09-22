@@ -1,3 +1,6 @@
+import DepartmentPortalSettings from '@/components/portal/DepartmentPortalSettings'
+import PayoutPreferences from '@/components/portal/PayoutPreferences'
+import AgencyContacts from '@/components/portal/AgencyContacts'
 import { inReportingPeriod } from '@/lib/portal/reporting-period'
 import DepartmentReporting from '@/components/admin/DepartmentReporting'
 import Link from "next/link"
@@ -18,7 +21,7 @@ export default async function OrganizationDetailPage({params}:{params:Promise<{i
   if(!user) redirect("/login")
 
   const db=createAdminClient()
-  const {data:organization}=await db.from("organizations").select("id,name,slug,organization_type,contact_name,contact_email,contact_phone,logo_url,website_url,is_active,created_at,reporting_start_date").eq("id",id).maybeSingle()
+  const {data:organization}=await db.from("organizations").select("id,name,slug,organization_type,contact_name,contact_email,contact_phone,logo_url,website_url,is_active,created_at,reporting_start_date,access_requests_enabled,brand_primary_color").eq("id",id).maybeSingle()
   if(!organization) notFound()
 
   const [{data:campaigns},{data:orders},{data:payouts},{data:members},{count:pinMemberCount,error:pinMemberError}]=await Promise.all([
@@ -54,6 +57,9 @@ export default async function OrganizationDetailPage({params}:{params:Promise<{i
     </section>
 
     <section className="fc-card"><h2>Department / station logo</h2><OrganizationLogoUpload organizationId={id} name={organization.name} logoUrl={organization.logo_url} /></section>
+    <DepartmentPortalSettings org={organization}/>
+    <PayoutPreferences organizationId={id}/>
+    <AgencyContacts organizationId={id}/>
     <DepartmentReporting organizationId={id} startDate={organization.reporting_start_date} />
     <section className="fc-dashboard-grid">
       <div className="fc-panel">

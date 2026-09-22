@@ -9,7 +9,7 @@ export default async function StationSection({params, searchParams}: {params: Pr
   await stationAccess(id)
   if(section==='collections') return <StationCollectionsPage id={id} />
   if(section==='members') return <PortalMembers searchParams={Promise.resolve({org:id})} />
-  if(!['sales','orders','products','progress','reports','marketing','help','settings','notifications'].includes(section)) notFound()
+  if(!['payouts','contacts','sales','orders','products','progress','reports','marketing','help','settings','notifications'].includes(section)) notFound()
   const {campaign}=await searchParams
   return <PortalSection params={Promise.resolve({section})} searchParams={Promise.resolve({org:id,campaign})} />
 }

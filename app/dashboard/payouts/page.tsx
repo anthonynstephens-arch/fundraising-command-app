@@ -45,7 +45,7 @@ export default async function PayoutsPage() {
       <section className="fc-page-header">
         <div>
           <div className="fc-kicker">FINANCE</div>
-          <h1>Payouts</h1>
+          <h1>Payout Engine</h1>
           <p>Review department payout requests, generate reconciled payout records, and track payment through completion.</p>
         </div>
       </section>

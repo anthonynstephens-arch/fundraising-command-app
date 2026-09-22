@@ -1,3 +1,6 @@
+import PayoutPreferences from '@/components/portal/PayoutPreferences'
+import AgencyContacts from '@/components/portal/AgencyContacts'
+import DepartmentPortalSettings from '@/components/portal/DepartmentPortalSettings'
 import Link from "next/link"
 import PortalShell from "@/components/portal/PortalShell"
 import SalesExplorer from "@/components/portal/SalesExplorer"
@@ -83,7 +86,8 @@ export default async function PortalSection({params,searchParams}:{params:Promis
 
   let content:React.ReactNode
 
-  if(section==="sales") content=<SalesExplorer orders={d.orders} items={d.items} products={d.products}/>
+  if(section==="contacts") content=<AgencyContacts organizationId={d.organizationId}/>
+  else if(section==="sales") content=<SalesExplorer orders={d.orders} items={d.items} products={d.products}/>
   else if(section==="orders") content=<OrdersExplorer rows={orderRows}/>
   else if(section==="reports") content=<ReportsTool org={d.org.name} campaign={d.campaign?.name||"Campaign"} orders={orderRows} products={products} payouts={payoutRows} totals={s}/>
   else if(section==="marketing") content=<MarketingTools campaignId={d.campaign?.id||""} organizationId={d.organizationId} url={d.campaign?.public_store_url||""} orgName={d.org.name} orgLogo={d.org.logo_url||null} campaignName={d.campaign?.name||"Campaign"} daysRemaining={daysRemaining} pct={pct} raised={money(s.raised)} goal={money(goal)} startsAt={d.campaign?.starts_at||null} endsAt={d.campaign?.ends_at||null} products={products.slice(0,8)} last3Sales={last3Sales} previous3Sales={previous3Sales}/>
@@ -109,9 +113,10 @@ export default async function PortalSection({params,searchParams}:{params:Promis
     <section className="agency-kpis four"><div><span>DAYS ELAPSED</span><strong>{start?Math.max(0,Math.ceil((Date.now()-start.getTime())/86400000)):0}</strong></div><div><span>DAYS REMAINING</span><strong className="orange">{daysRemaining}</strong></div><div><span>REQUIRED DAILY SALES</span><strong>{money(daysRemaining?Math.max(0,salesGoal-s.gross)/daysRemaining:0)}</strong></div><div><span>AVG. DAILY SALES</span><strong className="green">{money(start?s.gross/Math.max(1,Math.ceil((Date.now()-start.getTime())/86400000)):0)}</strong></div></section>
   </>
   else if(section==="payouts") content=<>
-    <div className="agency-page-head"><div><h1>{section==="payouts"?"Payouts":"Payout Assistant"}</h1><p>Transparent campaign payout information</p></div></div>
+    <div className="agency-page-head"><div><h1>Payout Engine</h1><p>Transparent campaign payout information</p></div></div>
     <div className="agency-notice">⚠ <b>Estimate notice:</b> Fundraising proceeds before approval are estimates. Approved payout records below are the source of truth.</div>
     <section className="agency-kpis four"><div><span>TOTAL EARNED</span><strong>{money(Number(d.balance.earned))}</strong></div><div><span>TOTAL PAID</span><strong className="green">{money(d.payouts.filter((p:any)=>p.status==="paid").reduce((a:number,p:any)=>a+Number(p.payout_amount||0),0))}</strong></div><div><span>PENDING</span><strong>{money(d.payouts.filter((p:any)=>["pending","processing"].includes(p.status)).reduce((a:number,p:any)=>a+Number(p.payout_amount||0),0))}</strong></div><div><span>AVAILABLE FOR PAYOUT</span><strong>{money(Number(d.balance.available))}</strong></div></section>
+    {(d.platform||["owner","admin"].includes(d.memberRole||""))?<PayoutPreferences organizationId={d.organizationId}/>:<div className="agency-notice">An agency owner or admin can manage payment and nonprofit details.</div>}
     <PayoutRequestPanel organizationId={d.organizationId} campaignId={d.campaign?.id||""} available={Number(d.balance.available)} threshold={Number(d.campaign?.min_payout_threshold||0)} canRequest={d.canManage} openRequest={d.payoutRequests.find((r:any)=>["requested","approved","processing"].includes(r.status))||null}/>
     <section className="agency-card"><header><div><h2>Payout Request History</h2><p>Every request and its status</p></div></header>{d.payoutRequests.length?<div className="agency-table-wrap"><table className="agency-table"><thead><tr><th>REQUESTED</th><th>AMOUNT</th><th>STATUS</th><th>REVIEWED</th><th>NOTE</th></tr></thead><tbody>{d.payoutRequests.map((r:any)=><tr key={r.id}><td>{new Date(r.requested_at).toLocaleDateString()}</td><td><b>{money(Number(r.requested_amount||0))}</b></td><td><span className={"agency-pill "+r.status}>{r.status}</span></td><td>{r.reviewed_at?new Date(r.reviewed_at).toLocaleDateString():"—"}</td><td>{r.admin_note||r.note||"—"}</td></tr>)}</tbody></table></div>:<div className="agency-empty">No payout requests yet.</div>}</section>
     <section className="agency-card"><header><div><h2>Payout Ledger</h2><p>Complete history of campaign disbursements</p></div></header>{d.payouts.length?<div className="agency-table-wrap"><table className="agency-table"><thead><tr><th>DATE</th><th>STATUS</th><th>GROSS</th><th>CONTRIBUTION</th><th>PAYOUT</th></tr></thead><tbody>{d.payouts.map((p:any)=><tr key={p.id}><td>{new Date(p.created_at).toLocaleDateString()}</td><td><span className="agency-pill">{p.status}</span></td><td>{money(Number(p.gross_sales||0))}</td><td>{money(Number(p.contribution_amount||0))}</td><td><b>{money(Number(p.payout_amount||0))}</b></td></tr>)}</tbody></table></div>:<div className="agency-empty big">No approved payouts yet.</div>}</section>
@@ -122,6 +127,7 @@ export default async function PortalSection({params,searchParams}:{params:Promis
   </>
   else if(section==="settings") content=<>
     <div className="agency-page-head"><div><h1>Account Settings</h1><p>Department portal access and profile information</p></div></div>
+    {(d.platform||["owner","admin"].includes(d.memberRole||""))&&<DepartmentPortalSettings org={d.org}/>}
     {d.canEditStorefront&&d.campaign&&<StorefrontHeaderEditor campaign={d.campaign} organizationName={d.org.name}/>}
     <section className="agency-grid-2"><article className="agency-card"><header><div><h2>Department Profile</h2></div></header><div className="agency-detail-list"><div><span>Organization</span><b>{d.org.name}</b></div><div><span>Contact</span><b>{d.org.contact_name||"—"}</b></div><div><span>Email</span><b>{d.org.contact_email||"—"}</b></div><div><span>Your role</span><b>{d.memberRole||"Platform preview"}</b></div></div></article>{d.canManage&&<article className="agency-card"><header><div><h2>Access Management</h2><p>Add users and change department roles</p></div></header><Link className="agency-primary-link" href={d.org.organization_type === "detroit_fire_station" ? "/station/"+d.organizationId+"/members" : "/portal/members?org="+d.organizationId}>Manage Members →</Link></article>}</section>
   </>

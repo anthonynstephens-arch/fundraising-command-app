@@ -1,3 +1,4 @@
+import PayoutPreferences from '@/components/portal/PayoutPreferences'
 import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
@@ -42,11 +43,12 @@ export default async function PayoutDetailPage({ params }: { params: Promise<{ i
           <p>{org?.name || "Organization"} · {campaign?.name || "Campaign"}</p>
         </div>
         <div className="fc-head-actions">
-          <Link href="/dashboard/payouts" className="fc-btn">← Payouts</Link>
+          <Link href="/dashboard/payouts" className="fc-btn">← Payout Engine</Link>
           {campaign?.id && <Link href={`/dashboard/campaigns/${campaign.id}`} className="fc-btn">Campaign</Link>}
         </div>
       </section>
 
+      <PayoutPreferences organizationId={payout.organization_id}/>
       <section className="fc-metrics">
         <div className="fc-metric"><span>Status</span><strong>{payout.status}</strong></div>
         <div className="fc-metric"><span>Eligible Sales</span><strong>{money(payout.gross_sales)}</strong></div>
