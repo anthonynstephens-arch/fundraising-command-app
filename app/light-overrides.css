@@ -921,8 +921,15 @@ input:focus,select:focus,textarea:focus{
   margin-top:auto;
   border-top:1px solid rgba(255,255,255,.07);
   padding:22px 18px 0;
-  display:grid;gap:16px;
+  display:grid;grid-template-columns:minmax(0,1fr);gap:16px;
+  min-width:0;max-width:100%;box-sizing:border-box;
 }
+.agency-side-bottom>*{min-width:0;max-width:100%;box-sizing:border-box}
+.agency-side-bottom .agency-seal{flex-shrink:0}
+.agency-side-bottom .agency-menu-org strong{white-space:normal;overflow-wrap:anywhere}
+.agency-side-bottom .agency-menu-sync>div{min-width:0;overflow-wrap:anywhere}
+.agency-side-bottom .agency-menu-campaign select{max-width:100%;box-sizing:border-box}
+
 .agency-seal{
   width:64px;height:64px;margin:0 auto;
   display:grid;place-items:center;
