@@ -12,7 +12,7 @@ export default async function Page({params}:{params:Promise<{slug:string}>}) {
   ])
   if (!user && !pin) redirect('/departments/'+encodeURIComponent(slug)+'/login')
   const db = createAdminClient()
-  const { data: org, error } = await db.from('organizations').select('id').eq('slug', slug).eq('is_active', true).maybeSingle()
+  const { data: org, error } = await db.from('organizations').select('id,organization_type').eq('slug', slug).eq('is_active', true).maybeSingle()
   if (error) throw error
   if (!org) notFound()
   const [{ data: platform }, { data: memberships }] = await Promise.all([
@@ -23,5 +23,5 @@ export default async function Page({params}:{params:Promise<{slug:string}>}) {
   if (context.denied) notFound()
   if (context.usePin && pin?.mustChangePin) redirect('/change-pin')
   // Shared portal pages and APIs independently enforce organization membership.
-  redirect('/portal?org=' + encodeURIComponent(org.id))
+  redirect(org.organization_type === 'detroit_fire_station' ? '/station/' + org.id : '/portal?org=' + encodeURIComponent(org.id))
 }
