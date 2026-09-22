@@ -8,7 +8,9 @@ export async function GET(request:Request){
  if(!access?.canFinance)return response({error:'Owner or admin access required.'},403)
  const {data,error}=await access.db.rpc('read_payout_profile',{input_org:id})
  if(error)return response({error:'Unable to load payout preferences.'},500)
- return response({details:maskPayoutDetails(data?.details||{}),version:data?.version||0,updatedAt:data?.updatedAt||null,canReveal:access.platform})
+ const {data:review,error:reviewError}=await access.db.from('organization_payout_profiles').select('review_status,review_note,reviewed_at').eq('organization_id',id).maybeSingle()
+ if(reviewError)return response({error:'Unable to load review status.'},500)
+ return response({review,details:maskPayoutDetails(data?.details||{}),version:data?.version||0,updatedAt:data?.updatedAt||null,canReveal:access.platform})
 }
 export async function PUT(request:Request){
  try{

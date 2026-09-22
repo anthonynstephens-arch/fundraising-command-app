@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import {emailConfigured} from '@/lib/portal/email-transport'
 import { getPortalPinSession } from '@/lib/pin-auth'
 
 export const dynamic = 'force-dynamic'
@@ -50,7 +51,8 @@ export async function GET(request: Request) {
     .eq('identity_id', identity.identityId)
     .maybeSingle()
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
-  return NextResponse.json({ preferences: data || defaults,identityKey:identity.identityType+':'+identity.identityId },{headers:{'Cache-Control':'no-store'}})
+  const recipient = identity.identityType==='pin' ? (await identity.db.from('portal_pin_credentials').select('email').eq('id',identity.identityId).single()).data?.email : (await identity.db.auth.admin.getUserById(identity.identityId)).data.user?.email
+  return NextResponse.json({ emailConfigured:emailConfigured(), notificationEmail:recipient||'', canEditEmail:identity.identityType==='pin', preferences: data || defaults,identityKey:identity.identityType+':'+identity.identityId },{headers:{'Cache-Control':'no-store'}})
 }
 
 export async function POST(request: Request) {
@@ -59,6 +61,12 @@ export async function POST(request: Request) {
   const identity = organizationId ? await identityFor(organizationId) : null
   if (!identity) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  if(body.notificationEmail!==undefined&&identity.identityType==='pin'){
+    const email=String(body.notificationEmail).trim().toLowerCase()
+    if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>254)return NextResponse.json({error:'Enter a valid email address.'},{status:400})
+    const {error}=await identity.db.from('portal_pin_credentials').update({email:email||null}).eq('id',identity.identityId).eq('organization_id',organizationId)
+    if(error)return NextResponse.json({error:'Could not save this email. It may already belong to another member.'},{status:400})
+  }
   const payload: any = {
     organization_id: organizationId,
     identity_type: identity.identityType,

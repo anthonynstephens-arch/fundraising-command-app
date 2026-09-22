@@ -34,6 +34,7 @@ export default async function PayoutsPage() {
     `).order("requested_at", { ascending: false })
   ])
 
+  const {data:profileReviews}=await db.from("organization_payout_profiles").select("organization_id,version,updated_at,organization:organizations(name)").eq("review_status","pending").order("updated_at")
   const pending = (payouts || []).filter((p: any) => ["pending","approved","processing"].includes(p.status))
   const paid = (payouts || []).filter((p: any) => p.status === "paid")
   const openRequests = (requests || []).filter((r:any)=>["requested","approved","processing"].includes(r.status))
@@ -50,6 +51,7 @@ export default async function PayoutsPage() {
         </div>
       </section>
 
+      <section className="fc-card" style={{padding:24,marginBottom:24}}><h2>Payment information awaiting review ({profileReviews?.length||0})</h2><p>Review submitted payment and tax information before processing a payout.</p>{profileReviews?.map((p:any)=><p key={p.organization_id}><Link href={"/dashboard/organizations/"+p.organization_id+"#payout-profile"}>{(Array.isArray(p.organization)?p.organization[0]:p.organization)?.name} · version {p.version} — Review details →</Link></p>)}{!profileReviews?.length&&<p>No payment information awaiting review.</p>}</section>
       <section className="fc-metrics">
         <div className="fc-metric"><span>Open Requests</span><strong>{openRequests.length}</strong></div>
         <div className="fc-metric"><span>Pending Payouts</span><strong>{money(pendingAmount)}</strong></div>

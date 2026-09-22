@@ -11,6 +11,7 @@ const nav = [
   { href: "/dashboard/orders", label: "Orders" },
   { href: "/dashboard/payouts", label: "Payout Engine" },
   { href: "/dashboard/applications", label: "Applications" },
+  { href: "/dashboard/email-studio", label: "Email Studio" },
   { href: "/dashboard/shopify", label: "Shopify" },
   { href: "/dashboard/launch-check", label: "Launch Check" },
 ]
