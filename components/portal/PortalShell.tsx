@@ -17,6 +17,7 @@ const nav=[
 
 export default function PortalShell({children,org,campaign,campaigns,userEmail,organizationId,platform,lastSynced,pinAccess=false}:{children:React.ReactNode;org:any;campaign:any;campaigns:any[];userEmail:string;organizationId:string;platform:boolean;lastSynced?:string|null;pinAccess?:boolean}){
   const dmd=isDmdOrganization(org)
+  const plymouth=org?.slug === "plymouth-township-fire-department"
   const macac=org?.slug === "macac"
   const path=usePathname()
   const router=useRouter()
@@ -43,17 +44,17 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
   async function signOut(){
     await fetch("/api/pin-session",{method:"DELETE"})
     if(!pinAccess) await createClient().auth.signOut()
-    router.push(macac ? "/stores/macac/login" : dmd ? DMD_LOGIN : stationMode ? "/station/login" : "/login")
+    router.push(plymouth ? "/stores/plymouth/login" : macac ? "/stores/macac/login" : dmd ? DMD_LOGIN : stationMode ? "/station/login" : "/login")
     router.refresh()
   }
 
-  return <div className={"agency-shell"+(macac?" macac-theme":dmd?" dmd-theme":"")}>
+  return <div className={"agency-shell"+(plymouth?" plymouth-theme":macac?" macac-theme":dmd?" dmd-theme":"")}>
     <aside className="agency-sidebar">
       <div className="agency-sidebar-head">
         <button className="agency-menu-toggle" type="button" aria-expanded={menuOpen} aria-controls="agency-navigation" onClick={()=>setMenuOpen(open=>!open)}><span aria-hidden="true">{menuOpen?"×":"☰"}</span> Menu</button>
         <div className="agency-wordmark">
-          <strong>{macac ? <span className="macac-portal-wordmark"><img src="/brand/macac/logo-white.png" alt="MACAC — Michigan Association for College Admission Counseling" className="macac-official-logo" /><small>MEMBER PORTAL</small></span> : dmd ? <img className="dmd-portal-logo" src={DMD_LOGO} alt="Detroit Metropolitan Dance"/> : stationMode ? <img src="/brand/firestation-command.webp" alt="Firestation Command" style={{width:"100%",maxWidth:200,height:"auto",display:"block",marginBottom:10}} /> : <><span className="agency-desktop-wordmark"><span className="agency-brand-mark">F</span> Fundraiser Command</span><Image className="agency-mobile-wordmark" src="/brand/fundraiser-command-header.webp" alt="Fundraiser Command" width={678} height={203} priority /></>}</strong>
-          {!dmd && !macac && <span className="agency-wordmark-byline">DETROIT DECAL & APPAREL</span>}
+          <strong>{plymouth ? <span className="plymouth-wordmark">{org.logo_url&&<img src={org.logo_url} alt=""/>}<span>PLYMOUTH TOWNSHIP<small>FIRE DEPARTMENT</small></span></span> : macac ? <span className="macac-portal-wordmark"><img src="/brand/macac/logo-white.png" alt="MACAC — Michigan Association for College Admission Counseling" className="macac-official-logo" /><small>MEMBER PORTAL</small></span> : dmd ? <img className="dmd-portal-logo" src={DMD_LOGO} alt="Detroit Metropolitan Dance"/> : stationMode ? <img src="/brand/firestation-command.webp" alt="Firestation Command" style={{width:"100%",maxWidth:200,height:"auto",display:"block",marginBottom:10}} /> : <><span className="agency-desktop-wordmark"><span className="agency-brand-mark">F</span> Fundraiser Command</span><Image className="agency-mobile-wordmark" src="/brand/fundraiser-command-header.webp" alt="Fundraiser Command" width={678} height={203} priority /></>}</strong>
+          {!dmd && !macac && !plymouth && <span className="agency-wordmark-byline">DETROIT DECAL & APPAREL</span>}
         </div>
         <div className="agency-mobile-account"><div className="agency-avatar" title={userEmail}>{(userEmail||"U").slice(0,2).toUpperCase()}</div><button type="button" onClick={signOut}>Sign out</button></div>
       </div>
@@ -62,7 +63,7 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
           const active=href.startsWith("/station") ? path===href : href==="/portal"?path==="/portal":path.startsWith(href)
           return <Link key={href} href={destination(href)} className={active?"active":""} onClick={()=>setMenuOpen(false)}><i>{icon}</i><span>{label}</span></Link>
         })}
-        {macac&&<Link href={"/portal/members?org="+encodeURIComponent(organizationId)} onClick={()=>setMenuOpen(false)}><i aria-hidden="true">♙</i><span>Member Access</span></Link>}
+        {(macac||plymouth)&&<Link href={"/portal/members?org="+encodeURIComponent(organizationId)} onClick={()=>setMenuOpen(false)}><i aria-hidden="true">♙</i><span>{plymouth ? "Users & Access" : "Member Access"}</span></Link>}
         <Link className="agency-storefront-link" href={storefrontHref} target="_blank" rel="noopener noreferrer" onClick={()=>setMenuOpen(false)}><i aria-hidden="true">↗</i><span>View Storefront</span></Link>
       </nav>
       <div className={"agency-side-bottom "+(menuOpen?"mobile-open":"")}>

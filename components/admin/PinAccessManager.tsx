@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation"
 
 type Credential = {
   id: string
+  email?: string | null
+  access_status?: string
   display_name: string
   role: string
   active: boolean
@@ -16,9 +18,11 @@ type Credential = {
 export default function PinAccessManager({
   organizationId,
   credentials,
+  canApprove = true,
 }: {
   organizationId: string
   credentials: Credential[]
+  canApprove?: boolean
 }) {
   const router = useRouter()
   const [displayName, setDisplayName] = useState("")
@@ -64,6 +68,18 @@ export default function PinAccessManager({
       return
     }
     router.refresh()
+  }
+
+  async function approve(id: string) {
+    setBusy(id); setMessage("")
+    try {
+      const response = await fetch("/api/access-requests", {method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({id})})
+      const data = await response.json()
+      if(!response.ok) throw new Error(data.error || "Unable to approve request.")
+      setMessage("Access approved. Their PIN is active and the approval email is queued.")
+      router.refresh()
+    } catch(error) { setMessage(error instanceof Error ? error.message : "Unable to approve request.") }
+    finally { setBusy("") }
   }
 
   async function remove(id: string) {
@@ -112,13 +128,13 @@ export default function PinAccessManager({
         <thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Last Login</th><th>Logins</th><th></th></tr></thead>
         <tbody>{credentials.map(credential =>
           <tr key={credential.id}>
-            <td><strong>{credential.display_name}</strong><small className="fc-member-id">Created {new Date(credential.created_at).toLocaleDateString()}</small></td>
+            <td><strong>{credential.display_name}</strong>{credential.email&&<small className="fc-member-id">{credential.email}</small>}<small className="fc-member-id">Created {new Date(credential.created_at).toLocaleDateString()}</small></td>
             <td><span className="fc-pill">{credential.role}</span></td>
-            <td><span className={"fc-member-status " + (credential.active ? "active" : "pending")}>{credential.active ? "Active" : "Disabled"}</span></td>
+            <td><span className={"fc-member-status " + (credential.active ? "active" : "pending")}>{credential.access_status === "pending" ? "Pending approval" : credential.active ? "Active" : "Disabled"}</span></td>
             <td>{credential.lastLogin ? new Date(credential.lastLogin).toLocaleString() : "Never"}</td>
             <td>{credential.loginCount}</td>
             <td className="fc-table-action">
-              <button className="fc-link-secondary" disabled={busy === credential.id} onClick={() => setActive(credential.id, !credential.active)}>{credential.active ? "Disable" : "Enable"}</button>
+              {credential.access_status === "pending" ? canApprove && <button className="fc-btn fc-btn-primary" disabled={busy === credential.id} onClick={() => approve(credential.id)}>{busy === credential.id ? "Approving…" : "Approve"}</button> : <button className="fc-link-secondary" disabled={busy === credential.id} onClick={() => setActive(credential.id, !credential.active)}>{credential.active ? "Disable" : "Enable"}</button>}
               <button className="fc-link-danger" disabled={busy === credential.id} onClick={() => remove(credential.id)}>Delete</button>
             </td>
           </tr>
