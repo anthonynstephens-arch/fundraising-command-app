@@ -34,7 +34,13 @@ export async function getDmdPrivateProducts():Promise<PrivateProduct[]>{
   return products
 }
 
-export type DmdOrder={id:string;name:string;createdAt:string;fulfillmentStatus:string;financialStatus:string;total:string;currency:string;inHandsBy:string|null;tracking:{number:string|null;url:string|null;company:string|null}[]}
+export type DmdOrder={
+  id:string;name:string;createdAt:string;fulfillmentStatus:string;financialStatus:string;total:string;currency:string;inHandsBy:string|null;
+  tracking:{number:string|null;url:string|null;company:string|null}[];
+  outstanding?:string;statusUrl?:string|null;paymentUrl?:string|null;paymentTerms?:string|null;
+  items?:{title:string;variant:string|null;quantity:number;unitPrice:string}[];
+  subtotal?:string;shipping?:string;tax?:string;discount?:string
+}
 
 export function formatPrivateOrder(payload:any):DmdOrder{
   const attrs=payload.note_attributes||[]
@@ -43,6 +49,10 @@ export function formatPrivateOrder(payload:any):DmdOrder{
     financialStatus:String(payload.financial_status||'PENDING').toUpperCase(),
     total:String(payload.total_price||'0'),currency:payload.currency||'USD',
     inHandsBy:attrs.find((a:any)=>a.name==='In hands by')?.value||null,
+    outstanding:String(payload.total_outstanding||'0'),statusUrl:payload.order_status_url||null,
+    paymentTerms:payload.payment_terms?.payment_terms_name||null,
+    subtotal:String(payload.subtotal_price||'0'),shipping:String(payload.total_shipping_price_set?.shop_money?.amount||'0'),tax:String(payload.total_tax||'0'),discount:String(payload.total_discounts||'0'),
+    items:(payload.line_items||[]).map((line:any)=>({title:String(line.title||line.name||'Item'),variant:line.variant_title||null,quantity:Number(line.quantity||0),unitPrice:String(line.price||'0')})),
     tracking:(payload.fulfillments||[]).flatMap((f:any)=>f.tracking_info?[f.tracking_info]:f.tracking_number||f.tracking_url?[{number:f.tracking_number,url:f.tracking_url,company:f.tracking_company}]:[]).map((t:any)=>({number:t.number||null,url:t.url||null,company:t.company||null}))}
 }
 
