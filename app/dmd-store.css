@@ -1485,3 +1485,7 @@
 @keyframes dmd-cinematic-drift { from { transform: scale(1.04) translateX(-.5%); } to { transform: scale(1.13) translateX(.5%); } }
 @keyframes dmd-photo-travel { from { transform: scale(1.12) translateY(-4%); } to { transform: scale(1.12) translateY(4%); } }
 @media (prefers-reduced-motion: reduce) { .dmd-reveal { opacity: 1; transform: none; } }
+
+/* Keep purchase details clear without changing DMD's editorial identity. */
+.dmd-cinema .dmd-colophon{flex-wrap:wrap;gap:18px;align-items:center}
+.dmd-cinema .dmd-colophon>a[href="/apply"]{font-size:14px;text-decoration:underline;text-underline-offset:5px;min-height:44px;display:inline-flex;align-items:center}

@@ -7,3 +7,62 @@
 @media(max-width:740px){.store-header-inner{height:66px;padding:0 16px}.store-identity>img,.store-identity>span{width:38px;height:38px;flex-basis:38px}.store-identity strong{font-size:14px}.store-identity small{font-size:11px}.store-cart-button{min-width:48px}.store-cart-button>span{font-size:0}.store-cart-button>span:after{content:"Cart";font-size:13px}.store-intro{width:calc(100% - 32px);margin-top:16px;padding:20px;gap:22px}.store-intro>div{align-items:flex-start}.store-intro img{width:55px;height:55px}.store-intro h1{font-size:28px}.store-intro p{font-size:14px}.store-intro-meta{align-items:flex-start;flex-direction:column;gap:5px}.store-products{padding:28px 16px 54px}.store-products-head{align-items:flex-start}.store-products-head label{align-items:flex-start;flex-direction:column}.store-product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 10px}.store-product-photo{border-radius:12px}.store-product-summary{padding-top:10px}.store-product-summary h2{min-height:0;font-size:14px}.store-product-summary p{font-size:14px}.store-product-summary small{font-size:11px}.store-product-page{padding:18px 16px 54px}.store-back{margin-bottom:16px}.store-product-layout{grid-template-columns:1fr;gap:20px}.store-main-image{border-radius:14px}.store-product-info{padding-top:0}.store-product-info h1{font-size:32px}.store-description{font-size:15px}.store-option button{min-height:48px}.store-add-area{bottom:0;padding:10px 0 12px}.store-footer{align-items:flex-start;flex-direction:column}.store-cart-line{grid-template-columns:74px minmax(0,1fr) auto}.store-cart-line>img,.store-cart-placeholder{width:74px;height:88px}.store-zoom{padding:16px}}
 @media(max-width:380px){.store-intro>div>img{display:none}.store-products-head{align-items:stretch;flex-direction:column}.store-products-head label{align-items:center;flex-direction:row}.store-product-grid{column-gap:8px}}
 .store-header-message{padding:9px 20px;background:#5147ca;color:#fff;text-align:center;font-size:13px;font-weight:800;line-height:1.35}
+
+/* Fundraiser collection: crisp navy framing, generous product photography and readable controls. */
+.fundraiser-theme{--store-ink:#132338;--store-accent:#214e78;background:#f7f8fa;color:var(--store-ink)}
+.fundraiser-theme *{box-sizing:border-box}
+.fundraiser-theme :is(a,button,select):focus-visible{outline:3px solid #3275ad;outline-offset:4px}
+.fundraiser-theme .store-header-inner{height:84px;gap:24px}
+.fundraiser-theme .store-identity strong{font-size:16px;color:var(--store-ink)}
+.fundraiser-theme .store-identity small{font-size:13px;color:#5d6878}
+.fundraiser-theme .store-identity>img{background:#fff;border:1px solid #e1e6ec;border-radius:12px;width:50px;height:50px;flex-basis:50px;padding:4px}
+.fundraiser-theme .store-identity>span{background:var(--store-ink)}
+.fundraiser-theme .store-header-actions{flex-shrink:0}
+.fundraiser-theme .store-cart-button{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--store-ink);border-color:var(--store-ink);color:#fff}
+.fundraiser-theme .store-cart-button b{position:static;min-width:25px;height:25px;border:0;background:#fff;color:var(--store-ink);font-size:12px}
+.fundraiser-theme .store-intro{margin-top:32px;padding:36px;border-radius:22px;border:1px solid #dae2eb;background:linear-gradient(120deg,#fff 40%,#edf2f7);box-shadow:0 12px 32px #13233806;gap:32px}
+.fundraiser-theme .store-intro>div{min-width:0;gap:24px}
+.fundraiser-theme .store-intro img{width:96px;height:96px;flex-shrink:0;background:#fff;padding:8px;border:1px solid #e1e6ec;border-radius:18px}
+.fundraiser-theme :is(.store-intro small,.store-products-head small,.store-product-info>small,.store-cart-head small){font-size:12px;color:var(--store-accent);letter-spacing:.12em;line-height:1.6}
+.fundraiser-theme .store-intro h1{font-size:clamp(30px,3.5vw,46px);line-height:1.12;max-width:780px;color:var(--store-ink);text-wrap:balance}
+.fundraiser-theme .store-intro p{font-size:16px;color:#566375;line-height:1.65}
+.fundraiser-theme .store-intro-meta{flex-wrap:wrap;font-size:14px;line-height:1.5;color:#455569}
+.fundraiser-theme .store-intro aside{flex:0 0 280px;padding:22px;border:1px solid #dce3ec;border-radius:16px;background:#fff}
+.fundraiser-theme .store-intro aside>div:first-child{flex-wrap:wrap;font-size:14px}
+.fundraiser-theme .store-intro aside small{font-size:13px;letter-spacing:0;color:#566375}
+.fundraiser-theme .store-goal{height:10px;background:#e6edf4}
+.fundraiser-theme .store-goal i{max-width:100%;background:linear-gradient(90deg,#214e78,#4f89b5)}
+.fundraiser-theme .store-products{padding-top:40px;padding-bottom:80px}
+.fundraiser-theme .store-products-head{align-items:center;padding-bottom:22px;border-bottom:1px solid #dce3eb;margin-bottom:28px}
+.fundraiser-theme .store-products-head h2{font-size:28px;color:var(--store-ink);letter-spacing:-.03em}
+.fundraiser-theme .store-products-head label{font-size:14px;color:#455569}
+.fundraiser-theme .store-products-head select{min-height:46px}
+.fundraiser-theme .store-product-grid{gap:24px}
+.fundraiser-theme .store-product-card{background:#fff;border:1px solid #e0e5ec;border-radius:18px;overflow:hidden;box-shadow:0 4px 16px #13233804;transition:box-shadow .2s,border-color .2s,transform .2s}
+.fundraiser-theme .store-product-card:hover{border-color:#acbdce;box-shadow:0 16px 32px #13233812;transform:translateY(-3px)}
+.fundraiser-theme .store-product-photo{aspect-ratio:1;border:0;border-bottom:1px solid #edf0f4;border-radius:0;background:#f1f3f6}
+.fundraiser-theme .store-product-photo img{object-fit:contain}
+.fundraiser-theme .store-product-summary{padding:18px}
+.fundraiser-theme .store-product-summary h2{font-size:17px;line-height:1.4;min-height:0;margin-bottom:12px;color:var(--store-ink)}
+.fundraiser-theme .store-product-summary p{font-size:20px;letter-spacing:-.025em;color:var(--store-ink)}
+.fundraiser-theme .store-product-summary small{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:#526276;margin-top:12px}
+.fundraiser-theme .store-sold-out{font-size:12px;background:var(--store-ink)}
+.fundraiser-theme .store-product-page{padding-top:32px}
+.fundraiser-theme .store-product-info h1{color:var(--store-ink);line-height:1.1}
+.fundraiser-theme .store-main-image{background:#fff;border-color:#e0e5ec}
+.fundraiser-theme :is(.store-checkout,.store-add){background:var(--store-ink);box-shadow:0 8px 20px #13233818;transition:background .2s}
+.fundraiser-theme :is(.store-checkout,.store-add):hover:not(:disabled){background:var(--store-accent)}
+.fundraiser-theme .store-add-area{background:#f7f8fa}
+.fundraiser-theme .store-add:disabled{background:#7a8390;box-shadow:none;cursor:not-allowed}
+.fundraiser-theme .store-header-message{background:var(--store-ink);font-size:14px}
+.store-footer>div{display:grid;gap:7px}.store-footer>div>span{font-size:13px}
+.store-fundraiser-link{display:inline-flex;align-items:center;justify-content:space-between;gap:22px;min-height:48px;padding:12px 18px;border:1px solid #cbd5e1;border-radius:12px;color:#132338;text-decoration:none;font-size:14px;font-weight:700;background:#fff}
+.store-fundraiser-link:hover{border-color:#214e78;background:#edf2f7}
+.fundraiser-theme .store-footer{padding-top:32px;padding-bottom:32px;background:#edf1f5;color:#526276}
+.fundraiser-theme .store-footer b{color:var(--store-ink);font-size:16px}
+@media(max-width:980px){.fundraiser-theme .store-intro aside{flex-basis:auto}.fundraiser-theme .store-product-grid{gap:18px}}
+@media(max-width:740px){
+.fundraiser-theme .store-header-inner{height:76px;gap:12px}.fundraiser-theme .store-identity{gap:9px}.fundraiser-theme .store-identity strong{font-size:14px}.fundraiser-theme .store-identity small{font-size:12px}.fundraiser-theme .store-identity>img{width:40px;height:40px;flex-basis:40px}.fundraiser-theme .store-cart-button{padding:9px 11px;gap:8px}.fundraiser-theme .store-cart-button>span{font-size:14px}.fundraiser-theme .store-cart-button>span:after{content:none}
+.fundraiser-theme .store-intro{padding:24px;margin-top:18px;gap:20px}.fundraiser-theme .store-intro>div{flex-direction:column;gap:18px}.fundraiser-theme .store-intro img{width:72px;height:72px}.fundraiser-theme .store-intro h1{font-size:30px}.fundraiser-theme .store-intro aside{padding:18px}.fundraiser-theme .store-products{padding-top:28px;padding-bottom:48px}.fundraiser-theme .store-products-head{gap:12px;padding-bottom:18px}.fundraiser-theme .store-products-head h2{font-size:24px}.fundraiser-theme .store-products-head select{max-width:175px}.fundraiser-theme .store-product-grid{gap:16px 12px}.fundraiser-theme .store-product-card{border-radius:14px}.fundraiser-theme .store-product-summary{padding:14px 12px}.fundraiser-theme .store-product-summary h2{font-size:16px;margin-bottom:10px}.fundraiser-theme .store-product-summary p{font-size:19px}.fundraiser-theme .store-product-summary small{font-size:12px;line-height:1.4}.fundraiser-theme .store-footer{gap:22px}.store-fundraiser-link{width:100%}
+}
+@media(prefers-reduced-motion:reduce){.fundraiser-theme *{transition:none!important;scroll-behavior:auto!important}}

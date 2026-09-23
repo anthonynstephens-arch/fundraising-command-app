@@ -41,7 +41,11 @@ function StoreHeader({campaign,count,onCart}:{campaign:Campaign;count:number;onC
   return <header className="store-header"><div className="store-header-inner"><Link href={`/fundraisers/${campaign.slug}`} className="store-identity">
     {(dmd||campaign.organization.logoUrl)?<img src={dmd?DMD_LOGO:campaign.organization.logoUrl!} alt={`${campaign.organization.name} logo`}/>:<span>{campaign.organization.name.slice(0,2).toUpperCase()}</span>}
     <div><strong>{campaign.name}</strong><small>{supporting}</small></div>
-  </Link><div className="store-header-actions">{dmd&&<Link className="dmd-member-link" href={DMD_LOGIN}>Member login</Link>}<button className="store-cart-button" onClick={onCart} aria-label={`Open cart with ${count} items`}><span aria-hidden="true">Bag</span><b>{count}</b></button></div></div>{campaign.storefront_header_message&&<div className="store-header-message">{campaign.storefront_header_message}</div>}</header>
+  </Link><div className="store-header-actions">{dmd&&<Link className="dmd-member-link" href={DMD_LOGIN}>Member login</Link>}<button className="store-cart-button" onClick={onCart} aria-label={`Open cart with ${count} items`}><span aria-hidden="true">Cart</span><b>{count}</b></button></div></div>{campaign.storefront_header_message&&<div className="store-header-message">{campaign.storefront_header_message}</div>}</header>
+}
+
+function StoreFooter({campaign}:{campaign:Campaign}){
+  return <footer className="store-footer"><div><b>{isDmdOrganization(campaign.organization)?"Detroit Metropolitan Dance":"Fundraiser Command"}</b><span>Fulfilled by Detroit Decal &amp; Apparel</span></div><Link className="store-fundraiser-link" href="/apply">Start your own Fundraiser <span aria-hidden="true">↗</span></Link></footer>
 }
 
 export function CartDrawer({campaign,cart,open,onClose}:{campaign:Campaign;cart:ReturnType<typeof useCampaignCart>;open:boolean;onClose:()=>void}){
@@ -81,7 +85,7 @@ function ProductImage({image,title}:{image:StoreImage|undefined;title:string}){
 function ProductCard({campaign,product}:{campaign:Campaign;product:StoreProduct}){
   return <Link className="store-product-card" href={`/fundraisers/${campaign.slug}/products/${product.handle}`} onClick={()=>emitStoreEvent("product_view",{campaignId:campaign.id,productId:product.id})}>
     <div className="store-product-photo"><ProductImage image={product.images[0]} title={product.title}/>{!product.available&&<span className="store-sold-out">Sold out</span>}</div>
-    <div className="store-product-summary"><h2>{product.title}</h2><p>{product.minPrice===product.maxPrice?money(product.minPrice):`From ${money(product.minPrice)}`}</p>{product.options.length>0&&<small>Multiple options</small>}</div>
+    <div className="store-product-summary"><h2>{product.title}</h2><p>{product.minPrice===product.maxPrice?money(product.minPrice):`From ${money(product.minPrice)}`}</p>{product.options.length>0&&<small>Choose your options <span aria-hidden="true">→</span></small>}</div>
   </Link>
 }
 
@@ -111,13 +115,13 @@ export function CampaignStorefront({campaign}:{campaign:Campaign}){
     if(sort==="price-high")copy.sort((a,b)=>b.minPrice-a.minPrice)
     return copy
   },[campaign.products,sort])
-  return <main className={"store-page"+(isDmdOrganization(campaign.organization)?" dmd-theme":"")}><StoreHeader campaign={campaign} count={cart.count} onCart={()=>setCartOpen(true)}/><CampaignIntro campaign={campaign}/>
+  return <main className={"store-page"+(isDmdOrganization(campaign.organization)?" dmd-theme":" fundraiser-theme")}><StoreHeader campaign={campaign} count={cart.count} onCart={()=>setCartOpen(true)}/><CampaignIntro campaign={campaign}/>
     <section className="store-products"><div className="store-products-head"><div><small>SHOP THE COLLECTION</small><h2>{products.length} product{products.length===1?"":"s"}</h2></div>{products.length>5&&<label>Sort <select value={sort} onChange={event=>setSort(event.target.value)}><option value="featured">Featured</option><option value="price-low">Price: Low to High</option><option value="price-high">Price: High to Low</option></select></label>}</div>
       {!campaignIsOpen(campaign)&&<div className="store-notice">This fundraiser is not currently accepting orders. You can still browse its merchandise.</div>}
       {campaignIsOpen(campaign)&&!campaign.shopifyConnected&&<div className="store-notice">Current prices are shown. Availability will be confirmed when you check out.</div>}
       <div className="store-product-grid">{products.map(product=><ProductCard key={product.id} campaign={campaign} product={product}/>)}</div>
       {!products.length&&<div className="store-empty"><h2>Products are coming soon</h2><p>This fundraiser&apos;s merchandise is still being prepared. Please check back shortly.</p></div>}
-    </section><footer className="store-footer"><b>{isDmdOrganization(campaign.organization)?"Detroit Metropolitan Dance":"Fundraiser Command"}</b><span>{isDmdOrganization(campaign.organization)?"Fulfilled by Detroit Decal & Apparel · ":""}Secure checkout powered by Shopify</span></footer><CartDrawer campaign={campaign} cart={cart} open={cartOpen} onClose={()=>setCartOpen(false)}/></main>
+    </section><StoreFooter campaign={campaign}/><CartDrawer campaign={campaign} cart={cart} open={cartOpen} onClose={()=>setCartOpen(false)}/></main>
 }
 
 export function findVariant(product:StoreProduct,selected:Record<string,string>){
@@ -148,13 +152,13 @@ export function StorefrontProductPage({campaign,product}:{campaign:Campaign;prod
     emitStoreEvent("add_to_cart",{campaignId:campaign.id,productId:product.id,variantId:variant.id,quantity,value:variant.price*quantity})
     setMessage(`${product.title} was added to your cart.`)
   }
-  return <main className={"store-page"+(isDmdOrganization(campaign.organization)?" dmd-theme":"")}><StoreHeader campaign={campaign} count={cart.count} onCart={()=>setCartOpen(true)}/><div className="store-product-page"><Link className="store-back" href={`/fundraisers/${campaign.slug}`}>← Back to all products</Link><div className="store-product-layout">
+  return <main className={"store-page"+(isDmdOrganization(campaign.organization)?" dmd-theme":" fundraiser-theme")}><StoreHeader campaign={campaign} count={cart.count} onCart={()=>setCartOpen(true)}/><div className="store-product-page"><Link className="store-back" href={`/fundraisers/${campaign.slug}`}>← Back to all products</Link><div className="store-product-layout">
     <section className="store-gallery"><button className="store-main-image" onClick={()=>activeImage&&setZoomed(true)} aria-label="View larger product image"><ProductImage image={activeImage} title={product.title}/></button>{product.images.length>1&&<div className="store-thumbnails" aria-label="Product images">{product.images.map((image,index)=><button key={image.url} className={index===imageIndex?"active":""} onClick={()=>setImageIndex(index)} aria-label={`View image ${index+1}`}><ProductImage image={image} title={product.title}/></button>)}</div>}</section>
     <section className="store-product-info"><small>SUPPORTING {campaign.organization.name.toUpperCase()}</small><h1>{product.title}</h1><div className="store-detail-price">{money(variant?.price??product.minPrice)}{!variant&&product.minPrice!==product.maxPrice&&<span> – {money(product.maxPrice)}</span>}</div>{product.description&&<p className="store-description">{product.description}</p>}
       {product.options.map(option=><fieldset className={message&& !selected[option.name]?"store-option missing":"store-option"} key={option.name}><legend>{option.name}{selected[option.name]&&<b>{selected[option.name]}</b>}</legend><div>{option.values.map(value=><button type="button" key={value} className={selected[option.name]===value?"selected":""} disabled={!valueAvailable(option.name,value)} aria-pressed={selected[option.name]===value} onClick={()=>{setSelected(current=>({...current,[option.name]:value}));setImageIndex(-1);setMessage("")}}>{value}</button>)}</div></fieldset>)}
       <label className="store-detail-quantity">Quantity <select value={quantity} onChange={event=>setQuantity(Number(event.target.value))}>{[1,2,3,4,5,6,7,8,9,10].map(value=><option key={value}>{value}</option>)}</select></label>
       <div className="store-add-area"><button className="store-add" disabled={!product.available||!campaignIsOpen(campaign)} onClick={add}>{!campaignIsOpen(campaign)?"Fundraiser unavailable":product.available?`Add to cart · ${money((variant?.price??product.minPrice)*quantity)}`:"Sold out"}</button></div><div className="store-product-message" ref={messageRef} tabIndex={-1} aria-live="polite">{message}{message.includes("added")&&<span><button onClick={()=>setCartOpen(true)}>View cart</button><Link href={`/fundraisers/${campaign.slug}`}>Continue shopping</Link></span>}</div><div className="store-secure">Secure payment, taxes, and shipping completed through Shopify.</div>
-    </section></div></div><footer className="store-footer"><b>{isDmdOrganization(campaign.organization)?"Detroit Metropolitan Dance":"Fundraiser Command"}</b><span>{isDmdOrganization(campaign.organization)?"Fulfilled by Detroit Decal & Apparel · ":""}Secure checkout powered by Shopify</span></footer><CartDrawer campaign={campaign} cart={cart} open={cartOpen} onClose={()=>setCartOpen(false)}/>
+    </section></div></div><StoreFooter campaign={campaign}/><CartDrawer campaign={campaign} cart={cart} open={cartOpen} onClose={()=>setCartOpen(false)}/>
     {zoomed&&activeImage&&<div ref={zoomRef} className="store-zoom" role="dialog" aria-modal="true" aria-label="Large product image" onClick={()=>setZoomed(false)}><button aria-label="Close image">×</button><img src={activeImage.url} alt={activeImage.altText||product.title}/></div>}
   </main>
 }

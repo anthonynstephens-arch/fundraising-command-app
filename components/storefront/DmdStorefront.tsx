@@ -328,7 +328,7 @@ function Purchase({
               ? "Store currently closed"
               : !product.available
                 ? "Sold out"
-                : "Add to bag"}
+                : "Add to cart"}
             <span>
               {money((variant?.price ?? product.minPrice) * quantity)} ＋
             </span>
@@ -419,7 +419,8 @@ function Footer({
       </div>
       <div className="dmd-colophon">
         <span>Official DMD merchandise</span>
-        <span>Fulfilled by Detroit Decal & Apparel · Checkout by Shopify</span>
+        <span>Fulfilled by Detroit Decal & Apparel</span>
+        <Link href="/apply">Start your own Fundraiser ↗</Link>
       </div>
     </footer>
   );
@@ -435,7 +436,7 @@ const information: Record<string, { title: string; copy: string }> = {
   },
   Privacy: {
     title: "Your shopping information",
-    copy: "This storefront saves your merchandise selection in this browser so your bag is available when you return. Checkout is handled by Shopify. The merchant’s privacy policy and checkout disclosures are available during checkout. Contact support@fundraisercommand.com for privacy questions.",
+    copy: "This storefront saves your merchandise selection in this browser so your cart is available when you return. Checkout is handled by Shopify. The merchant’s privacy policy and checkout disclosures are available during checkout. Contact support@fundraisercommand.com for privacy questions.",
   },
   Terms: {
     title: "Before you order",
@@ -616,9 +617,9 @@ export function DmdStorefront({
           </button>
           <button
             onClick={() => setCartOpen(true)}
-            aria-label={`Open bag with ${cart.count} items`}
+            aria-label={`Open cart with ${cart.count} items`}
           >
-            Bag{" "}
+            Cart{" "}
             <span className="dmd-bag-count">
               {cart.count.toString().padStart(2, "0")}
             </span>
