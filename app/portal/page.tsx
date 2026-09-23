@@ -13,10 +13,10 @@ export const dynamic="force-dynamic"
 export default async function PortalOverview({searchParams}:{searchParams:Promise<{org?:string;campaign?:string}>}){
   const {org,campaign}=await searchParams
   const d=await getPortalData(org,campaign)
-  let dmdOrders:Awaited<ReturnType<typeof getDmdPortalOrders>>['orders']=[]
+  let dmdOrders:Awaited<ReturnType<typeof getDmdPortalOrders>>=[]
   let dmdOrderError=false
   if(isDmdOrganization(d.org)){
-    try{const result=await getDmdPortalOrders();dmdOrders=result.orders;dmdOrderError=result.companyError}catch(error){console.error('DMD company orders unavailable',error);dmdOrderError=true}
+    try{dmdOrders=await getDmdPortalOrders()}catch(error){console.error('DMD company orders unavailable',error);dmdOrderError=true}
   }
   const s=portalStats(d)
   const series=dailySeries(d)
