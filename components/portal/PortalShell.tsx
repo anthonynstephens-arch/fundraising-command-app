@@ -63,6 +63,7 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
           const active=href.startsWith("/station") ? path===href : href==="/portal"?path==="/portal":path.startsWith(href)
           return <Link key={href} href={destination(href)} className={active?"active":""} onClick={()=>setMenuOpen(false)}><i>{icon}</i><span>{label}</span></Link>
         })}
+        {dmd&&<Link href="/stores/dmd/private" className={path==='/stores/dmd/private'?'active':''} onClick={()=>setMenuOpen(false)}><i aria-hidden="true">✦</i><span>Private Store</span></Link>}
         {<Link href={"/portal/members?org="+encodeURIComponent(organizationId)} onClick={()=>setMenuOpen(false)}><i aria-hidden="true">♙</i><span>Users & Access</span></Link>}
         <Link className="agency-storefront-link" href={storefrontHref} target="_blank" rel="noopener noreferrer" onClick={()=>setMenuOpen(false)}><i aria-hidden="true">↗</i><span>View Storefront</span></Link>
       </nav>

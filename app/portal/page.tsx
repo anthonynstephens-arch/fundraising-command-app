@@ -4,12 +4,20 @@ import PortalMetricChart from "@/components/portal/PortalMetricChart"
 import CampaignGoalEditor from "@/components/portal/CampaignGoalEditor"
 import { getPortalData, money, portalStats, dailySeries } from "@/lib/portal/data"
 import { customerName, orderLabel } from "@/lib/orders/display"
+import DmdOrdersOverview from '@/components/portal/DmdOrdersOverview'
+import {getDmdPortalOrders} from '@/lib/shopify/dmd-private'
+import {isDmdOrganization} from '@/lib/branding/dmd'
 
 export const dynamic="force-dynamic"
 
 export default async function PortalOverview({searchParams}:{searchParams:Promise<{org?:string;campaign?:string}>}){
   const {org,campaign}=await searchParams
   const d=await getPortalData(org,campaign)
+  let dmdOrders:Awaited<ReturnType<typeof getDmdPortalOrders>>['orders']=[]
+  let dmdOrderError=false
+  if(isDmdOrganization(d.org)){
+    try{const result=await getDmdPortalOrders();dmdOrders=result.orders;dmdOrderError=result.companyError}catch(error){console.error('DMD company orders unavailable',error);dmdOrderError=true}
+  }
   const s=portalStats(d)
   const series=dailySeries(d)
   const goal=Number(d.campaign?.goal_amount||0)
@@ -45,6 +53,8 @@ export default async function PortalOverview({searchParams}:{searchParams:Promis
         <em>◉ Shopify data · last sync {d.lastWebhook?.created_at?new Date(d.lastWebhook.created_at).toLocaleString("en-US",{timeZone:"America/Detroit",timeZoneName:"short"}):"not yet received"}</em>
       </div>
     </section>
+
+    {isDmdOrganization(d.org)&&<DmdOrdersOverview orders={dmdOrders} error={dmdOrderError}/>}
 
     <section className="agency-kpis">
       <div><span>GROSS SALES</span><strong>{money(s.gross)}</strong><small>campaign order items</small></div>

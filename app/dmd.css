@@ -120,3 +120,4 @@
 @media(max-width:360px){
   .dmd-theme .agency-kpis,.dmd-theme .agency-kpis.four{grid-template-columns:1fr}
 }
+.dmd-orders-overview{margin:22px 0}.dmd-orders-overview .agency-table{min-width:760px}.dmd-order-tracking{margin-top:6px;font-size:12px}.dmd-order-tracking a{color:#a63d82;font-weight:700}

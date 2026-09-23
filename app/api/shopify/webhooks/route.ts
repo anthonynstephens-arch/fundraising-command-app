@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { stripShopifyGid } from '@/lib/shopify/admin'
 import { syncCollection } from '@/lib/shopify/sync-collection'
+import {syncDmdPrivateOrder} from '@/lib/shopify/dmd-private'
 import {
   importShopifyOrder,
   applyShopifyRefund,
@@ -202,6 +203,7 @@ export async function POST(
           payload,
           shopDomain
         )
+      await syncDmdPrivateOrder(payload)
     } else if (
       topic === 'refunds/create'
     ) {
