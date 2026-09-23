@@ -1154,8 +1154,8 @@ input:focus,select:focus,textarea:focus{
   .agency-milestones{grid-template-columns:repeat(2,1fr)}
 }
 @media(max-width:620px){
-  .agency-kpis,.agency-kpis.four{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-  .agency-kpis>div{aspect-ratio:auto;min-height:124px;padding:12px 10px}.agency-kpis span{font-size:10px;line-height:1.25}.agency-kpis strong{font-size:25px}.agency-kpis small{font-size:10px;line-height:1.25}
+  .agency-kpis,.agency-kpis.four{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .agency-kpis>div{aspect-ratio:auto;min-height:124px;padding:12px 10px}.agency-kpis span{font-size:10px;line-height:1.25}.agency-kpis strong{font-size:32px}.agency-kpis small{font-size:10px;line-height:1.25}
   .agency-sidebar nav.mobile-open{grid-template-columns:1fr}
   .agency-filter-row{flex-direction:column;align-items:stretch}
   .agency-report-layout{grid-template-columns:1fr}
