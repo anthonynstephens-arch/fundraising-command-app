@@ -1,3 +1,4 @@
+import { fulfillmentStatus, paymentStatus } from '@/lib/orders/status'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   stripShopifyGid,
@@ -7,22 +8,6 @@ import {
 function money(value: any) {
   const number = Number(value || 0)
   return Number.isFinite(number) ? number : 0
-}
-
-function mapOrderStatus(order: any) {
-  if (order.cancelled_at) return 'cancelled'
-
-  const status = String(
-    order.financial_status || ''
-  ).toLowerCase()
-
-  if (status === 'paid') return 'paid'
-  if (status === 'refunded') return 'refunded'
-  if (status === 'partially_refunded') {
-    return 'partially_refunded'
-  }
-
-  return 'pending'
 }
 
 async function findCampaignProduct(
@@ -323,7 +308,8 @@ export async function importShopifyOrder(
         payload.totalPriceSet
           ?.shopMoney?.amount
     ),
-    status: mapOrderStatus(payload),
+    ...(paymentStatus(payload) ? {status: paymentStatus(payload)} : {}),
+    ...(fulfillmentStatus(payload) ? {fulfillment_status: fulfillmentStatus(payload)} : {}),
     placed_at:
       payload.created_at ||
       payload.createdAt ||

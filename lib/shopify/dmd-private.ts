@@ -1,3 +1,4 @@
+import { fulfillmentStatus } from '@/lib/orders/status'
 import {shopifyGraphQL,stripShopifyGid} from '@/lib/shopify/admin'
 import {createAdminClient} from '@/lib/supabase/admin'
 
@@ -45,7 +46,7 @@ export type DmdOrder={
 export function formatPrivateOrder(payload:any):DmdOrder{
   const attrs=payload.note_attributes||[]
   return {id:String(payload.id),name:payload.name||`#${payload.order_number}`,createdAt:payload.created_at,
-    fulfillmentStatus:payload.cancelled_at?'CANCELLED':String(payload.fulfillment_status||'UNFULFILLED').toUpperCase(),
+    fulfillmentStatus:(fulfillmentStatus(payload)||'unknown').toUpperCase(),
     financialStatus:String(payload.financial_status||'PENDING').toUpperCase(),
     total:String(payload.total_price||'0'),currency:payload.currency||'USD',
     inHandsBy:attrs.find((a:any)=>a.name==='In hands by')?.value||null,

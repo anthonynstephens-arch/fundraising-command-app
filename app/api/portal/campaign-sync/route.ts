@@ -1,3 +1,4 @@
+import { syncOrderStatuses } from '@/lib/shopify/sync-order-status'
 import { revalidatePath } from 'next/cache'
 import { NextResponse } from 'next/server'
 import { authorizeCampaignManagement } from '@/lib/portal/authorize-campaign'
@@ -33,6 +34,7 @@ export async function POST(request: Request) {
     }
 
     const result = await syncCollection(campaignId, links[0].shopify_collection_id, organizationId)
+    await syncOrderStatuses(campaignId)
     revalidatePath('/portal', 'layout')
     revalidatePath('/station', 'layout')
     revalidatePath('/dashboard', 'layout')

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm run test:reporting && npm run test:campaign-controls && npm run test:storefront && npm run test:ui-audit && npm run test:notifications && npm run test:dmd && npm run test:payout-engine && npm run test:email-studio && next build",
+    "build": "npm run test:order-status && npm run test:reporting && npm run test:campaign-controls && npm run test:storefront && npm run test:ui-audit && npm run test:notifications && npm run test:dmd && npm run test:payout-engine && npm run test:email-studio && next build",
     "start": "next start",
     "test:reporting": "node tests/department-reporting.cjs",
     "test:campaign-controls": "node tests/campaign-controls.cjs",
@@ -13,7 +13,8 @@
     "test:notifications": "node tests/notifications.cjs",
     "test:dmd": "node tests/dmd-commerce.cjs",
     "test:payout-engine": "node tests/payout-engine.cjs && node tests/payout-engine-ui.cjs",
-    "test:email-studio": "node tests/email-studio.cjs && node tests/email-studio-ui.cjs"
+    "test:email-studio": "node tests/email-studio.cjs && node tests/email-studio-ui.cjs",
+    "test:order-status": "node tests/order-status.cjs"
   },
   "dependencies": {
     "@supabase/ssr": "latest",
