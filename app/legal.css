@@ -1,0 +1,21 @@
+.fc-legal-footer{position:static;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:12px 24px;padding:20px 24px;background:#f5f7fb;color:#475569;border-top:1px solid #dce2ea;font-size:13px;line-height:1.6;text-align:center}
+.fc-legal-links{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center}
+.fc-legal-links a{color:inherit;text-decoration:underline;text-underline-offset:3px}
+.fc-legal-notice{font-size:13px!important;line-height:1.65!important;margin:16px 0!important;color:inherit!important;max-width:65ch}
+.fc-legal-notice a{color:inherit!important;text-decoration:underline!important;text-underline-offset:3px}
+.fc-legal-page{background:#f5f7fb;color:#17243b;min-height:100vh;padding:28px 24px 64px}
+.fc-legal-page>header{max-width:900px;margin:0 auto 32px;display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;font-size:14px}
+.fc-legal-page>header a{font-weight:800;color:#17243b}
+.fc-legal-page article{max-width:900px;margin:auto;background:#fff;border:1px solid #dce2ea;border-radius:20px;padding:48px}
+.fc-legal-page h1{font-size:clamp(32px,5vw,48px)!important;line-height:1.15!important;letter-spacing:-.035em!important;color:#17243b!important;margin:8px 0 16px!important}
+.fc-legal-page h2{font-size:23px!important;line-height:1.35!important;color:#17243b!important;margin:36px 0 12px!important;letter-spacing:-.015em!important}
+.fc-legal-page p,.fc-legal-page li{font-size:16px;line-height:1.8;color:#334155;overflow-wrap:anywhere}
+.fc-legal-page p{margin:0 0 18px}.fc-legal-page ul{padding-left:24px}.fc-legal-page li{margin-bottom:8px}
+.fc-legal-page .fc-legal-eyebrow{font-size:12px;font-weight:800;letter-spacing:.12em;color:#6353a5}
+.fc-legal-page .fc-legal-date{font-size:14px;color:#64748b}
+.fc-legal-toc{display:grid;gap:8px;padding:24px;background:#f5f7fb;border-radius:12px;margin:28px 0}
+.fc-legal-page a{color:#49358a;text-decoration:underline;text-underline-offset:3px}
+.fc-legal-page section{scroll-margin-top:24px}
+.fc-legal-contact{border-top:1px solid #dce2ea;margin-top:32px;padding-top:24px;display:flex;flex-wrap:wrap;gap:16px}
+@media(max-width:600px){.fc-legal-page{padding:20px 12px 36px}.fc-legal-page article{padding:24px 20px}.fc-legal-toc{padding:18px}.fc-legal-page>header{padding:0 8px}.fc-legal-footer{padding:18px 16px}.fc-legal-links{justify-content:center}}
+@media print{.fc-legal-footer,.fc-legal-toc,.fc-legal-contact,.fc-legal-page>header{display:none}.fc-legal-page{padding:0;background:white}.fc-legal-page article{border:0;padding:0;max-width:none}.fc-legal-page h2{break-after:avoid}}

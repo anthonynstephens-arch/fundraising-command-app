@@ -410,7 +410,8 @@ function Footer({
           <Link href={DMD_LOGIN}>Member access</Link>
         </nav>
         <nav id="store-information" aria-label="Store information">
-          {["Shipping", "Returns", "Privacy", "Terms"].map((item) => (
+          <Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms of Service</Link>
+          {["Shipping", "Returns"].map((item) => (
             <button key={item} onClick={() => onInfo(item)}>
               {item}
             </button>
@@ -434,14 +435,7 @@ const information: Record<string, { title: string; copy: string }> = {
     title: "Returns & order assistance",
     copy: "For return eligibility, size questions, damaged items, or an issue with your order, contact support@fundraisercommand.com. Include your order number and a description of the issue. Review the merchant’s applicable return policy at Shopify checkout before completing your purchase.",
   },
-  Privacy: {
-    title: "Your shopping information",
-    copy: "This storefront saves your merchandise selection in this browser so your cart is available when you return. Checkout is handled by Shopify. The merchant’s privacy policy and checkout disclosures are available during checkout. Contact support@fundraisercommand.com for privacy questions.",
-  },
-  Terms: {
-    title: "Before you order",
-    copy: "Product prices and availability are verified when you proceed to checkout. Your final total, shipping charges, taxes, and the merchant’s applicable terms are presented by Shopify before you pay. Contact support@fundraisercommand.com if you need clarification before placing an order.",
-  },
+
 };
 export function DmdStorefront({
   campaign,

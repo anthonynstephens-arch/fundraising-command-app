@@ -1,4 +1,5 @@
 "use client";
+import { LegalNotice } from "@/components/legal/LegalLinks"
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -87,7 +88,7 @@ export default function SignupPage() {
 
           {error && <div className="error">{error}</div>}
 
-          <button type="submit" disabled={loading}>
+          <LegalNotice action="creating an account"/><button type="submit" disabled={loading}>
             {loading ? "Creating account..." : "Create account"}
           </button>
         </form>
