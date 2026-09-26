@@ -1,4 +1,5 @@
 'use client'
+import { LegalNotice } from "@/components/legal/LegalLinks"
 import { FormEvent, useEffect, useState } from 'react'
 export default function AccessRequestForm({organizationSlug}:{organizationSlug:string}) {
  const [enabled,setEnabled]=useState(false)
@@ -23,7 +24,7 @@ export default function AccessRequestForm({organizationSlug}:{organizationSlug:s
    <label>Choose a PIN<input name="pin" type="password" inputMode="numeric" autoComplete="new-password" pattern="[0-9]{4,8}" minLength={4} maxLength={8} required/></label>
    <small>Use 4–8 digits. Keep your PIN private.</small>
    <label className="access-honeypot" aria-hidden="true">Website<input name="website" tabIndex={-1} autoComplete="off"/></label>
-   <button className="primary" disabled={busy}>{busy?'Submitting…':'Submit request'}</button>
+   <LegalNotice action="submitting an access request"/><button className="primary" disabled={busy}>{busy?'Submitting…':'Submit request'}</button>
   </form>}<p role="status">{message}</p></div>}
  </div>
 }

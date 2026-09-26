@@ -1,4 +1,5 @@
 "use client"
+import { LegalNotice } from "@/components/legal/LegalLinks"
 
 import { FormEvent,useEffect,useState } from "react"
 import { useRouter } from "next/navigation"
@@ -49,7 +50,7 @@ export default function InvitePage(){
           <label>Create password</label><input type="password" required autoComplete="new-password" value={password} onChange={e=>setPassword(e.target.value)}/>
           <label>Confirm password</label><input type="password" required autoComplete="new-password" value={confirm} onChange={e=>setConfirm(e.target.value)}/>
           {msg&&<div className="error">{msg}</div>}
-          <button type="submit" disabled={busy}>{busy?"Saving…":"Activate My Account"}</button>
+          <LegalNotice action="activating your account"/><button type="submit" disabled={busy}>{busy?"Saving…":"Activate My Account"}</button>
         </form>
       ):<><div className="error">{msg}</div><p className="auth-footer">Your department administrator can resend a fresh invitation from Member Access.</p></>}
     </div>

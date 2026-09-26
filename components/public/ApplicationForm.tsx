@@ -1,4 +1,5 @@
 "use client"
+import { LegalNotice } from "@/components/legal/LegalLinks"
 import {FormEvent,useState} from "react"
 export default function ApplicationForm(){
  const [loading,setLoading]=useState(false),[msg,setMsg]=useState("")
@@ -20,5 +21,5 @@ export default function ApplicationForm(){
    <label>Email<input name="contact_email" type="email" required /></label>
    <label>Phone<input name="contact_phone" type="tel" /></label>
    <label>Fundraiser type<select name="requested_campaign_type" defaultValue="fundraiser"><option value="fundraiser">General Fundraiser</option><option value="breast-cancer-awareness">Breast Cancer Awareness</option><option value="movember">Movember</option><option value="autism-awareness">Autism Awareness</option><option value="department-store">Department Store</option><option value="school">School Fundraiser</option><option value="other">Other</option></select></label>
- </div><label>Tell us what you want to build<textarea name="message" rows={5}/></label><button className="pub-primary" disabled={loading}>{loading?"Submitting…":"Submit Application"}</button>{msg&&<div className="pub-msg">{msg}</div>}</form>
+ </div><label>Tell us what you want to build<textarea name="message" rows={5}/></label><LegalNotice action="submitting an application"/><button className="pub-primary" disabled={loading}>{loading?"Submitting…":"Submit Application"}</button>{msg&&<div className="pub-msg">{msg}</div>}</form>
 }

@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { LegalNotice } from "@/components/legal/LegalLinks"
 import {isDmdOrganization,DMD_LOGO,DMD_LOGIN} from "@/lib/branding/dmd"
 import {useEffect,useMemo,useRef,useState} from "react"
 import {useDialogAccessibility} from "@/components/public/useDialogAccessibility"
@@ -74,7 +75,7 @@ export function CartDrawer({campaign,cart,open,onClose}:{campaign:Campaign;cart:
     <div className="store-cart-head"><div><small>YOUR CART</small><h2>{cart.count?`${cart.count} item${cart.count===1?"":"s"}`:"Your cart is empty"}</h2></div><button onClick={onClose} aria-label="Close cart">×</button></div>
     <div className="store-cart-lines">{cart.items.map(item=><article className="store-cart-line" key={item.variantId}>{item.image?<img src={item.image} alt=""/>:<div className="store-cart-placeholder"/>}<div className="store-cart-copy"><strong>{item.productTitle}</strong><span>{item.variantTitle}</span><b>{money(item.price)}</b><div className="store-quantity"><button onClick={()=>cart.update(item.variantId,item.quantity-1)} aria-label={`Decrease ${item.productTitle} quantity`}>−</button><span>{item.quantity}</span><button disabled={item.quantity>=100} onClick={()=>cart.update(item.variantId,item.quantity+1)} aria-label={`Increase ${item.productTitle} quantity`}>+</button></div><button className="store-remove" onClick={()=>cart.update(item.variantId,0)}>Remove</button></div><strong>{money(item.price*item.quantity)}</strong></article>)}</div>
     {!cart.items.length&&<div className="store-cart-empty"><span>🛍️</span><p>Add fundraiser gear and it will stay here while you keep shopping.</p><button onClick={onClose}>Continue shopping</button></div>}
-    {!!cart.items.length&&<div className="store-cart-footer"><div><span>Subtotal</span><strong>{money(cart.subtotal)}</strong></div><p>Shipping, taxes, and payment are handled securely by Shopify.</p>{error&&<div className="store-error" role="alert">{error}</div>}<button className="store-checkout" disabled={checkingOut} onClick={checkout}>{checkingOut?"Preparing secure checkout…":"Checkout with Shopify"}</button><button className="store-continue" onClick={onClose}>Continue shopping</button></div>}
+    {!!cart.items.length&&<div className="store-cart-footer"><div><span>Subtotal</span><strong>{money(cart.subtotal)}</strong></div><p>Shipping, taxes, and payment are handled securely by Shopify.</p>{error&&<div className="store-error" role="alert">{error}</div>}<LegalNotice action="placing an order"/><button className="store-checkout" disabled={checkingOut} onClick={checkout}>{checkingOut?"Preparing secure checkout…":"Checkout with Shopify"}</button><button className="store-continue" onClick={onClose}>Continue shopping</button></div>}
   </aside></div>
 }
 
