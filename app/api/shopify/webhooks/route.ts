@@ -1,3 +1,4 @@
+import { saveOrderStatus } from '@/lib/shopify/sync-order-status'
 import crypto from 'crypto'
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -198,6 +199,7 @@ export async function POST(
       topic === 'orders/updated' ||
       topic === 'orders/cancelled'
     ) {
+      await saveOrderStatus(payload)
       result =
         await importShopifyOrder(
           payload,

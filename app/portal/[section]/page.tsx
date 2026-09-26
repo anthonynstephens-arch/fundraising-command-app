@@ -1,3 +1,4 @@
+import { orderFulfillment } from '@/lib/orders/status'
 import PayoutPreferences from '@/components/portal/PayoutPreferences'
 import AgencyContacts from '@/components/portal/AgencyContacts'
 import DepartmentPortalSettings from '@/components/portal/DepartmentPortalSettings'
@@ -56,7 +57,7 @@ export default async function PortalSection({params,searchParams}:{params:Promis
       [o.shipping_city,o.shipping_province,o.shipping_postal_code].filter(Boolean).join(", "),
       o.shipping_country
     ].filter(Boolean)
-    return {id:o.id,order:orderLabel(o.shopify_order_number),date:o.placed_at?new Date(o.placed_at).toLocaleDateString():"—",customer:customerName(o),email:o.customer_email||"",phone:o.customer_phone||"",address,addressText:address.join(" "),items,gross,eligible,refund,raised,payment:o.status||"pending",fulfillment:o.fulfillment_status||"unfulfilled",lines}
+    return {id:o.id,order:orderLabel(o.shopify_order_number),date:o.placed_at?new Date(o.placed_at).toLocaleDateString():"—",customer:customerName(o),email:o.customer_email||"",phone:o.customer_phone||"",address,addressText:address.join(" "),items,gross,eligible,refund,raised,payment:o.status||"unknown",fulfillment:orderFulfillment(o),lines}
   })
 
   const productMap=new Map<string,any>()

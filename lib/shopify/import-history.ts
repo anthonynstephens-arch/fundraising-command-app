@@ -1,8 +1,9 @@
+import { fulfillmentStatus } from '@/lib/orders/status'
 import 'server-only'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { shopifyGraphQL, clearShopifyAccessToken } from './admin'
 import { reportingDay } from '@/lib/portal/reporting-period'
-const ORDERS="query DepartmentHistory($after:String,$query:String!){orders(first:5,after:$after,query:$query,sortKey:CREATED_AT){nodes{id name createdAt cancelledAt displayFinancialStatus displayFulfillmentStatus currencyCode email phone shippingAddress{firstName lastName company address1 address2 city province provinceCode zip country countryCodeV2 phone} billingAddress{firstName lastName company address1 address2 city province provinceCode zip country countryCodeV2 phone} subtotalPriceSet{shopMoney{amount}} totalPriceSet{shopMoney{amount}} lineItems(first:25){nodes{id title variantTitle sku quantity currentQuantity product{id} variant{id} discountedUnitPriceAfterAllDiscountsSet{shopMoney{amount}}} pageInfo{hasNextPage endCursor}}} pageInfo{hasNextPage endCursor}}}"
+const ORDERS="query DepartmentHistory($after:String,$query:String!){orders(first:5,after:$after,query:$query,sortKey:CREATED_AT){nodes{id name createdAt cancelledAt displayFinancialStatus displayFulfillmentStatus fulfillments{status displayStatus deliveredAt} currencyCode email phone shippingAddress{firstName lastName company address1 address2 city province provinceCode zip country countryCodeV2 phone} billingAddress{firstName lastName company address1 address2 city province provinceCode zip country countryCodeV2 phone} subtotalPriceSet{shopMoney{amount}} totalPriceSet{shopMoney{amount}} lineItems(first:25){nodes{id title variantTitle sku quantity currentQuantity product{id} variant{id} discountedUnitPriceAfterAllDiscountsSet{shopMoney{amount}}} pageInfo{hasNextPage endCursor}}} pageInfo{hasNextPage endCursor}}}"
 const LINES="query DepartmentHistoryLines($id:ID!,$after:String){order(id:$id){lineItems(first:100,after:$after){nodes{id title variantTitle sku quantity currentQuantity product{id} variant{id} discountedUnitPriceAfterAllDiscountsSet{shopMoney{amount}}} pageInfo{hasNextPage endCursor}}}}"
 const SCOPES="query HistoryAccess{currentAppInstallation{accessScopes{handle}}}"
 export async function importDepartmentHistory(organizationId:string, cursor:string|null, expectedStart:string|null, through:string) {
@@ -39,7 +40,7 @@ export async function importDepartmentHistory(organizationId:string, cursor:stri
       page=more.order.lineItems.pageInfo
       if(page.hasNextPage&&page.endCursor===previousCursor)throw new Error('Shopify line-item pagination stalled. Retry the import.')
     }
-    const {data,error}=await db.rpc('import_department_order',{target_org:organizationId,payload:{...order,lines}})
+    const {data,error}=await db.rpc('import_department_order',{target_org:organizationId,payload:{...order,displayFulfillmentStatus:fulfillmentStatus(order),lines}})
     if(error)throw error
     if(data>0){imported++;items+=data}
   }

@@ -1,3 +1,4 @@
+import { syncOrderStatuses } from '@/lib/shopify/sync-order-status'
 import { revalidatePath } from 'next/cache'
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -21,6 +22,11 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  let orderSync: {synced?: number; error?: string}
+  try { orderSync = await syncOrderStatuses() } catch (error) {
+    console.error('Shopify order status reconciliation failed', error)
+    orderSync = {error: 'Order status reconciliation failed'}
+  }
   const db = createAdminClient()
   const { data, error } = await db
     .from('campaign_shopify_collections')
@@ -60,7 +66,8 @@ export async function GET(request: Request) {
 
   const failed = results.filter(result => !result.ok).length
   return NextResponse.json({
-    ok: failed === 0,
+    ok: failed === 0 && !orderSync.error,
+    orderSync,
     syncedAt: new Date().toISOString(),
     linkedCampaigns: campaigns.size,
     succeeded: results.length - failed,

@@ -1,3 +1,4 @@
+import { awaitingFulfillment, orderFulfillment } from '@/lib/orders/status'
 import { inReportingPeriod } from './reporting-period'
 import { resolvePortalContext } from './context'
 import { redirect, notFound } from "next/navigation"
@@ -130,8 +131,8 @@ export function portalStats(d:any){
   const raised=d.items.reduce((s:number,i:any)=>s+Number(i.contribution_amount||0)-Number(i.refunded_contribution_amount||0),0)
   const units=d.items.reduce((s:number,i:any)=>s+Number(i.quantity||0),0)
   const avg=d.orders.length?gross/d.orders.length:0
-  const awaiting=d.orders.filter((o:any)=>!o.fulfillment_status||o.fulfillment_status==="unfulfilled").length
-  const shipped=d.orders.filter((o:any)=>["fulfilled","partial"].includes(o.fulfillment_status)).length
+  const awaiting=d.orders.filter(awaitingFulfillment).length
+  const shipped=d.orders.filter((o:any)=>["fulfilled","partial","delivered","partially_delivered","in_transit","out_for_delivery","carrier_picked_up"].includes(orderFulfillment(o))).length
   return {gross,refunds,eligible,raised,units,avg,awaiting,shipped}
 }
 

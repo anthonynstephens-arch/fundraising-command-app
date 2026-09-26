@@ -1,3 +1,4 @@
+import { orderFulfillment, statusLabel } from '@/lib/orders/status'
 import Link from "next/link"
 import PortalShell from "@/components/portal/PortalShell"
 import PortalMetricChart from "@/components/portal/PortalMetricChart"
@@ -97,10 +98,10 @@ export default async function PortalOverview({searchParams}:{searchParams:Promis
     <section className="agency-grid-2">
       <article className="agency-card">
         <header><div><h2>Recent Orders</h2><p>Latest Shopify orders from this campaign</p></div><Link href={"/portal/orders?org="+d.organizationId+"&campaign="+(d.campaign?.id||"")}>View all →</Link></header>
-        <div className="agency-table-wrap"><table className="agency-table"><thead><tr><th>ORDER</th><th>DATE</th><th>CUSTOMER</th><th>TOTAL</th><th>FUNDRAISING</th><th>STATUS</th></tr></thead><tbody>{d.orders.slice(0,5).map((o:any)=>{
+        <div className="agency-table-wrap"><table className="agency-table"><thead><tr><th>ORDER</th><th>DATE</th><th>CUSTOMER</th><th>TOTAL</th><th>FUNDRAISING</th><th>PAYMENT</th><th>FULFILLMENT / DELIVERY</th></tr></thead><tbody>{d.orders.slice(0,5).map((o:any)=>{
           const oi=d.items.filter((i:any)=>i.order_id===o.id)
           const raised=oi.reduce((a:number,i:any)=>a+Number(i.contribution_amount||0)-Number(i.refunded_contribution_amount||0),0)
-          return <tr key={o.id}><td><b>{orderLabel(o.shopify_order_number)}</b></td><td>{o.placed_at?new Date(o.placed_at).toLocaleDateString():"—"}</td><td>{customerName(o)}</td><td>{money(Number(o.total||0))}</td><td className="green"><b>{money(raised)}</b></td><td><span className="agency-pill active">{o.status}</span></td></tr>
+          return <tr key={o.id}><td><b>{orderLabel(o.shopify_order_number)}</b></td><td>{o.placed_at?new Date(o.placed_at).toLocaleDateString():"—"}</td><td>{customerName(o)}</td><td>{money(Number(o.total||0))}</td><td className="green"><b>{money(raised)}</b></td><td><span className="agency-pill active">{statusLabel(o.status)}</span></td><td><span className="agency-pill">{statusLabel(orderFulfillment(o))}</span></td></tr>
         })}</tbody></table></div>
       </article>
       <article className="agency-card">
@@ -111,7 +112,7 @@ export default async function PortalOverview({searchParams}:{searchParams:Promis
 
     {d.canManage&&<section className="agency-card">
       <header><div><h2>Dashboard Access</h2><p>Accounts with access to this department&apos;s portal</p></div><Link href={"/portal/members?org="+d.organizationId}>Manage access →</Link></header>
-      <div className="agency-table-wrap"><table className="agency-table"><thead><tr><th>MEMBER</th><th>ROLE</th><th>SIGN-IN</th><th>STATUS</th></tr></thead><tbody>
+      <div className="agency-table-wrap"><table className="agency-table"><thead><tr><th>MEMBER</th><th>ROLE</th><th>SIGN-IN</th><th>PAYMENT</th><th>FULFILLMENT / DELIVERY</th></tr></thead><tbody>
         {d.members.map((m:any)=><tr key={"email:"+m.id}><td><b>{d.userMap.get(m.user_id)||m.user_id}</b></td><td><span className="agency-pill">{m.role}</span></td><td><span className="agency-pill">Email</span></td><td><span className="agency-pill active">Active</span></td></tr>)}
         {d.pinMembers.map((m:any)=><tr key={"pin:"+m.id}><td><b>{m.display_name}</b></td><td><span className="agency-pill">{m.role}</span></td><td><span className="agency-pill">PIN</span></td><td><span className={"agency-pill "+(m.active?"active":"")}>{m.active?"Active":"Disabled"}</span></td></tr>)}
       </tbody></table></div>
