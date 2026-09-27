@@ -1,3 +1,4 @@
+import { designerOrderEligible } from '@/lib/designer-tracking'
 import { fulfillmentStatus, paymentStatus } from '@/lib/orders/status'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
@@ -208,7 +209,7 @@ export async function importShopifyOrder(
   const { data: campaign, error: campaignError } =
     await supabase
       .from('campaigns')
-      .select('organization_id')
+      .select('organization_id,campaign_type,status,starts_at')
       .eq('id', campaignId)
       .single()
 
@@ -216,6 +217,11 @@ export async function importShopifyOrder(
     throw campaignError || new Error(
       `Campaign ${campaignId} was not found`
     )
+  }
+
+  // Designer commissions begin on activation, never on historical orders.
+  if (!designerOrderEligible(campaign, payload.created_at || payload.createdAt)) {
+    return { skipped: true, reason: 'Designer tracking has not started for this order', campaignId, lineItemCount: mappedLines.length };
   }
 
   const shopifyOrderId =

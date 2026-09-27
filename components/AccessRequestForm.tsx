@@ -1,7 +1,7 @@
 'use client'
 import { LegalNotice } from "@/components/legal/LegalLinks"
 import { FormEvent, useEffect, useState } from 'react'
-export default function AccessRequestForm({organizationSlug}:{organizationSlug:string}) {
+export default function AccessRequestForm({organizationSlug,designer=false}:{organizationSlug:string;designer?:boolean}) {
  const [enabled,setEnabled]=useState(false)
  useEffect(()=>{fetch('/api/access-requests?slug='+encodeURIComponent(organizationSlug)).then(r=>r.json()).then(d=>setEnabled(!!d.enabled)).catch(()=>setEnabled(false))},[organizationSlug])
  const [open,setOpen]=useState(false),[busy,setBusy]=useState(false),[done,setDone]=useState(false),[message,setMessage]=useState('')
@@ -18,7 +18,7 @@ export default function AccessRequestForm({organizationSlug}:{organizationSlug:s
  if(!enabled)return null
  return <div className="plymouth-request">
   <button type="button" className="plymouth-request-toggle" aria-expanded={open} aria-controls="plymouth-request-form" onClick={()=>setOpen(!open)}>{open?'Back to sign in':'Request access'}</button>
-  {open&&<div id="plymouth-request-form"><h3>Request department access</h3>{!done&&<form onSubmit={submit}>
+  {open&&<div id="plymouth-request-form"><h3>{designer?"Request designer access":"Request department access"}</h3>{!done&&<form onSubmit={submit}>
    <label>Full name<input name="name" autoComplete="name" required minLength={2} maxLength={100}/></label>
    <label>Email address<input name="email" type="email" autoComplete="email" required maxLength={254}/></label>
    <label>Choose a PIN<input name="pin" type="password" inputMode="numeric" autoComplete="new-password" pattern="[0-9]{4,8}" minLength={4} maxLength={8} required/></label>

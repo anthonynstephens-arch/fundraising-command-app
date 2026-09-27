@@ -10,7 +10,7 @@ export async function getPublicCampaign(slug: string) {
     storefront_eyebrow,storefront_supporting_text,storefront_header_message,
     public_store_url,custom_domain,organization_id,
     organization:organizations(name,slug,logo_url,website_url)
-  `).eq("slug", slug).in("status", ["active","completed"]).maybeSingle()
+  `).eq("slug", slug).neq("campaign_type","designer").in("status", ["active","completed"]).maybeSingle()
 
   if (error) throw error
   if (!campaign) return null
@@ -87,7 +87,7 @@ export async function getPublicCampaign(slug: string) {
 
 export async function getPublicCampaigns() {
   const db = createAdminClient()
-  const {data,error} = await db.from("campaigns").select("slug").in("status",["active","completed"]).order("starts_at",{ascending:false,nullsFirst:false})
+  const {data,error} = await db.from("campaigns").select("slug").neq("campaign_type","designer").in("status",["active","completed"]).order("starts_at",{ascending:false,nullsFirst:false})
   if (error) throw error
   const all = await Promise.all((data ?? []).map((x:any)=>getPublicCampaign(x.slug)))
   return all.filter(Boolean) as any[]

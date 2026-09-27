@@ -25,6 +25,7 @@ export default async function CampaignPage({ params }: { params: Promise<{ id: s
     *, organization:organizations(name,slug)
   `).eq("id", id).maybeSingle()
   if (!campaign) notFound()
+  if (campaign.slug === "britton-mane-designer") redirect("/dashboard/designers/britton-mane")
 
   const { data: products } = await db.from("campaign_products").select("id,title,variant_title,retail_price").eq("campaign_id", id)
   const productIds = (products || []).map((p: any) => p.id)

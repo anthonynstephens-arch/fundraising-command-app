@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation'
 import { orderFulfillment, statusLabel } from '@/lib/orders/status'
 import Link from "next/link"
 import PortalShell from "@/components/portal/PortalShell"
@@ -14,6 +15,7 @@ export const dynamic="force-dynamic"
 export default async function PortalOverview({searchParams}:{searchParams:Promise<{org?:string;campaign?:string}>}){
   const {org,campaign}=await searchParams
   const d=await getPortalData(org,campaign)
+  if(d.org.slug==='britton-mane')redirect('/designers/britton-mane')
   let dmdOrders:Awaited<ReturnType<typeof getDmdPortalOrders>>=[]
   let dmdOrderError=false
   if(isDmdOrganization(d.org)){

@@ -7,9 +7,9 @@ import Link from 'next/link'
 import AccessRequestForm from '@/components/AccessRequestForm'
 import {DMD_LOGO,DMD_SLUG} from '@/lib/branding/dmd'
 
-export default function LoginForm({branded=false,macac=false,plymouth=false,logoUrl,department}:{branded?:boolean;macac?:boolean;plymouth?:boolean;logoUrl?:string;department?:{name:string;slug:string;logoUrl?:string;primary?:string}}) {
+export default function LoginForm({designer=false,branded=false,macac=false,plymouth=false,logoUrl,department}:{designer?:boolean;branded?:boolean;macac?:boolean;plymouth?:boolean;logoUrl?:string;department?:{name:string;slug:string;logoUrl?:string;primary?:string}}) {
   const requestSlug=department?.slug||(plymouth?'plymouth-township-fire-department':macac?'macac':branded?DMD_SLUG:'')
-  const departmentPortal=department?'/departments/'+encodeURIComponent(department.slug)+'/portal':null
+  const departmentPortal=designer?'/designers/britton-mane':department?'/departments/'+encodeURIComponent(department.slug)+'/portal':null
   const [mode, setMode] = useState<'pin' | 'email'>('pin')
   const [pin, setPin] = useState('')
   const [email, setEmail] = useState('')
@@ -68,14 +68,14 @@ export default function LoginForm({branded=false,macac=false,plymouth=false,logo
   }
 
   return <main style={department?.primary?{'--department-color':department.primary} as CSSProperties:undefined} className={department?"center fc-login-page plymouth-login department-login":plymouth?"center fc-login-page plymouth-login":macac?"center fc-login-page macac-theme macac-login":branded?"center fc-login-page dmd-theme dmd-login":"center fc-login-page"}>
-    {department&&<aside className="plymouth-login-brand">{department.logoUrl&&<img src={department.logoUrl} alt={department.name+" logo"}/>}<div className="eyebrow">MEMBER ACCESS</div><h1>{department.name}</h1><p>Agency portal</p></aside>}
+    {department&&<aside className="plymouth-login-brand">{department.logoUrl&&<img src={department.logoUrl} alt={department.name+" logo"}/>}<div className="eyebrow">MEMBER ACCESS</div><h1>{department.name}</h1><p>{designer?"Designer sales & commissions":"Agency portal"}</p></aside>}
     {plymouth&&<aside className="plymouth-login-brand">{logoUrl&&<img src={logoUrl} alt="Plymouth Township Fire Department emblem"/>}<div className="eyebrow">PLYMOUTH TOWNSHIP · MICHIGAN</div><h1>Fire Department</h1><p>Member portal</p><span>Campaign activity. Department access. One place.</span></aside>}
     {macac&&<aside className="macac-login-brand"><Link href="/stores/macac" className="macac-portal-wordmark"><img src="/brand/macac/logo-white.png" alt="MACAC — Michigan Association for College Admission Counseling" className="macac-official-logo" /></Link><h1>Bridging the path<br/><em>to college.</em></h1><p>Your merchandise, community, and campaign activity—all in one place.</p><Link href="/stores/macac">← Back to the collection</Link></aside>}
     {branded&&<aside className="dmd-login-brand"><Link href={"/fundraisers/"+DMD_SLUG}><img src={DMD_LOGO} alt="Detroit Metropolitan Dance"/></Link><h1>Your community.<br/><em>In motion.</em></h1><Link href={"/fundraisers/"+DMD_SLUG}>← Back to the apparel store</Link></aside>}
     <section className="card login fc-login-card">
       <div className="eyebrow">{department?department.name:plymouth?"PLYMOUTH TOWNSHIP FIRE":macac?"MACAC MEMBER ACCESS":branded?"DMD MEMBER ACCESS":"FUNDRAISING COMMAND"}</div>
       <h2>{mode === 'pin' ? 'Enter your access PIN' : 'Welcome back'}</h2>
-      <p>{mode === 'pin' ? plymouth ? 'Sign in with your approved PIN, or request access below.' : 'Use the PIN provided by your department or organization.' : macac?'Sign in to your MACAC merchandise portal.':branded?'Sign in to your Detroit Metropolitan Dance workspace.':'Sign in to your Fundraising Command workspace.'}</p>
+      <p>{mode === 'pin' ? plymouth ? 'Sign in with your approved PIN, or request access below.' : designer?'Use your approved PIN, or request access below.':'Use the PIN provided by your department or organization.' : macac?'Sign in to your MACAC merchandise portal.':branded?'Sign in to your Detroit Metropolitan Dance workspace.':'Sign in to your Fundraising Command workspace.'}</p>
 
       <div className="fc-login-tabs" role="tablist" aria-label="Sign-in method">
         <button type="button" className={mode === 'pin' ? 'active' : ''} onClick={() => { setMode('pin'); setMsg('') }}>PIN Login</button>
@@ -107,7 +107,7 @@ export default function LoginForm({branded=false,macac=false,plymouth=false,logo
         {msg && <div className="error">{msg}</div>}
         <button className="primary" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
       </form>}
-      {requestSlug&&<AccessRequestForm organizationSlug={requestSlug}/>}
+      {requestSlug&&<AccessRequestForm organizationSlug={requestSlug} designer={designer}/>}
     </section>
   </main>
 }

@@ -44,8 +44,9 @@ export default async function OrganizationDetailPage({params}:{params:Promise<{i
         <p>{organization.organization_type || "Organization"} · {organization.is_active ? "Active" : "Inactive"}</p>
       </div>
       <div className="fc-head-actions">
+        {organization.slug === "britton-mane" && <Link href="/dashboard/designers/britton-mane" className="fc-btn fc-btn-primary">Designer Setup</Link>}
         <Link href={"/dashboard/organizations/"+id+"/members"} className="fc-btn fc-btn-primary">Manage Access</Link>
-        <Link href={"/portal?org="+id} target="_blank" className="fc-btn">Open Department View ↗</Link>
+        <Link href={organization.slug === "britton-mane" ? "/designers/britton-mane" : "/portal?org="+id} target="_blank" className="fc-btn">Open Department View ↗</Link>
       </div>
     </section>
 
