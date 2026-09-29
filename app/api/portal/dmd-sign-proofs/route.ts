@@ -46,3 +46,21 @@ export async function POST(request:Request){
   if(error) return NextResponse.json({error:'Could not save your selection.'},{status:500})
   return NextResponse.json({ok:true,id:data.id})
 }
+
+export async function DELETE(request:Request){
+  let body:any
+  try{body=await request.json()}catch{return NextResponse.json({error:'Invalid selection.'},{status:400})}
+  const organizationId=typeof body.organizationId==='string'?body.organizationId:''
+  const id=typeof body.id==='string'?body.id:''
+  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)){
+    return NextResponse.json({error:'Invalid selection.'},{status:400})
+  }
+  const access=organizationId?await authorize(organizationId):null
+  if(!access) return NextResponse.json({error:'Unauthorized'},{status:401})
+  let query=access.db.from('dmd_sign_proof_selections').delete().eq('id',id).eq('organization_id',organizationId)
+  if(!access.admin) query=query.eq('selected_by_identity',access.identity)
+  const {data,error}=await query.select('id')
+  if(error) return NextResponse.json({error:'Could not delete the pairing.'},{status:500})
+  if(!data?.length) return NextResponse.json({error:'Pairing not found or you cannot delete it.'},{status:404})
+  return NextResponse.json({ok:true},{headers:{'Cache-Control':'no-store'}})
+}

@@ -13,8 +13,11 @@ export default function DmdSignProofs({organizationId,adminView}:{organizationId
   const [selections,setSelections]=useState<Selection[]>([])
   const [loading,setLoading]=useState(true)
   const [saving,setSaving]=useState(false)
+  const [deleting,setDeleting]=useState<string|null>(null)
   const [message,setMessage]=useState('')
   const [error,setError]=useState('')
+  const [deleteNotice,setDeleteNotice]=useState('')
+  const [deleteError,setDeleteError]=useState('')
   const [large,setLarge]=useState<number|null>(null)
 
   const load=useCallback(async()=>{
@@ -42,6 +45,19 @@ export default function DmdSignProofs({organizationId,adminView}:{organizationId
     finally{setSaving(false)}
   }
 
+  async function remove(item:Selection){
+    if(deleting||!window.confirm(`Delete the pairing with Proof ${String(item.front_proof).padStart(2,'0')} on the front and Proof ${String(item.back_proof).padStart(2,'0')} on the back?`))return
+    setDeleting(item.id);setDeleteError('');setDeleteNotice('')
+    try{
+      const response=await fetch('/api/portal/dmd-sign-proofs',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({organizationId,id:item.id})})
+      const result=await response.json()
+      if(!response.ok)throw new Error(result.error||'Could not delete the pairing.')
+      setSelections(current=>current.filter(selection=>selection.id!==item.id))
+      setDeleteNotice('Pairing deleted.')
+    }catch(e){setDeleteError(e instanceof Error?e.message:'Could not delete the pairing.')}
+    finally{setDeleting(null)}
+  }
+
   return <div className="dmd-proofs">
     <header className="dmd-proofs-heading"><div><span className="dmd-proofs-eyebrow">DMD · SIGN DESIGN</span><h1>PROOFS</h1><p>Choose one design for the front and a different design for the back. Save the pairing for review.</p></div><span className="dmd-proofs-count">10 DESIGNS</span></header>
 
@@ -58,8 +74,8 @@ export default function DmdSignProofs({organizationId,adminView}:{organizationId
       </div><button type="button" className="dmd-proof-save" disabled={front===null||back===null||saving} onClick={save}>{saving?'Saving…':'Save pairing'}</button>{message&&<p className="dmd-proof-success" role="status">{message}</p>}{error&&<p className="dmd-proof-error" role="alert">{error}</p>}</aside>
     </div>
 
-    <section className="dmd-proof-history"><div className="dmd-proof-history-head"><div><span className="dmd-proofs-eyebrow">SAVED PAIRINGS</span><h2>{adminView?'DMD selections':'Your selections'}</h2></div><button type="button" onClick={()=>{setLoading(true);void load()}}>Refresh</button></div>
-      {loading?<p>Loading selections…</p>:selections.length?<div className="dmd-proof-history-grid">{selections.map(item=><article key={item.id}><div className="dmd-proof-history-images"><div><span>FRONT · {String(item.front_proof).padStart(2,'0')}</span><img src={src(item.front_proof)} alt={`Front design ${item.front_proof}`}/></div><div><span>BACK · {String(item.back_proof).padStart(2,'0')}</span><img src={src(item.back_proof)} alt={`Back design ${item.back_proof}`}/></div></div><p><strong>{item.selected_by_name}</strong><time dateTime={item.created_at}>{new Date(item.created_at).toLocaleString('en-US',{timeZone:'America/Detroit',dateStyle:'medium',timeStyle:'short'})} ET</time></p></article>)}</div>:<p>No pairings saved yet.</p>}
+    <section className="dmd-proof-history"><div className="dmd-proof-history-head"><div><span className="dmd-proofs-eyebrow">SAVED PAIRINGS</span><h2>{adminView?'DMD selections':'Your selections'}</h2></div><button type="button" onClick={()=>{setLoading(true);void load()}}>Refresh</button></div>{deleteNotice&&<p className="dmd-proof-success" role="status">{deleteNotice}</p>}{deleteError&&<p className="dmd-proof-error" role="alert">{deleteError}</p>}
+      {loading?<p>Loading selections…</p>:selections.length?<div className="dmd-proof-history-grid">{selections.map(item=><article key={item.id}><div className="dmd-proof-history-images"><div><span>FRONT · {String(item.front_proof).padStart(2,'0')}</span><img src={src(item.front_proof)} alt={`Front design ${item.front_proof}`}/></div><div><span>BACK · {String(item.back_proof).padStart(2,'0')}</span><img src={src(item.back_proof)} alt={`Back design ${item.back_proof}`}/></div></div><p><strong>{item.selected_by_name}</strong><time dateTime={item.created_at}>{new Date(item.created_at).toLocaleString('en-US',{timeZone:'America/Detroit',dateStyle:'medium',timeStyle:'short'})} ET</time></p><button className="dmd-proof-delete" type="button" disabled={deleting!==null} onClick={()=>void remove(item)}>{deleting===item.id?'Deleting…':'Delete pairing'}</button></article>)}</div>:<p>No pairings saved yet.</p>}
     </section>
 
     {large!==null&&<div className="dmd-proof-lightbox" role="dialog" aria-modal="true" aria-label={`Proof ${large} enlarged`} onClick={()=>setLarge(null)} onKeyDown={e=>{if(e.key==='Escape')setLarge(null)}}><button type="button" autoFocus onClick={()=>setLarge(null)} aria-label="Close enlarged proof">×</button><img src={src(large)} alt={`Sign design proof ${String(large).padStart(2,'0')}`} onClick={e=>e.stopPropagation()}/></div>}
