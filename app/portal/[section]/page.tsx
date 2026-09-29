@@ -15,6 +15,7 @@ import StorefrontHeaderEditor from "@/components/portal/StorefrontHeaderEditor"
 import CampaignProductContributionManager from "@/components/CampaignProductContributionManager"
 import PortalNotificationSettings from '@/components/portal/PortalNotificationSettings'
 import DmdProductReview from '@/components/portal/DmdProductReview'
+import DmdSignProofs from '@/components/portal/DmdSignProofs'
 import { getPortalData, money, portalStats } from "@/lib/portal/data"
 import { customerName, orderLabel } from "@/lib/orders/display"
 import {isDmdOrganization} from "@/lib/branding/dmd"
@@ -87,7 +88,8 @@ export default async function PortalSection({params,searchParams}:{params:Promis
 
   let content:React.ReactNode
 
-  if(section==="contacts") content=<AgencyContacts organizationId={d.organizationId}/>
+  if(section==="proofs" && isDmdOrganization(d.org)) content=<DmdSignProofs organizationId={d.organizationId} adminView={d.platform}/>
+  else if(section==="contacts") content=<AgencyContacts organizationId={d.organizationId}/>
   else if(section==="sales") content=<SalesExplorer orders={d.orders} items={d.items} products={d.products}/>
   else if(section==="orders") content=<OrdersExplorer rows={orderRows}/>
   else if(section==="reports") content=<ReportsTool org={d.org.name} campaign={d.campaign?.name||"Campaign"} orders={orderRows} products={products} payouts={payoutRows} totals={s}/>

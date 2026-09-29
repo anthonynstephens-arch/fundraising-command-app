@@ -61,7 +61,7 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
       <nav id="agency-navigation" className={menuOpen?"mobile-open":""}>
         {navigation.map(([label,href,icon])=>{
           const active=href.startsWith("/station") ? path===href : href==="/portal"?path==="/portal":path.startsWith(href)
-          return <Fragment key={href}><Link href={destination(href)} className={active?"active":""} onClick={()=>setMenuOpen(false)}><i>{icon}</i><span>{label}</span></Link>{dmd&&href==='/portal'&&<Link href="/stores/dmd/private" className={path==='/stores/dmd/private'?'active':''} onClick={()=>setMenuOpen(false)}><i aria-hidden="true">✦</i><span>Private Store</span></Link>}</Fragment>
+          return <Fragment key={href}><Link href={destination(href)} className={active?"active":""} onClick={()=>setMenuOpen(false)}><i>{icon}</i><span>{label}</span></Link>{dmd&&href==='/portal'&&<><Link href="/stores/dmd/private" className={path==='/stores/dmd/private'?'active':''} onClick={()=>setMenuOpen(false)}><i aria-hidden="true">✦</i><span>Private Store</span></Link><Link href={destination('/portal/proofs')} className={path==='/portal/proofs'?'active':''} onClick={()=>setMenuOpen(false)}><i aria-hidden="true">▣</i><span>PROOFS</span><span className="dmd-proofs-new">NEW</span></Link></>}</Fragment>
         })}
         {<Link href={"/portal/members?org="+encodeURIComponent(organizationId)} onClick={()=>setMenuOpen(false)}><i aria-hidden="true">♙</i><span>Users & Access</span></Link>}
         <Link className="agency-storefront-link" href={storefrontHref} target="_blank" rel="noopener noreferrer" onClick={()=>setMenuOpen(false)}><i aria-hidden="true">↗</i><span>View Storefront</span></Link>
