@@ -321,6 +321,12 @@
   gap: 55px 30px;
 }
 .dmd-product-media {
+  --light-x: 34%;
+  --light-y: 62%;
+  --light-angle: -24deg;
+  --light-duration: 13s;
+  --light-delay: -4s;
+  isolation: isolate;
   position: relative;
   aspect-ratio: 4/4.6;
   background: transparent;
@@ -340,7 +346,7 @@
   height: 100%;
   object-fit: contain;
 }
-.dmd-floating-image { transition: opacity .5s, transform .7s; }
+.dmd-floating-image { z-index: 1; transition: opacity .5s, transform .7s; }
 .dmd-floating-image img { opacity: 0; }
 .dmd-floating-image canvas { opacity: 0; }
 .dmd-floating-image.is-ready canvas { opacity: 1; }
@@ -381,7 +387,8 @@
   position: absolute;
   inset: 8% 5% 6%;
   border-radius: 50%;
-  background: radial-gradient(ellipse at 50% 58%, #faf0de55 0%, #d8e9bc30 30%, #cfeccb12 52%, transparent 72%);
+  z-index: 0;
+  background: radial-gradient(ellipse at var(--light-x) var(--light-y), #faf0de80 0%, #d8e9bc45 28%, #cfeccb20 48%, transparent 72%);
   filter: blur(24px);
   opacity: .85;
   transition: opacity .7s, transform .7s;
@@ -390,13 +397,19 @@
 .dmd-product-media::after {
   content: "";
   position: absolute;
-  inset: -8% 0 5%;
-  background: conic-gradient(from 155deg at 50% 90%, transparent 0deg, #faf0de66 12deg, #faf0de24 20deg, transparent 32deg, transparent 278deg, #faf0de24 289deg, #faf0de66 298deg, transparent 315deg);
-  filter: blur(10px);
+  z-index: 0;
+  inset: 2% -4% 12%;
+  background: radial-gradient(ellipse 18% 62% at var(--light-x) var(--light-y), #faf0de80 0%, #faf0de38 40%, transparent 75%), radial-gradient(ellipse 13% 48% at 72% 35%, #d8e9bc55 0%, transparent 74%);
+  transform: rotate(var(--light-angle));
+  filter: blur(14px);
   pointer-events: none;
 }
+.dmd-product-card:nth-child(2n) .dmd-product-media { --light-x: 68%; --light-y: 42%; --light-angle: 31deg; --light-duration: 17s; --light-delay: -11s; }
+.dmd-product-card:nth-child(3n) .dmd-product-media { --light-x: 27%; --light-y: 36%; --light-angle: -39deg; --light-duration: 19s; --light-delay: -7s; }
+.dmd-product-card:nth-child(5n) .dmd-product-media { --light-x: 59%; --light-y: 70%; --light-angle: 16deg; --light-duration: 14s; --light-delay: -9s; }
+.dmd-product-media .dmd-sold-out { z-index: 2; }
 .dmd-floating-image.is-ready canvas {
-  filter: drop-shadow(0 14px 20px #15201035) drop-shadow(0 0 18px #faf0de20);
+  filter: drop-shadow(0 14px 20px #15201035) drop-shadow(0 0 14px #faf0de55);
 }
 .dmd-product-card-link:hover .dmd-product-media::before {
   opacity: 1;
@@ -411,6 +424,12 @@
   .dmd-product-card:nth-child(2n) .dmd-product-media { animation-delay: -3.5s; animation-duration: 8s; }
   .dmd-product-card:nth-child(3n) .dmd-product-media { animation-delay: -2s; }
   .dmd-product-media::before { animation: dmd-garment-glow 6s ease-in-out infinite alternate; }
+  .dmd-product-media::after { animation: dmd-backlight-drift var(--light-duration) ease-in-out var(--light-delay) infinite alternate; }
+}
+@keyframes dmd-backlight-drift {
+  0% { transform: translate(-3%, 2%) rotate(var(--light-angle)); opacity: .7; }
+  43% { transform: translate(3%, -3%) rotate(calc(var(--light-angle) + 9deg)); opacity: 1; }
+  100% { transform: translate(-1%, 4%) rotate(calc(var(--light-angle) - 7deg)); opacity: .8; }
 }
 @keyframes dmd-garment-float {
   0%, 100% { transform: translateY(0) rotate(-.65deg); }
