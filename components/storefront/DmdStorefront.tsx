@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { FloatingProductImage } from "./FloatingProductImage";
 import Image from "next/image";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { preload } from "react-dom";
@@ -88,9 +89,9 @@ function ProductCard({
         onClick={() => emitStoreEvent("product_view", {campaignId: campaign.id, productId: product.id})}
       >
         <div className="dmd-product-media">
-          <MerchandiseImage image={product.images[0]} title={product.title} />
+          <FloatingProductImage image={product.images[0]} title={product.title} />
           {product.images[1] && (
-            <MerchandiseImage image={product.images[1]} title={product.title} secondary />
+            <FloatingProductImage image={product.images[1]} title={product.title} secondary />
           )}
           {!product.available && <span className="dmd-sold-out">Sold out</span>}
         </div>

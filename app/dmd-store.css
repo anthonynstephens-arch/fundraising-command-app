@@ -323,45 +323,57 @@
 .dmd-product-media {
   position: relative;
   aspect-ratio: 4/4.6;
-  background: var(--dmd-cream);
+  background: transparent;
   overflow: hidden;
 }
 .dmd-product-card-link {
+  position: relative;
   display: block;
   height: 100%;
   text-decoration: none;
 }
-.dmd-product-media img {
+.dmd-floating-image,
+.dmd-floating-image :is(img, canvas) {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: contain;
-  transition:
-    opacity 0.5s,
-    transform 0.7s;
 }
-.dmd-product-media .dmd-secondary-image {
-  opacity: 0;
-}
-.dmd-product-media:hover img {
-  transform: scale(1.035);
-}
-.dmd-product-media:hover .dmd-secondary-image {
-  opacity: 1;
+.dmd-floating-image { transition: opacity .5s, transform .7s; }
+.dmd-floating-image img { opacity: 0; }
+.dmd-floating-image canvas { opacity: 0; }
+.dmd-floating-image.is-ready canvas { opacity: 1; }
+.dmd-floating-image.is-fallback img { opacity: 1; mix-blend-mode: multiply; }
+.dmd-product-media .dmd-secondary-image { opacity: 0; }
+.dmd-product-card-link:hover .dmd-floating-image { transform: scale(1.035); }
+.dmd-product-card-link:hover .dmd-secondary-image { opacity: 1; }
+.dmd-product-card-link:hover .dmd-product-media:has(.dmd-secondary-image.is-ready) > .dmd-floating-image:first-child { opacity: 0; }
+.dmd-product-card-link:has(.dmd-floating-image.is-light) .dmd-product-caption {
+  color: var(--dmd-deep);
+  text-shadow: 0 1px 4px #faf0decc, 0 2px 16px #faf0de80;
 }
 .dmd-product-caption {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
   display: flex;
-  justify-content: space-between;
-  gap: 20px;
-  margin-top: 17px;
-  align-items: baseline;
-  font-size: 16px;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  text-align: center;
+  pointer-events: none;
+  color: var(--dmd-cream);
+  text-shadow: 0 1px 4px #152010cc, 0 2px 16px #15201080;
 }
 .dmd-product-caption .dmd-product-title {
-  max-width: 75%;
+  max-width: 100%;
+  text-wrap: balance;
   font-family: "DMD Feature", Georgia, serif;
-  font-size: 20px;
+  font-size: clamp(24px, 2.6vw, 40px);
   font-weight: 400;
   line-height: 1.3;
 }
@@ -1253,12 +1265,11 @@
     aspect-ratio: 3/4;
   }
   .dmd-product-caption {
-    margin-top: 12px;
-    font-size: 14px;
+    width: 94%;
     gap: 6px;
   }
   .dmd-product-caption .dmd-product-title {
-    font-size: 18px;
+    font-size: clamp(19px, 4.5vw, 30px);
   }
   .dmd-product-caption .dmd-product-price {
     font-size: 16px;

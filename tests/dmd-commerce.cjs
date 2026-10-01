@@ -36,6 +36,14 @@ function load(file){
  return mod.exports
 }
 const {DmdStorefront}=load('components/storefront/DmdStorefront.tsx')
+const {clearExteriorWhite}=load('components/storefront/FloatingProductImage.tsx')
+const pixels=new Uint8ClampedArray(5*5*4).fill(255)
+for(let y=1;y<4;y++)for(let x=1;x<4;x++)if(x!==2||y!==2){let p=(y*5+x)*4;pixels[p]=70;pixels[p+1]=80;pixels[p+2]=60}
+clearExteriorWhite(pixels,5,5)
+assert.equal(pixels[3],0,'Exterior white becomes transparent')
+assert.equal(pixels[(2*5+2)*4+3],255,'White artwork inside garment stays intact')
+assert.equal(pixels[(1*5+1)*4+3],255,'Garment pixels stay intact')
+
 const {getProductSizeGuide,productDescriptionWithoutSizeGuide}=load('lib/public/product-size-guide.ts')
 const sizeGuide=getProductSizeGuide(fs.readFileSync('tests/fixtures/dmd-youth-size-guide.html','utf8'))
 assert.deepEqual(sizeGuide.rows,[['XS','2/4','18','14','11½'],['S','6/8','20½','16','13½'],['M','10/12','22','17','14½'],['L','14/16','23½','18','15½'],['XL','18/20','25','19','16½']])
