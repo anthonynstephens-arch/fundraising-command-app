@@ -390,9 +390,9 @@
 .dmd-product-media::after {
   content: "";
   position: absolute;
-  inset: 4% 8% 10%;
-  background: conic-gradient(from 155deg at 50% 90%, transparent 0deg, #faf0de18 12deg, transparent 27deg, transparent 283deg, #faf0de18 298deg, transparent 315deg);
-  filter: blur(18px);
+  inset: -8% 0 5%;
+  background: conic-gradient(from 155deg at 50% 90%, transparent 0deg, #faf0de66 12deg, #faf0de24 20deg, transparent 32deg, transparent 278deg, #faf0de24 289deg, #faf0de66 298deg, transparent 315deg);
+  filter: blur(10px);
   pointer-events: none;
 }
 .dmd-floating-image.is-ready canvas {
