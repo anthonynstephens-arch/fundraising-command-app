@@ -6,6 +6,7 @@ import Link from "next/link"
 import { usePathname,useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Fragment, useState } from "react"
+import DepartmentPortalGate from '@/components/portal/DepartmentPortalGate'
 import PortalOnboarding from '@/components/portal/PortalOnboarding'
 import NotificationInbox from '@/components/portal/NotificationInbox'
 
@@ -48,7 +49,7 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
     router.refresh()
   }
 
-  return <div className={"agency-shell"+(plymouth?" plymouth-theme":macac?" macac-theme":dmd?" dmd-theme":"")}>
+  return <DepartmentPortalGate organizationId={organizationId}><div className={"agency-shell"+(plymouth?" plymouth-theme":macac?" macac-theme":dmd?" dmd-theme":"")}>
     <aside className="agency-sidebar">
       <div className="agency-sidebar-head">
         <button className="agency-menu-toggle" type="button" aria-expanded={menuOpen} aria-controls="agency-navigation" onClick={()=>setMenuOpen(open=>!open)}><span aria-hidden="true">{menuOpen?"×":"☰"}</span> Menu</button>
@@ -92,5 +93,5 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
       <main className="agency-content">{!dmd && <p className="fc-note">Reporting period: {org.reporting_start_date || "All history"} through today · Detroit time</p>}{children}</main>
     </div>
     {organizationId&&<PortalOnboarding organizationId={organizationId} query={q}/>}
-  </div>
+  </div></DepartmentPortalGate>
 }

@@ -15,7 +15,7 @@
     "test:payout-engine": "node tests/payout-engine.cjs && node tests/payout-engine-ui.cjs",
     "test:email-studio": "node tests/email-studio.cjs && node tests/email-studio-ui.cjs",
     "test:order-status": "node tests/order-status.cjs",
-    "test:department-details": "node tests/department-required-details-ui.cjs"
+    "test:department-details": "node tests/department-required-details-ui.cjs && node tests/department-portal-gate-ui.cjs && node tests/department-portal-access.cjs"
   },
   "dependencies": {
     "@supabase/ssr": "latest",

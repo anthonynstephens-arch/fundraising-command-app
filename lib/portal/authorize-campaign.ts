@@ -38,8 +38,7 @@ async function authorizeCampaignForRoles(
   const {data:requirements,error:requirementsError}=await db.from('organizations').select('require_details,details_status').eq('id',organizationId).single()
   if(requirementsError)throw requirementsError
   if(requirements.require_details&&requirements.details_status!=='approved'){
-    const {data:admin}=user?await db.from('platform_admins').select('user_id').eq('user_id',user.id).eq('is_active',true).maybeSingle():{data:null}
-    if(!admin)return {ok:false as const,status:403,error:'Department details must be accepted before managing campaigns.'}
+    return {ok:false as const,status:403,error:'Department details must be accepted before managing campaigns.'}
   }
 
   if (

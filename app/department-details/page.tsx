@@ -10,6 +10,6 @@ export default async function DetailsPage({searchParams}:{searchParams:Promise<{
  const {org}=await searchParams;if(!org)redirect('/portal')
  const access=await organizationAccess(org);if(!access)notFound()
  const data=await departmentDetails(access.db,org)
- if(!access.platform&&(!data.org.require_details||data.org.details_status==='approved'))redirect('/portal?org='+org)
+ if(!data.org.require_details||data.org.details_status==='approved')redirect('/portal?org='+org)
  return <main style={{maxWidth:1100,margin:'0 auto',padding:'24px 16px'}}><header className="pe-heading"><h2>{data.org.name}</h2><Link href="/login">Sign in with another account</Link></header><DepartmentDetailsStatus organizationId={org}/>{access.canFinance&&<PayoutPreferences organizationId={org}/>}<AgencyContacts organizationId={org}/></main>
 }

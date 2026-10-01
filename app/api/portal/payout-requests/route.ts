@@ -14,7 +14,7 @@ export async function POST(request:Request){
   const db=createAdminClient()
   const access=await organizationAccess(organizationId)
   if(!access?.canFinance)return NextResponse.json({error:'Owner or admin access required.'},{status:403})
-  if(!access.platform&&access.org.require_details&&access.org.details_status!=='approved')return NextResponse.json({error:'Complete department details and wait for approval before requesting a payout.'},{status:403})
+  if(access.org.require_details&&access.org.details_status!=='approved')return NextResponse.json({error:'Complete department details and wait for approval before requesting a payout.'},{status:403})
   const {data:stationOrg}=await db.from('organizations').select('organization_type').eq('id',organizationId).maybeSingle()
   if(stationOrg?.organization_type==='detroit_fire_station'){
     const {data,error}=await db.rpc('request_station_payout',{target_campaign:campaignId,actor:user.id})

@@ -5,6 +5,7 @@ const reply=(body:unknown,status=200)=>NextResponse.json(body,{status,headers:{'
 export async function GET(request:Request){
  try{const id=new URL(request.url).searchParams.get('organizationId')||'',access=await organizationAccess(id)
  if(!access)return reply({error:'Unauthorized'},403)
+ if(new URL(request.url).searchParams.get('accessOnly')==='1')return reply({locked:access.org.require_details&&access.org.details_status!=='approved',status:access.org.details_status})
  return reply({...await departmentDetails(access.db,id),canSubmit:access.canFinance})
  }catch{return reply({error:'Unable to load department requirements.'},500)}
 }
