@@ -401,7 +401,7 @@
   inset: 2% -4% 12%;
   background: radial-gradient(ellipse 18% 62% at var(--light-x) var(--light-y), #faf0de80 0%, #faf0de38 40%, transparent 75%), radial-gradient(ellipse 13% 48% at 72% 35%, #d8e9bc55 0%, transparent 74%);
   transform: rotate(var(--light-angle));
-  filter: blur(14px);
+  filter: blur(28px);
   pointer-events: none;
 }
 .dmd-product-card:nth-child(2n) .dmd-product-media { --light-x: 68%; --light-y: 42%; --light-angle: 31deg; --light-duration: 17s; --light-delay: -11s; }
@@ -427,9 +427,9 @@
   .dmd-product-media::after { animation: dmd-backlight-drift var(--light-duration) ease-in-out var(--light-delay) infinite alternate; }
 }
 @keyframes dmd-backlight-drift {
-  0% { transform: translate(-3%, 2%) rotate(var(--light-angle)); opacity: .7; }
-  43% { transform: translate(3%, -3%) rotate(calc(var(--light-angle) + 9deg)); opacity: 1; }
-  100% { transform: translate(-1%, 4%) rotate(calc(var(--light-angle) - 7deg)); opacity: .8; }
+  0% { transform: translate(-10%, 6%) rotate(calc(var(--light-angle) - 12deg)) scale(.95); opacity: .65; }
+  43% { transform: translate(10%, -8%) rotate(calc(var(--light-angle) + 22deg)) scale(1.08); opacity: .9; }
+  100% { transform: translate(-5%, 10%) rotate(calc(var(--light-angle) - 20deg)) scale(1.02); opacity: .75; }
 }
 @keyframes dmd-garment-float {
   0%, 100% { transform: translateY(0) rotate(-.65deg); }
