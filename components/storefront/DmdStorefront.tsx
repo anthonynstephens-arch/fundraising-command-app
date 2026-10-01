@@ -81,42 +81,27 @@ function ProductCard({
 }) {
   return (
     <article className="dmd-product-card">
-      <div className="dmd-product-media">
-        <Link
-          href={productUrl(campaign, product)}
-          aria-label={`View ${product.title}`}
-        >
+      <Link
+        className="dmd-product-card-link"
+        href={productUrl(campaign, product)}
+        aria-label={`View ${product.title}, ${money(product.minPrice)}`}
+        onClick={() => emitStoreEvent("product_view", {campaignId: campaign.id, productId: product.id})}
+      >
+        <div className="dmd-product-media">
           <MerchandiseImage image={product.images[0]} title={product.title} />
           {product.images[1] && (
-            <MerchandiseImage
-              image={product.images[1]}
-              title={product.title}
-              secondary
-            />
+            <MerchandiseImage image={product.images[1]} title={product.title} secondary />
           )}
-        </Link>
-        <Link
-          href={productUrl(campaign, product)}
-          className="dmd-quick-button"
-          onClick={() => {
-            emitStoreEvent("product_view", {
-              campaignId: campaign.id,
-              productId: product.id,
-            });
-          }}
-          aria-label={`View full details for ${product.title}`}
-        >
-          Quick look <span aria-hidden="true">↗</span>
-        </Link>
-        {!product.available && <span className="dmd-sold-out">Sold out</span>}
-      </div>
-      <div className="dmd-product-caption">
-        <Link href={productUrl(campaign, product)}>{product.title}</Link>
-        <span>
-          {product.minPrice !== product.maxPrice ? "From " : ""}
-          {money(product.minPrice)}
-        </span>
-      </div>
+          {!product.available && <span className="dmd-sold-out">Sold out</span>}
+        </div>
+        <div className="dmd-product-caption">
+          <span className="dmd-product-title">{product.title}</span>
+          <span className="dmd-product-price">
+            {product.minPrice !== product.maxPrice ? "From " : ""}
+            {money(product.minPrice)}
+          </span>
+        </div>
+      </Link>
     </article>
   );
 }
