@@ -75,11 +75,9 @@ function MerchandiseImage({
 function ProductCard({
   campaign,
   product,
-  onQuick,
 }: {
   campaign: Campaign;
   product: StoreProduct;
-  onQuick: (product: StoreProduct) => void;
 }) {
   return (
     <article className="dmd-product-card">
@@ -97,19 +95,19 @@ function ProductCard({
             />
           )}
         </Link>
-        <button
+        <Link
+          href={productUrl(campaign, product)}
           className="dmd-quick-button"
           onClick={() => {
             emitStoreEvent("product_view", {
               campaignId: campaign.id,
               productId: product.id,
             });
-            onQuick(product);
           }}
-          aria-label={`Quick view ${product.title}`}
+          aria-label={`View full details for ${product.title}`}
         >
-          Quick view <span aria-hidden="true">＋</span>
-        </button>
+          Quick look <span aria-hidden="true">↗</span>
+        </Link>
         {!product.available && <span className="dmd-sold-out">Sold out</span>}
       </div>
       <div className="dmd-product-caption">
@@ -126,12 +124,10 @@ function Purchase({
   campaign,
   product,
   onAdd,
-  quick = false,
 }: {
   campaign: Campaign;
   product: StoreProduct;
   onAdd: (item: CartItem) => void;
-  quick?: boolean;
 }) {
   const [selected, setSelected] = useState<Record<string, string>>(() =>
     Object.fromEntries(
@@ -194,7 +190,7 @@ function Purchase({
     });
   }
   return (
-    <div className={"dmd-purchase" + (quick ? " dmd-purchase-quick" : "")}>
+    <div className="dmd-purchase">
       <section className="dmd-gallery" aria-label="Product gallery">
         <button
           className={"dmd-gallery-main" + (zoom ? " is-zoomed" : "")}
@@ -334,42 +330,48 @@ function Purchase({
             </span>
           </button>
         </div>
-        {quick ? (
-          <Link className="dmd-text-link" href={productUrl(campaign, product)}>
-            View full details <span>↗</span>
-          </Link>
-        ) : (
-          <div className="dmd-product-details">
-            {product.description && (
-              <section>
-                <h2>About this piece</h2>
-                <p>{product.description}</p>
-              </section>
-            )}
+        <div className="dmd-product-details">
+          {product.description && (
             <section>
-              <h2>Sizing & garment information</h2>
+              <h2>About this piece</h2>
+              <p>{product.description}</p>
+            </section>
+          )}
+          <section>
+            <h2>Sizing & garment information</h2>
+            {product.sizeGuide ? (
+              <>
+                <div className="dmd-size-table-wrap" role="region" aria-label={product.sizeGuide.title} tabIndex={0}>
+                  <table className="dmd-size-table">
+                    <caption>{product.sizeGuide.title}</caption>
+                    <thead><tr>{product.sizeGuide.columns.map((column) => <th key={column} scope="col">{column}</th>)}</tr></thead>
+                    <tbody>{product.sizeGuide.rows.map((row) => (
+                      <tr key={row[0]}><th scope="row">{row[0]}</th>{row.slice(1).map((value, index) => <td key={index}>{value}</td>)}</tr>
+                    ))}</tbody>
+                  </table>
+                </div>
+                <div className="dmd-size-notes">{product.sizeGuide.notes.map((note) => <p key={note}>{note}</p>)}</div>
+              </>
+            ) : (
               <p>
-                Select from the available garment options above. Need help
-                finding your fit?{" "}
-                <a href="mailto:support@fundraisercommand.com">
-                  Contact our fulfillment team
-                </a>{" "}
+                Select from the available garment options above. Need help finding your fit?{" "}
+                <a href="mailto:support@fundraisercommand.com">Contact our fulfillment team</a>{" "}
                 before ordering.
               </p>
-            </section>
-            <section>
-              <h2>Shipping & fulfillment</h2>
-              <p>
-                Printed and fulfilled by Detroit Decal & Apparel. Shipping
-                options, taxes, and the final total are shown at Shopify
-                checkout.
-              </p>
-              <a href={`${root(campaign)}#store-information`}>
-                Store information →
-              </a>
-            </section>
-          </div>
-        )}
+            )}
+          </section>
+          <section>
+            <h2>Shipping & fulfillment</h2>
+            <p>
+              Printed and fulfilled by Detroit Decal & Apparel. Shipping
+              options, taxes, and the final total are shown at Shopify
+              checkout.
+            </p>
+            <a href={`${root(campaign)}#store-information`}>
+              Store information →
+            </a>
+          </section>
+        </div>
       </section>
     </div>
   );
@@ -458,7 +460,6 @@ export function DmdStorefront({
   const cart = useCampaignCart(campaign);
   const [cartOpen, setCartOpen] = useState(false);
   const [overlay, setOverlay] = useState<"menu" | "search" | null>(null);
-  const [quick, setQuick] = useState<StoreProduct | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("Shop all");
@@ -466,10 +467,9 @@ export function DmdStorefront({
   const [scrolled, setScrolled] = useState(false);
   const [intro, setIntro] = useState(false);
   const dialog = useDialogAccessibility<HTMLDivElement>(
-    !!overlay || !!quick || !!info,
+    !!overlay || !!info,
     () => {
       setOverlay(null);
-      setQuick(null);
       setInfo(null);
     },
   );
@@ -544,7 +544,6 @@ export function DmdStorefront({
   }, [product]);
   function add(item: CartItem) {
     cart.add(item);
-    setQuick(null);
     setOverlay(null);
     setCartOpen(true);
   }
@@ -579,7 +578,7 @@ export function DmdStorefront({
         </div>
       )}
       <header
-        inert={!!overlay || !!quick || !!info || cartOpen}
+        inert={!!overlay || !!info || cartOpen}
         className={"dmd-header" + (scrolled || product ? " is-solid" : "")}
       >
         <div className="dmd-header-left">
@@ -620,7 +619,7 @@ export function DmdStorefront({
           </button>
         </div>
       </header>
-      <main id="dmd-main" inert={!!overlay || !!quick || !!info || cartOpen}>
+      <main id="dmd-main" inert={!!overlay || !!info || cartOpen}>
         {product ? (
           <div className="dmd-pdp-body">
             <Link
@@ -648,7 +647,6 @@ export function DmdStorefront({
                         key={p.id}
                         campaign={campaign}
                         product={p}
-                        onQuick={setQuick}
                       />
                     ))}
                 </div>
@@ -775,7 +773,6 @@ export function DmdStorefront({
                     key={p.id}
                     campaign={campaign}
                     product={p}
-                    onQuick={setQuick}
                   />
                 ))}
               </div>
@@ -860,7 +857,7 @@ export function DmdStorefront({
           </>
         )}
       </main>
-      <div inert={!!overlay || !!quick || !!info || cartOpen}>
+      <div inert={!!overlay || !!info || cartOpen}>
         <Footer campaign={campaign} onInfo={setInfo} />
       </div>
       <CartDrawer
@@ -869,16 +866,15 @@ export function DmdStorefront({
         open={cartOpen}
         onClose={() => setCartOpen(false)}
       />
-      {(overlay || quick || info) && (
+      {(overlay || info) && (
         <div
           className={
             "dmd-overlay " +
-            (quick ? "dmd-quick-overlay" : info ? "dmd-info-overlay" : "")
+            (info ? "dmd-info-overlay" : "")
           }
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) {
               setOverlay(null);
-              setQuick(null);
               setInfo(null);
             }
           }}
@@ -888,13 +884,11 @@ export function DmdStorefront({
             role="dialog"
             aria-modal="true"
             aria-label={
-              quick
-                ? `Quick view ${quick.title}`
-                : info
-                  ? information[info].title
-                  : overlay === "menu"
-                    ? "Navigation menu"
-                    : "Search merchandise"
+              info
+                ? information[info].title
+                : overlay === "menu"
+                  ? "Navigation menu"
+                  : "Search merchandise"
             }
             className="dmd-dialog"
           >
@@ -903,21 +897,12 @@ export function DmdStorefront({
               aria-label="Close dialog"
               onClick={() => {
                 setOverlay(null);
-                setQuick(null);
                 setInfo(null);
               }}
             >
               Close <span>×</span>
             </button>
-            {quick ? (
-              <Purchase
-                key={quick.id}
-                campaign={campaign}
-                product={quick}
-                onAdd={add}
-                quick
-              />
-            ) : info ? (
+            {info ? (
               <div className="dmd-info-content">
                 <p className="dmd-label">STORE INFORMATION</p>
                 <h2>{information[info].title}</h2>

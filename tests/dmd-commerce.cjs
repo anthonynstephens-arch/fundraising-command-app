@@ -36,8 +36,13 @@ function load(file){
  return mod.exports
 }
 const {DmdStorefront}=load('components/storefront/DmdStorefront.tsx')
+const {getProductSizeGuide,productDescriptionWithoutSizeGuide}=load('lib/public/product-size-guide.ts')
+const sizeGuide=getProductSizeGuide(fs.readFileSync('tests/fixtures/dmd-youth-size-guide.html','utf8'))
+assert.deepEqual(sizeGuide.rows,[['XS','2/4','18','14','11½'],['S','6/8','20½','16','13½'],['M','10/12','22','17','14½'],['L','14/16','23½','18','15½'],['XL','18/20','25','19','16½']])
+assert.equal(getProductSizeGuide('<table><tr><td>Unmarked</td></tr></table>'),undefined)
+assert.equal(productDescriptionWithoutSizeGuide('Classic fit. Youth size guide Size Youth size XS 2/4',sizeGuide),'Classic fit.')
 const im={url:'https://cdn.shopify.com/test.png',altText:'QA garment',width:800,height:800}
-const product={id:'100',handle:'qa-tee',title:'QA Tee',description:'Test fixture garment description',images:[im,{...im,url:'https://cdn.shopify.com/test-back.png'}],options:[{name:'Color',values:['Green','Cream']},{name:'Size',values:['S','M','L']}],variants:[{id:'101',title:'Green / S',price:25,available:true,selectedOptions:[{name:'Color',value:'Green'},{name:'Size',value:'S'}],image:im},{id:'102',title:'Cream / M',price:29,available:true,selectedOptions:[{name:'Color',value:'Cream'},{name:'Size',value:'M'}],image:null},{id:'103',title:'Green / L',price:25,available:false,selectedOptions:[{name:'Color',value:'Green'},{name:'Size',value:'L'}],image:null}],minPrice:25,maxPrice:29,available:true}
+const product={id:'100',handle:'qa-tee',title:'QA Tee',description:'Test fixture garment description',sizeGuide,images:[im,{...im,url:'https://cdn.shopify.com/test-back.png'}],options:[{name:'Color',values:['Green','Cream']},{name:'Size',values:['S','M','L']}],variants:[{id:'101',title:'Green / S',price:25,available:true,selectedOptions:[{name:'Color',value:'Green'},{name:'Size',value:'S'}],image:im},{id:'102',title:'Cream / M',price:29,available:true,selectedOptions:[{name:'Color',value:'Cream'},{name:'Size',value:'M'}],image:null},{id:'103',title:'Green / L',price:25,available:false,selectedOptions:[{name:'Color',value:'Green'},{name:'Size',value:'L'}],image:null}],minPrice:25,maxPrice:29,available:true}
 const campaign={id:'qa-campaign',slug:'detroit-metropolitan-dance',organization_id:'qa-org',name:'QA campaign',status:'active',starts_at:null,ends_at:null,organization:{name:'Detroit Metropolitan Dance',slug:'detroit-metropolitan-dance',logoUrl:null},products:[product,{...product,id:'200',handle:'qa-hoodie',title:'QA Hoodie'}],shopifyConnected:true}
 const root=createRoot(document.getElementById('app'))
 const button=(text,scope=document)=>[...scope.querySelectorAll('button')].find(el=>el.textContent.trim()===text)
@@ -49,8 +54,17 @@ async function run(){
  await click(button('Tees'))
  assert.equal(document.querySelectorAll('.dmd-product-card').length,1)
  assert.equal(document.querySelector('.dmd-product-caption a').getAttribute('href'),'/fundraisers/detroit-metropolitan-dance/products/qa-tee')
- await click(document.querySelector('.dmd-quick-button'))
- assert.ok(document.querySelector('[role="dialog"]'))
+ const quickLook=document.querySelector('.dmd-quick-button')
+ assert.equal(quickLook.tagName,'A')
+ assert.equal(quickLook.getAttribute('href'),'/fundraisers/detroit-metropolitan-dance/products/qa-tee')
+ await render({product})
+ assert.equal(document.querySelector('[role="dialog"]'),null)
+ assert.match(document.querySelector('.dmd-product-details').textContent,/Test fixture garment description/)
+ assert.equal(document.querySelector('.dmd-size-table caption').textContent,'Youth size guide')
+ assert.equal(document.querySelectorAll('.dmd-size-table tbody tr').length,5)
+ assert.deepEqual([...document.querySelectorAll('.dmd-size-table tbody tr')].map(row=>[...row.children].map(cell=>cell.textContent)),sizeGuide.rows)
+ assert.match(document.querySelector('.dmd-size-notes').textContent,/flat width, not the chest circumference/)
+ assert.ok(document.querySelector('.dmd-size-table-wrap[tabindex="0"]'))
  await click(document.querySelector('.dmd-purchase-action button'))
  assert.match(document.querySelector('[role="status"]').textContent,/Select color/)
  await click(button('Green'));await click(button('S'))
@@ -80,6 +94,7 @@ async function run(){
  assert.equal(document.querySelector('#dmd-main').hasAttribute('inert'),true)
  await act(()=>document.dispatchEvent(new window.KeyboardEvent('keydown',{key:'Escape',bubbles:true})))
  assert.equal(document.querySelector('.dmd-overlay'),null)
+ await render()
  await click(button('Search'))
  const input=document.querySelector('input[type=search]')
  await act(()=>{Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype,'value').set.call(input,'hoodie');input.dispatchEvent(new window.Event('input',{bubbles:true}))})
@@ -95,6 +110,6 @@ async function run(){
  await render({product,campaign:{...campaign,status:'closed'}})
  assert.equal(document.querySelector('.dmd-purchase-action button').disabled,true)
  await act(()=>root.unmount())
- console.log('PASS: DMD categories, product links, quick view, option validation, variant IDs, quantities, cart attribution, live-price/error handling, removal, accessible overlays, search, gallery, zoom, and closed-store protection.')
+ console.log('PASS: DMD categories, full product links, youth size table, option validation, variant IDs, quantities, cart attribution, live-price/error handling, removal, accessible overlays, search, gallery, zoom, and closed-store protection.')
 }
 run().catch(error=>{console.error(error);process.exitCode=1})

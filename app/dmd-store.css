@@ -921,6 +921,44 @@
   font-size: 14px;
   text-underline-offset: 4px;
 }
+.dmd-size-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--dmd-rule);
+  border-radius: 12px;
+  background: var(--dmd-cream);
+}
+.dmd-size-table-wrap:focus-visible {
+  outline: 2px solid var(--dmd-deep);
+  outline-offset: 4px;
+}
+.dmd-size-table {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+  text-align: center;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.dmd-size-table caption {
+  text-align: left;
+  padding: 18px 20px;
+  font-size: 16px;
+}
+.dmd-size-table th, .dmd-size-table td {
+  padding: 15px 12px;
+  border-bottom: 1px solid var(--dmd-rule);
+}
+.dmd-size-table thead {
+  background: var(--dmd-deep);
+  color: var(--dmd-cream);
+}
+.dmd-size-table thead th { font-weight: 500; line-height: 1.4; }
+.dmd-size-table tbody th { color: var(--dmd-deep); font-weight: 700; }
+.dmd-size-table tbody tr:nth-child(even) { background: var(--dmd-pale); }
+.dmd-size-table tbody tr:last-child > * { border-bottom: 0; }
+.dmd-size-notes { margin-top: 18px; }
+.dmd-product-details .dmd-size-notes p { font-size: 13px; line-height: 1.7; margin: 8px 0; }
 .dmd-related {
   padding-top: 90px;
 }
