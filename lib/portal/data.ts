@@ -30,6 +30,10 @@ export async function getPortalData(requestedOrg?:string, requestedCampaign?:str
   }
   if(!organizationId) redirect("/apply")
 
+  const {data:accessOrg,error:accessError}=await db.from('organizations').select('require_details,details_status').eq('id',organizationId).maybeSingle()
+  if(accessError)throw accessError
+  if(!platform&&accessOrg?.require_details&&accessOrg.details_status!=='approved')redirect('/department-details?org='+organizationId)
+
   const [{data:org},{data:campaigns},{data:payouts},{data:members},{data:pinMembers},{data:allOrgs},{data:lastWebhook}]=await Promise.all([
     db.from("organizations").select("*").eq("id",organizationId).maybeSingle(),
     db.from("campaigns").select("*").eq("organization_id",organizationId).order("created_at",{ascending:false}),

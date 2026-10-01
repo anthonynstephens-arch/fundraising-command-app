@@ -10,6 +10,9 @@ async function authorized(s:any){
  return !!(member||admin)
 }
 async function send(s:any,event:any,config:any){
+ const {data:org,error:orgError}=await db.from("organizations").select("require_details,details_status").eq("id",s.organization_id).single();
+ if(orgError)throw orgError;
+ if(org.require_details&&org.details_status!=="approved")return;
  if(!allowed(s.endpoint)||!await authorized(s)){await db.from("portal_push_subscriptions").delete().eq("id",s.id);return}
  await webpush.sendNotification(s.subscription,JSON.stringify({id:event.id,title:event.title,body:event.body,href:event.href}),{vapidDetails:{subject:"mailto:support@fundraisercommand.com",publicKey:config.public_key,privateKey:config.private_key},TTL:86400,timeout:10000});
 }

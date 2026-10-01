@@ -4,12 +4,12 @@ import {emailTransport,emailSender} from './email-transport'
 
 export async function emailRecipients(db:ReturnType<typeof createAdminClient>,org:string,category:string,eventDate:string){
  const [{data:agency,error:ae},{data:members,error:me},{data:pins,error:pe},{data:prefs,error:pre}]=await Promise.all([
-  db.from('organizations').select('id,name,logo_url,is_active').eq('id',org).single(),
+  db.from('organizations').select('id,name,logo_url,is_active,require_details,details_status').eq('id',org).single(),
   db.from('organization_members').select('user_id,created_at').eq('organization_id',org).lte('created_at',eventDate),
   db.from('portal_pin_credentials').select('id,email,display_name,created_at').eq('organization_id',org).eq('active',true).eq('access_status','approved').lte('created_at',eventDate),
   db.from('portal_notification_preferences').select('*').eq('organization_id',org)])
  if(ae||me||pe||pre)throw Error('Unable to resolve recipients.')
- if(!agency.is_active)return {agency,recipients:[]}
+ if(!agency.is_active||(agency.require_details&&agency.details_status!=='approved'))return {agency,recipients:[]}
  const candidates:Array<{email:string;name:string;identity_type:string;identity_id:string}>=[]
  for(const m of members||[]){const {data,error}=await db.auth.admin.getUserById(m.user_id);if(error)throw Error('Unable to resolve member email.');if(data.user?.email&&data.user.email_confirmed_at)candidates.push({email:data.user.email,name:data.user.user_metadata?.full_name||data.user.email.split('@')[0],identity_type:'user',identity_id:m.user_id})}
  for(const p of pins||[])if(p.email)candidates.push({email:p.email,name:p.display_name,identity_type:'pin',identity_id:p.id})

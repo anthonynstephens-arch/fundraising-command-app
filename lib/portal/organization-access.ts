@@ -11,7 +11,7 @@ export async function organizationAccess(organizationId:string){
   user?db.from('organization_members').select('organization_id,role').eq('user_id',user.id):Promise.resolve({data:[]})])
  const context=resolvePortalContext(organizationId,!!platform,memberships||[],pin)
  if(context.denied)return null
- const {data:org}=await db.from('organizations').select('id,organization_type,is_active').eq('id',organizationId).maybeSingle()
+ const {data:org}=await db.from('organizations').select('id,organization_type,is_active,require_details,details_status,is_union').eq('id',organizationId).maybeSingle()
  if(!org?.is_active)return null
  return {db,org,platform:!!platform,actor:context.usePin?`pin:${pin!.credentialId}`:`user:${user!.id}`,canManage:!!platform||['owner','admin','manager'].includes(context.role||''),canFinance:!!platform||['owner','admin'].includes(context.role||'')}
 }

@@ -1,3 +1,4 @@
+import DepartmentDetailsReview from '@/components/admin/DepartmentDetailsReview'
 import DepartmentPortalSettings from '@/components/portal/DepartmentPortalSettings'
 import PayoutPreferences from '@/components/portal/PayoutPreferences'
 import AgencyContacts from '@/components/portal/AgencyContacts'
@@ -58,6 +59,7 @@ export default async function OrganizationDetailPage({params}:{params:Promise<{i
     </section>
 
     <section className="fc-card"><h2>Department / station logo</h2><OrganizationLogoUpload organizationId={id} name={organization.name} logoUrl={organization.logo_url} /></section>
+    <DepartmentDetailsReview organizationId={id}/>
     <DepartmentPortalSettings org={organization}/>
     <PayoutPreferences organizationId={id}/>
     <AgencyContacts organizationId={id}/>

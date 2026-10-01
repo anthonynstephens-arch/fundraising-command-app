@@ -27,6 +27,7 @@ export async function stationAccess(id?: string) {
   if (stationError) throw stationError
   const station = id ? stations?.find(s => s.id === id) : null
   if (id && !station) notFound()
+  if(station&&!admin&&station.require_details&&station.details_status!=='approved')redirect('/department-details?org='+station.id)
   const context = resolvePortalContext(id, !!admin, memberships || [], savedPinSession)
   const pinSession = context.usePin ? savedPinSession : null
   const portalUser = user || { id: `pin:${pinSession!.credentialId}`, email: pinSession!.displayName }

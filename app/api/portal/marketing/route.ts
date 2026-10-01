@@ -1,8 +1,11 @@
+import {organizationAccess} from '@/lib/portal/organization-access'
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 
 async function gate(campaignId:string,organizationId:string){
+  const access=await organizationAccess(organizationId)
+  if(!access||(!access.platform&&access.org.require_details&&access.org.details_status!=='approved'))return {ok:false as const,status:403,user:null}
   const auth=await createClient()
   const {data:{user}}=await auth.auth.getUser()
   if(!user) return {ok:false as const,status:401,user:null}

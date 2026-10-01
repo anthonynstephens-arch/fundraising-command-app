@@ -1,8 +1,11 @@
+import {organizationAccess} from '@/lib/portal/organization-access'
 import {NextResponse} from 'next/server'
 import {notificationIdentity} from '@/lib/portal/notification-identity'
 export const dynamic='force-dynamic'
 export async function GET(req:Request){
  const org=new URL(req.url).searchParams.get('organizationId')||''
+ const access=await organizationAccess(org)
+ if(!access||(!access.platform&&access.org.require_details&&access.org.details_status!=='approved'))return NextResponse.json({error:'Department details must be approved.'},{status:403})
  const identity=await notificationIdentity(org)
  if(!identity)return NextResponse.json({error:'Unauthorized'},{status:401})
  const {db,identityType,identityId}=identity

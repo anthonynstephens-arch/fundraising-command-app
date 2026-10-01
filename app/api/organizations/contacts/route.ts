@@ -4,9 +4,9 @@ const reply=(data:unknown,status=200)=>NextResponse.json(data,{status,headers:{'
 export async function GET(request:Request){
  const id=new URL(request.url).searchParams.get('organizationId')||'',a=await organizationAccess(id)
  if(!a)return reply({error:'Unauthorized'},403)
- const [{data:contacts,error},{data:org}]=await Promise.all([a.db.from('agency_contacts').select('id,name,role,email,phone,notes').eq('organization_id',id).order('created_at'),a.db.from('organizations').select('is_union,union_name,union_local,organization_type').eq('id',id).single()])
+ const [{data:contacts,error},{data:org}]=await Promise.all([a.db.from('agency_contacts').select('id,name,role,email,phone,notes').eq('organization_id',id).order('created_at'),a.db.from('organizations').select('is_union,union_name,union_local,organization_type,require_details').eq('id',id).single()])
  if(error)return reply({error:'Unable to load contacts.'},500)
- return reply({contacts,org,canManage:a.canManage})
+ return reply({contacts,org,canManage:a.canManage,canSetUnion:a.platform})
 }
 export async function POST(request:Request){
  try{
@@ -32,7 +32,8 @@ export async function DELETE(request:Request){
 export async function PATCH(request:Request){
  const b=await request.json(),a=await organizationAccess(b.organizationId)
  if(!a?.canManage)return reply({error:'Manager, admin, or owner access required.'},403)
- if(!['fire','fire_department','detroit_fire_station'].includes(a.org.organization_type)||typeof b.isUnion!=='boolean')return reply({error:'Select union status for a fire department.'},400)
+ if(typeof b.isUnion!=='boolean')return reply({error:'Select union status.'},400)
+ if(a.org.require_details&&!a.platform&&b.isUnion!==a.org.is_union)return reply({error:'Union status is set by the platform administrator.'},403)
  const data={is_union:b.isUnion,union_name:b.isUnion?String(b.unionName||'').trim().slice(0,120):null,union_local:b.isUnion?String(b.unionLocal||'').trim().slice(0,60):null}
  const {error}=await a.db.from('organizations').update(data).eq('id',b.organizationId)
  return error?reply({error:'Unable to save union details.'},400):reply({ok:true})

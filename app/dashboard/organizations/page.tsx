@@ -12,7 +12,7 @@ export default async function OrganizationsPage() {
   if (!user) redirect("/login")
 
   const db = createAdminClient()
-  const { data: orgs } = await db.from("organizations").select("id,name,slug,organization_type,is_active,created_at").order("name")
+  const { data: orgs } = await db.from("organizations").select("id,name,slug,organization_type,is_active,created_at,require_details,details_status").order("name")
 
   return (
     <>
@@ -48,6 +48,7 @@ export default async function OrganizationsPage() {
               </div>
               <div className="fc-list-card-right">
                 <span className={`fc-pill ${org.is_active ? "active" : "inactive"}`}>{org.is_active ? "Active" : "Inactive"}</span>
+                {org.require_details&&<span className="fc-pill">{({incomplete:'Details required',pending:'Review details',approved:'Details accepted',changes_requested:'Changes requested'} as Record<string,string>)[org.details_status]}</span>}
                 <span>→</span>
               </div>
             </Link>
