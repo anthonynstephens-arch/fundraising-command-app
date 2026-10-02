@@ -347,7 +347,8 @@
   object-fit: contain;
 }
 .dmd-floating-image { z-index: 1; transition: opacity .5s, transform .7s; }
-.dmd-floating-image img { opacity: 0; }
+.dmd-floating-image img { opacity: 1; }
+.dmd-floating-image.is-ready img { opacity: 0; }
 .dmd-floating-image canvas { opacity: 0; }
 .dmd-floating-image.is-ready canvas { opacity: 1; }
 .dmd-floating-image.is-fallback img { opacity: 1; mix-blend-mode: multiply; }

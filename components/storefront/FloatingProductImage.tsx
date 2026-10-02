@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { StoreImage } from "@/lib/public/storefront";
 
 // Clear only white pixels connected to the outer edge. White printing inside
@@ -31,26 +31,19 @@ export function clearExteriorWhite(pixels: Uint8ClampedArray, width: number, hei
 
 export function FloatingProductImage({ image, title, secondary = false }: { image?: StoreImage; title: string; secondary?: boolean }) {
   const canvas = useRef<HTMLCanvasElement>(null);
+  const sourceRef = useRef<HTMLImageElement>(null);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const [light, setLight] = useState(false);
-  if (!image) return <span className="dmd-no-image">{title}</span>;
-  const url = new URL(image.url, "https://www.fundraisercommand.com");
-  if (url.hostname.endsWith("shopify.com")) url.searchParams.set("width", "1000");
-  return (
-    <span className={"dmd-floating-image" + (secondary ? " dmd-secondary-image" : "") + (ready ? " is-ready" : "") + (failed ? " is-fallback" : "") + (light ? " is-light" : "")}>
-      <img
-        src={url.toString()} crossOrigin="anonymous" alt={secondary ? "" : image.altText || title}
-        loading="lazy" decoding="async" width={image.width || 1000} height={image.height || 1000}
-        onError={() => setFailed(true)}
-        onLoad={(event) => {
+  const processImage = useCallback((source: HTMLImageElement) => {
           try {
-            const source = event.currentTarget, target = canvas.current;
+            const target = canvas.current;
             if (!target) return;
-            target.width = source.naturalWidth; target.height = source.naturalHeight;
+            const scale = Math.min(1, 800 / Math.max(source.naturalWidth, source.naturalHeight));
+            target.width = Math.round(source.naturalWidth * scale); target.height = Math.round(source.naturalHeight * scale);
             const context = target.getContext("2d", { willReadFrequently: true });
             if (!context) { setFailed(true); return; }
-            context.drawImage(source, 0, 0);
+            context.drawImage(source, 0, 0, target.width, target.height);
             const frame = context.getImageData(0, 0, target.width, target.height);
             clearExteriorWhite(frame.data, target.width, target.height);
             const center = (Math.floor(target.height / 2) * target.width + Math.floor(target.width / 2)) * 4;
@@ -58,7 +51,23 @@ export function FloatingProductImage({ image, title, secondary = false }: { imag
             context.putImageData(frame, 0, 0);
             setReady(true);
           } catch { setFailed(true); }
-        }}
+  }, []);
+  useEffect(() => {
+    setReady(false);
+    setFailed(false);
+    const source = sourceRef.current;
+    if (source?.complete && source.naturalWidth > 0) processImage(source);
+  }, [image?.url, processImage]);
+  if (!image) return <span className="dmd-no-image">{title}</span>;
+  const url = new URL(image.url, "https://www.fundraisercommand.com");
+  if (url.hostname.endsWith("shopify.com")) url.searchParams.set("width", "800");
+  return (
+    <span className={"dmd-floating-image" + (secondary ? " dmd-secondary-image" : "") + (ready ? " is-ready" : "") + (failed ? " is-fallback" : "") + (light ? " is-light" : "")}>
+      <img
+        ref={sourceRef} src={url.toString()} crossOrigin="anonymous" alt={secondary ? "" : image.altText || title}
+        loading={secondary ? "lazy" : "eager"} decoding="async" width={image.width || 1000} height={image.height || 1000}
+        onError={() => setFailed(true)}
+        onLoad={(event) => processImage(event.currentTarget)}
       />
       <canvas ref={canvas} aria-hidden="true" />
     </span>
