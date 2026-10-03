@@ -84,6 +84,7 @@ function ProductCard({
     <article className="dmd-product-card">
       <Link
         className="dmd-product-card-link"
+        prefetch={true}
         href={productUrl(campaign, product)}
         aria-label={`View ${product.title}, ${money(product.minPrice)}`}
         onClick={() => emitStoreEvent("product_view", {campaignId: campaign.id, productId: product.id})}

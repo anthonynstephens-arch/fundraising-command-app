@@ -410,7 +410,7 @@
 .dmd-product-card:nth-child(5n) .dmd-product-media { --light-x: 59%; --light-y: 70%; --light-angle: 16deg; --light-duration: 14s; --light-delay: -9s; }
 .dmd-product-media .dmd-sold-out { z-index: 2; }
 .dmd-floating-image.is-ready canvas {
-  filter: drop-shadow(0 14px 20px #15201035) drop-shadow(0 0 14px #faf0de55);
+  filter: none;
 }
 .dmd-product-card-link:hover .dmd-product-media::before {
   opacity: 1;
@@ -437,8 +437,8 @@
   50% { transform: translateY(-18px) rotate(.65deg); }
 }
 @keyframes dmd-garment-glow {
-  from { filter: blur(24px); }
-  to { filter: blur(32px); }
+  from { opacity: .7; }
+  to { opacity: .9; }
 }
 .dmd-product-caption .dmd-product-price {
   white-space: nowrap;

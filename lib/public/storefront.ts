@@ -1,4 +1,6 @@
 import "server-only"
+import {cache} from "react"
+import {unstable_cache} from "next/cache"
 import {getProductSizeGuide, productDescriptionWithoutSizeGuide, type ProductSizeGuide} from "./product-size-guide"
 import {getPublicCampaign} from "@/lib/public/campaigns"
 import {shopifyGraphQL, toShopifyGid} from "@/lib/shopify/admin"
@@ -51,14 +53,22 @@ function fallbackProducts(campaign:any):StoreProduct[]{
   }))
 }
 
-export async function getCampaignStorefront(slug:string){
+// Share catalog reads across page visits; checkout still validates live pricing.
+const getStoreProducts = unstable_cache(
+  async (ids:string[]) => shopifyGraphQL<{nodes:Array<ShopifyProduct|null>}>(productQuery,{ids}),
+  ["public-store-products-v1"],
+  {revalidate:30},
+)
+
+// Metadata and the page share one request instead of loading everything twice.
+export const getCampaignStorefront = cache(async (slug:string)=>{
   const campaign:any=await getPublicCampaign(slug)
   if(!campaign)return null
   if(!campaign.products.length)return {...campaign,products:[] as StoreProduct[],shopifyConnected:true}
 
   try{
     const ids=campaign.products.map((product:any)=>toShopifyGid("Product",product.productId)).filter(Boolean) as string[]
-    const data=await shopifyGraphQL<{nodes:Array<ShopifyProduct|null>}>(productQuery,{ids})
+    const data=await getStoreProducts(ids)
     const assignedVariants=new Set(campaign.products.flatMap((product:any)=>product.variants.map((variant:any)=>String(variant.shopifyVariantId))))
     const products=(data.nodes||[]).filter((node):node is ShopifyProduct=>!!node&&node.status==="ACTIVE").map(product=>{
       const variants=product.variants.nodes.filter(variant=>assignedVariants.has(numericId(variant.id))).map(variant=>({
@@ -78,4 +88,4 @@ export async function getCampaignStorefront(slug:string){
     console.error("Unable to refresh public Shopify product data",error)
     return {...campaign,products:fallbackProducts(campaign),shopifyConnected:false}
   }
-}
+})
