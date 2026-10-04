@@ -11,6 +11,20 @@ function money(value: any) {
   return Number.isFinite(number) ? number : 0
 }
 
+const DMD_ORGANIZATION_ID = '4eaaf553-8adf-478c-8118-5ddb9795326c'
+
+function excludeFromFundraising(
+  organizationId: string,
+  firstName: unknown,
+  lastName: unknown
+) {
+  if (organizationId !== DMD_ORGANIZATION_ID) return false
+  const normalized = `${String(firstName || '').trim()} ${String(lastName || '').trim()}`
+    .replace(/\s+/g, ' ')
+    .toLowerCase()
+  return normalized === 'allison armfield'
+}
+
 async function findCampaignProduct(
   productId: any,
   variantId: any
@@ -252,6 +266,12 @@ export async function importShopifyOrder(
     payload.customer?.lastName ||
     null
 
+  const excludeFundraising = excludeFromFundraising(
+    campaign.organization_id,
+    firstName,
+    lastName
+  )
+
   const address =
     payload.shipping_address ||
     payload.shippingAddress ||
@@ -387,15 +407,17 @@ export async function importShopifyOrder(
       existingMap.get(lineId)
 
     const contribution =
-      existing
-        ? money(
-            existing.contribution_amount
-          )
-        : calculateContribution(
-            item.campaignProduct,
-            item.quantity,
-            item.unitPrice
-          )
+      excludeFundraising
+        ? 0
+        : existing
+          ? money(
+              existing.contribution_amount
+            )
+          : calculateContribution(
+              item.campaignProduct,
+              item.quantity,
+              item.unitPrice
+            )
 
     const record = {
       order_id: orderId,
@@ -426,11 +448,13 @@ export async function importShopifyOrder(
       contribution_amount:
         contribution,
       refunded_contribution_amount:
-        existing
-          ? money(
-              existing.refunded_contribution_amount
-            )
-          : 0,
+        excludeFundraising
+          ? 0
+          : existing
+            ? money(
+                existing.refunded_contribution_amount
+              )
+            : 0,
     }
 
     const { error } = await supabase
