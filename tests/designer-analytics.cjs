@@ -1,0 +1,5 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),{stripTypeScriptTypes}=require('node:module')
+const mod={};vm.runInNewContext(stripTypeScriptTypes(fs.readFileSync('lib/designer/analytics.ts','utf8')).replace('export function','function')+'\nexports.daily=designerDaily',{exports:mod,Intl,Date,Map})
+const rows=mod.daily([{id:'a',placed_at:'2026-10-07T01:00:00Z'},{id:'b',placed_at:'2026-10-07T05:00:00Z'}],[{order_id:'a',quantity:2,unit_price:25,contribution_amount:4,refunded_merchandise_amount:25,refunded_contribution_amount:2},{order_id:'b',quantity:1,unit_price:30,contribution_amount:2}])
+assert.equal(rows[0].date,'2026-10-06');assert.equal(rows[0].sales,25);assert.equal(rows[0].commission,2);assert.equal(rows[0].units,2);assert.equal(rows[1].date,'2026-10-07');assert.equal(mod.daily([],[]).length,0)
+console.log('PASS: Detroit date boundaries, refunds, commissions, quantities and empty analytics.')
