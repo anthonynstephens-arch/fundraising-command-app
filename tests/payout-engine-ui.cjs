@@ -56,6 +56,9 @@ async function changeSelect(select,value){await act(()=>{select.value=value;sele
  assert.match(document.body.textContent,/Mailing address/)
  await changeSelect([...document.querySelectorAll('select')].find(el=>el.querySelector('option[value="yes"]')),'yes')
  assert.match(document.body.textContent,/Tax ID \/ EIN/);assert.match(document.body.textContent,/Registered nonprofit address/)
+ await act(async()=>{root.render(React.createElement(PayoutPreferences,{organizationId:'test-org',audience:'designer'}));await Promise.resolve()})
+ for(const method of ['venmo','zelle','other']){await act(()=>document.querySelector('input[value="'+method+'"]').click());assert.ok(document.querySelector('input[value="'+method+'"]').checked)}
+ assert.doesNotMatch(document.body.textContent,/Tax ID \/ EIN/)
  await render(AgencyContacts)
  assert.match(document.body.textContent,/Union president/);assert.match(document.body.textContent,/Union treasurer/)
  union=false;orgType='school';await act(()=>root.unmount())

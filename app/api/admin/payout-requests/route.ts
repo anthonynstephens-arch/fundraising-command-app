@@ -12,6 +12,10 @@ export async function PATCH(request:Request){
   const {data:req}=await db.from("payout_requests").select("*").eq("id",requestId).maybeSingle()
   if(!req) return NextResponse.json({error:"Payout request not found"},{status:404})
   const {data:org}=await db.from('organizations').select('organization_type').eq('id',req.organization_id).single()
+  if(org?.organization_type==='designer'){
+    const {error}=await db.rpc('review_designer_payout',{target_request:requestId,input_actor:auth.user.id,input_action:action,input_note:typeof adminNote==='string'?adminNote.slice(0,1000):null,input_reference:typeof paymentReference==='string'?paymentReference.slice(0,200):null})
+    return NextResponse.json(error?{error:error.message}:{ok:true},{status:error?400:200})
+  }
   if(org?.organization_type==='detroit_fire_station'){
     const {error}=await db.rpc('review_station_payout',{target_request:requestId,actor:auth.user.id,action,note:typeof adminNote==='string'?adminNote.slice(0,1000):null,reference:typeof paymentReference==='string'?paymentReference.slice(0,200):null})
     return NextResponse.json(error?{error:error.message}:{ok:true},{status:error?400:200})

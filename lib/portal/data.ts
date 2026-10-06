@@ -70,7 +70,7 @@ export async function getPortalData(requestedOrg?:string, requestedCampaign?:str
   if(campaignId){
     for(let from=0;;from+=500){
       const {data,error}=await db.from("order_items")
-        .select("*,campaign_products!inner(campaign_id),orders!inner(*)")
+        .select(org.organization_type==='designer'?"*,campaign_products!inner(campaign_id),orders!inner(id,placed_at,status,customer_first_name,shipping_city,shipping_province)":"*,campaign_products!inner(campaign_id),orders!inner(*)")
         .eq("campaign_products.campaign_id",campaignId).order("id").range(from,from+499)
       if(error)throw error
       items.push(...(data||[]))

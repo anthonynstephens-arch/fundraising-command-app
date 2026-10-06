@@ -13,5 +13,11 @@ export async function organizationAccess(organizationId:string){
  if(context.denied)return null
  const {data:org}=await db.from('organizations').select('id,organization_type,is_active,require_details,details_status,is_union').eq('id',organizationId).maybeSingle()
  if(!org?.is_active)return null
- return {db,org,platform:!!platform,actor:context.usePin?`pin:${pin!.credentialId}`:`user:${user!.id}`,canManage:!!platform||['owner','admin','manager'].includes(context.role||''),canFinance:!!platform||['owner','admin'].includes(context.role||'')}
+ let designerFinance=false
+ if(org.organization_type==='designer'&&context.usePin){
+  const {data:permission,error}=await db.from('portal_pin_credentials').select('can_manage_payouts').eq('id',pin!.credentialId).eq('organization_id',organizationId).eq('active',true).maybeSingle()
+  if(error)throw error
+  designerFinance=permission?.can_manage_payouts===true
+ }
+ return {db,org,platform:!!platform,actor:context.usePin?`pin:${pin!.credentialId}`:`user:${user!.id}`,canManage:!!platform||['owner','admin','manager'].includes(context.role||''),canFinance:designerFinance||!!platform||['owner','admin'].includes(context.role||'')}
 }

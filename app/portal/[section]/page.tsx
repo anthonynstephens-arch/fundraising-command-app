@@ -1,3 +1,4 @@
+import {redirect} from 'next/navigation'
 import { orderFulfillment } from '@/lib/orders/status'
 import PayoutPreferences from '@/components/portal/PayoutPreferences'
 import AgencyContacts from '@/components/portal/AgencyContacts'
@@ -26,6 +27,7 @@ export default async function PortalSection({params,searchParams}:{params:Promis
   const {section}=await params
   const {org,campaign}=await searchParams
   const d=await getPortalData(org,campaign)
+  if(d.org.slug==='britton-mane')redirect('/designers/britton-mane'+(section==='notifications'?'#notifications':section==='payouts'?'#payments':section==='orders'||section==='sales'?'#sales':''))
   const s=portalStats(d)
   const goal=Number(d.campaign?.goal_amount||0)
   const salesGoal=Number(d.campaign?.sales_goal||0)

@@ -13,6 +13,12 @@ assert.throws(()=>mod.prepare({...ach,is501c3:true,ein:'123'}),/nonprofit/)
 const charity=mod.prepare({...ach,is501c3:true,ein:'12-3456789',legalName:'Test foundation',nonprofitAddress:'Test address'})
 assert.equal(charity.ein,'123456789');assert.equal(mod.mask(charity).ein,'');assert.equal(mod.mask(charity).einLast4,'6789')
 assert.equal(mod.prepare({...ach,is501c3:false},charity).ein,'')
+assert.equal(mod.prepare({...ach,method:'venmo',venmoHandle:'@designer',recipientName:'Designer'}).venmoHandle,'@designer')
+assert.throws(()=>mod.prepare({...ach,method:'venmo',venmoHandle:'bad url'}),/Venmo/)
+assert.equal(mod.prepare({...ach,method:'zelle',zelleContact:'313-555-0100',recipientName:'Designer'}).method,'zelle')
+assert.throws(()=>mod.prepare({...ach,method:'zelle',zelleContact:'bad',recipientName:'Designer'}),/Zelle/)
+assert.equal(mod.prepare({...ach,method:'other',otherMethod:'Wire',recipientName:'Designer',otherDetails:'Contact for details'}).method,'other')
+assert.throws(()=>mod.prepare({...ach,method:'other'}),/delivery instructions/)
 const gate={};let user=null,pin=null,platform=false,memberRole='viewer';const org='11111111-1111-1111-1111-111111111111',other='22222222-2222-2222-2222-222222222222'
 const auth={auth:{getUser:async()=>({data:{user}})}}
 const db={from(table){const filters={};const q={select(){return q},eq(k,v){filters[k]=v;return q},then(resolve){resolve({data:user?[{organization_id:org,role:memberRole}]:[]})},maybeSingle:async()=>({data:table==='platform_admins'?(platform?{user_id:'admin'}:null):{id:filters.id,is_active:true,organization_type:'fire_department'}})};return q}}

@@ -77,6 +77,11 @@ export async function POST(request: Request) {
     if (typeof body[key] === 'boolean') payload[key] = body[key]
   }
   if (body.onboardingCompleted === true) {payload.onboarding_completed_at = new Date().toISOString();payload.onboarding_version=2}
+  if (body.designerOnboardingCompleted === true) {
+    const {data:org}=await identity.db.from('organizations').select('organization_type').eq('id',organizationId).single()
+    if(org?.organization_type!=='designer')return NextResponse.json({error:'Invalid organization.'},{status:400})
+    payload.onboarding_completed_at=new Date().toISOString();payload.onboarding_version=3
+  }
   if (body.markNotificationsRead === true) payload.notifications_read_at = new Date().toISOString()
 
   const { error } = await identity.db.from('portal_notification_preferences')

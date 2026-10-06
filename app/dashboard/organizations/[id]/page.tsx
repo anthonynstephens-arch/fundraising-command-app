@@ -61,7 +61,7 @@ export default async function OrganizationDetailPage({params}:{params:Promise<{i
     <section className="fc-card"><h2>Department / station logo</h2><OrganizationLogoUpload organizationId={id} name={organization.name} logoUrl={organization.logo_url} /></section>
     <DepartmentDetailsReview organizationId={id}/>
     <DepartmentPortalSettings org={organization}/>
-    <PayoutPreferences organizationId={id}/>
+    <PayoutPreferences organizationId={id} audience={organization.organization_type==='designer'?'designer':'agency'}/>
     <AgencyContacts organizationId={id}/>
     <DepartmentReporting organizationId={id} startDate={organization.reporting_start_date} />
     <section className="fc-dashboard-grid">
