@@ -13,10 +13,13 @@ function shopifyUrl(raw?:string|null){
 
 export default function DmdOrdersOverview({orders,error}:{orders:DmdOrder[];error?:boolean}){
   const [expanded,setExpanded]=useState<string|null>(null)
+  const [showAll,setShowAll]=useState(false)
+  const sortedOrders=[...orders].sort((a,b)=>b.createdAt.localeCompare(a.createdAt))
+  const visibleOrders=showAll?sortedOrders:sortedOrders.slice(0,3)
   return <section className="agency-card dmd-orders-overview">
-    <header><div><h2>DMD Shopify Orders</h2><p>Available orders under the DMD business account, plus orders placed through the private portal</p></div><Link href="/stores/dmd/private">Shop private collection →</Link></header>
+    <header><div><h2>DMD Admin Orders</h2><p>Available orders under the DMD business account, private portal orders, and sample orders</p></div><Link href="/stores/dmd/private">Shop private collection →</Link></header>
     {error&&<p role="alert" className="agency-empty">DMD orders are temporarily unavailable. Please refresh or contact support.</p>}
-    {!orders.length&&!error?<p className="agency-empty">No DMD orders found yet.</p>:!!orders.length&&<div className="agency-table-wrap"><table className="agency-table"><thead><tr><th>ORDER</th><th>PLACED</th><th>TOTAL</th><th>IN HANDS BY</th><th>PAYMENT</th><th>FULFILLMENT & TRACKING</th></tr></thead><tbody>{orders.map(order=>{
+    {!orders.length&&!error?<p className="agency-empty">No DMD orders found yet.</p>:!!orders.length&&<div className="agency-table-wrap"><table className="agency-table"><thead><tr><th>ORDER</th><th>PLACED</th><th>TOTAL</th><th>IN HANDS BY</th><th>PAYMENT</th><th>FULFILLMENT & TRACKING</th></tr></thead><tbody>{visibleOrders.map(order=>{
       const open=expanded===order.id
       const outstanding=Number(order.outstanding||0)
       const paymentUrl=shopifyUrl(order.paymentUrl)||shopifyUrl(order.statusUrl)
@@ -37,6 +40,7 @@ export default function DmdOrdersOverview({orders,error}:{orders:DmdOrder[];erro
         </div>
       </div></td></tr>}</Fragment>
     })}</tbody></table></div>}
+    {orders.length>3&&<button type="button" className="dmd-order-toggle" aria-expanded={showAll} onClick={()=>setShowAll(!showAll)}>{showAll?'Show fewer orders':`Show ${orders.length-3} older orders`}</button>}
     <p className="dmd-order-footnote">Orders older than Shopify&apos;s current API access window require historical-order permission to import.</p>
   </section>
 }

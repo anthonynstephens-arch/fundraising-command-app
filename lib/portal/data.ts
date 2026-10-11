@@ -1,3 +1,4 @@
+import { isDmdSampleOrder } from '@/lib/branding/dmd'
 import { awaitingFulfillment, orderFulfillment } from '@/lib/orders/status'
 import { inReportingPeriod } from './reporting-period'
 import { resolvePortalContext } from './context'
@@ -78,7 +79,7 @@ export async function getPortalData(requestedOrg?:string, requestedCampaign?:str
     }
   }
   products=products.filter((p:any)=>p.is_active)
-  const visibleItems=items.filter((i:any)=>inReportingPeriod(i.orders.placed_at,org.reporting_start_date))
+  const visibleItems=items.filter((i:any)=>inReportingPeriod(i.orders.placed_at,org.reporting_start_date)&&!isDmdSampleOrder(organizationId,i.orders.shopify_order_number))
   const orderMap=new Map<string,any>()
   for(const item of visibleItems)orderMap.set(item.orders.id,item.orders)
   const campaignOrders=[...orderMap.values()].sort((a,b)=>String(b.placed_at).localeCompare(String(a.placed_at)))
