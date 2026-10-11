@@ -1,3 +1,4 @@
+import { isDmdSampleOrder } from '@/lib/branding/dmd'
 import { fulfillmentStatus } from '@/lib/orders/status'
 import {shopifyGraphQL,stripShopifyGid} from '@/lib/shopify/admin'
 import {createAdminClient} from '@/lib/supabase/admin'
@@ -62,7 +63,7 @@ export async function syncDmdOrder(payload:any){
   const privateOrder=attrs.some((a:any)=>a.name==='fundraiser_private_store'&&a.value==='dmd')
   const dmdOrg=attrs.some((a:any)=>a.name==='fundraiser_organization_id'&&a.value===DMD_ORGANIZATION_ID)
   const b2bCompany=String(payload.company?.id||'')===stripShopifyGid(DMD_COMPANY_ID)
-  if(!b2bCompany&&!(privateOrder&&dmdOrg))return
+  if(!b2bCompany&&!(privateOrder&&dmdOrg)&&!isDmdSampleOrder(DMD_ORGANIZATION_ID,payload.name||payload.order_number))return
   const {error}=await createAdminClient().from(b2bCompany?'dmd_company_orders':'dmd_private_orders').upsert({
     shopify_order_id:String(payload.id),organization_id:DMD_ORGANIZATION_ID,
     order_data:formatPrivateOrder(payload),updated_at:new Date().toISOString()
@@ -71,15 +72,28 @@ export async function syncDmdOrder(payload:any){
 }
 
 export async function getDmdPortalOrders(){
-  const [companyResult,privateResult]=await Promise.all([
+  const [companyResult,privateResult,sampleResult]=await Promise.all([
     createAdminClient().from('dmd_company_orders').select('order_data').eq('organization_id',DMD_ORGANIZATION_ID).order('updated_at',{ascending:false}),
-    createAdminClient().from('dmd_private_orders').select('order_data').eq('organization_id',DMD_ORGANIZATION_ID).order('updated_at',{ascending:false})
+    createAdminClient().from('dmd_private_orders').select('order_data').eq('organization_id',DMD_ORGANIZATION_ID).order('updated_at',{ascending:false}),
+    createAdminClient().from('orders').select('*,order_items(*)').eq('organization_id',DMD_ORGANIZATION_ID).in('shopify_order_number',['4791','#4791','4792','#4792'])
   ])
-  if(privateResult.error||companyResult.error)throw privateResult.error||companyResult.error
+  if(privateResult.error||companyResult.error||sampleResult.error)throw privateResult.error||companyResult.error||sampleResult.error
   const combined=new Map<string,DmdOrder>((companyResult.data||[]).map(row=>{const order=row.order_data as DmdOrder;return [order.id,order]}))
   for(const row of privateResult.data||[]){
     const order=row.order_data as DmdOrder
     if(!combined.has(order.id))combined.set(order.id,order)
+  }
+  // Include already-imported samples immediately; subsequent webhooks keep full details current.
+  for(const row of sampleResult.data||[]){
+    const id=String(row.shopify_order_id)
+    if(combined.has(id))continue
+    combined.set(id,{
+      id,name:'#'+String(row.shopify_order_number).replace(/^#/,''),createdAt:row.placed_at,
+      fulfillmentStatus:String(row.fulfillment_status||'UNKNOWN').toUpperCase(),
+      financialStatus:String(row.status||'UNKNOWN').toUpperCase(),total:String(row.total||0),
+      currency:row.currency||'USD',inHandsBy:null,tracking:[],
+      items:(row.order_items||[]).map((line:any)=>({title:line.title,variant:line.variant_title||null,quantity:Number(line.quantity||0),unitPrice:String(line.unit_price||0)}))
+    })
   }
   return [...combined.values()].sort((a,b)=>b.createdAt.localeCompare(a.createdAt))
 }
