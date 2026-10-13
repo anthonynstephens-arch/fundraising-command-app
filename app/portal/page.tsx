@@ -1,10 +1,11 @@
+import OrdersExplorer from "@/components/portal/OrdersExplorer"
 import { redirect } from 'next/navigation'
 import { orderFulfillment, statusLabel } from '@/lib/orders/status'
 import Link from "next/link"
 import PortalShell from "@/components/portal/PortalShell"
 import PortalMetricChart from "@/components/portal/PortalMetricChart"
 import CampaignGoalEditor from "@/components/portal/CampaignGoalEditor"
-import { getPortalData, money, portalStats, dailySeries } from "@/lib/portal/data"
+import { getPortalData, money, portalStats, dailySeries, portalOrderRows, isTrackingOnlyCollection } from "@/lib/portal/data"
 import { customerName, orderLabel } from "@/lib/orders/display"
 import DmdOrdersOverview from '@/components/portal/DmdOrdersOverview'
 import {getDmdPortalOrders} from '@/lib/shopify/dmd-private'
@@ -16,6 +17,19 @@ export default async function PortalOverview({searchParams}:{searchParams:Promis
   const {org,campaign}=await searchParams
   const d=await getPortalData(org,campaign)
   if(!d.collectionOnly&&d.org.slug==='britton-mane')redirect('/designers/britton-mane')
+  if(isTrackingOnlyCollection(d.campaign)){
+    const stats=portalStats(d)
+    const delivered=d.orders.filter((order:any)=>orderFulfillment(order)==="delivered").length
+    return <PortalShell org={d.org} campaign={d.campaign} campaigns={d.campaigns} userEmail={d.user.email||""} organizationId={d.organizationId} platform={d.platform} lastSynced={d.lastWebhook?.created_at||null} pinAccess={!!d.pinSession} collectionOnly={!!d.collectionOnly}>
+      <section className="agency-kpis" aria-label="Order tracking summary">
+        <div><span>TOTAL ORDERS</span><strong>{d.orders.length}</strong><small>collection orders</small></div>
+        <div><span>ITEMS SOLD</span><strong>{stats.units}</strong><small>collection items</small></div>
+        <div><span>AWAITING FULFILLMENT</span><strong className="orange">{stats.awaiting}</strong><small>orders awaiting fulfillment</small></div>
+        <div><span>ORDERS DELIVERED</span><strong className="green">{delivered}</strong><small>confirmed delivered by Shopify</small></div>
+      </section>
+      <OrdersExplorer rows={portalOrderRows(d)} trackingOnly/>
+    </PortalShell>
+  }
   let dmdOrders:Awaited<ReturnType<typeof getDmdPortalOrders>>=[]
   let dmdOrderError=false
   if(!d.collectionOnly&&isDmdOrganization(d.org)){
