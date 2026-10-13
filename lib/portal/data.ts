@@ -1,3 +1,4 @@
+import {customerName, orderLabel} from "@/lib/orders/display"
 import {assignedCampaignIds} from './collection-access'
 import { isDmdSampleOrder } from '@/lib/branding/dmd'
 import { awaitingFulfillment, orderFulfillment } from '@/lib/orders/status'
@@ -168,4 +169,37 @@ export function dailySeries(d:any){
     row.fundraising+=Number(i.contribution_amount||0)-Number(i.refunded_contribution_amount||0)
   }
   return [...byDate.values()].sort((a,b)=>a.date.localeCompare(b.date))
+}
+
+
+export function isTrackingOnlyCollection(campaign: {id?: string} | null | undefined){
+  return campaign?.id === "74d66d32-6b24-4e30-8446-41cd1578ac18"
+}
+
+export function portalOrderRows(d: {orders:any[];items:any[]}){
+  return d.orders.map((o:any)=>{
+    const oi=d.items.filter((i:any)=>i.order_id===o.id)
+    const items=oi.reduce((a:number,i:any)=>a+Number(i.quantity||0),0)
+    const gross=oi.reduce((a:number,i:any)=>a+Number(i.unit_price||0)*Number(i.quantity||0),0)
+    const refund=oi.reduce((a:number,i:any)=>a+Number(i.refunded_merchandise_amount||0),0)
+    const eligible=Math.max(0,gross-refund)
+    const raised=oi.reduce((a:number,i:any)=>a+Number(i.contribution_amount||0)-Number(i.refunded_contribution_amount||0),0)
+    const lines=oi.map((i:any)=>({
+      id:i.id,
+      title:i.title,
+      variant:i.variant_title,
+      sku:i.sku,
+      quantity:Number(i.quantity||0),
+      unitPrice:Number(i.unit_price||0),
+      total:Number(i.unit_price||0)*Number(i.quantity||0),
+      contribution:Number(i.contribution_amount||0)-Number(i.refunded_contribution_amount||0)
+    }))
+    const address=[
+      o.shipping_address1,
+      o.shipping_address2,
+      [o.shipping_city,o.shipping_province,o.shipping_postal_code].filter(Boolean).join(", "),
+      o.shipping_country
+    ].filter(Boolean)
+    return {id:o.id,order:orderLabel(o.shopify_order_number),date:o.placed_at?new Date(o.placed_at).toLocaleDateString():"—",customer:customerName(o),email:o.customer_email||"",phone:o.customer_phone||"",address,addressText:address.join(" "),items,gross,eligible,refund,raised,payment:o.status||"unknown",fulfillment:orderFulfillment(o),lines}
+  })
 }
