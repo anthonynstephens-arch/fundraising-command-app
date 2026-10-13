@@ -3,7 +3,7 @@ import {organizationAccess} from '@/lib/portal/organization-access'
 import {departmentDetails} from '@/lib/portal/department-details'
 const reply=(body:unknown,status=200)=>NextResponse.json(body,{status,headers:{'Cache-Control':'no-store'}})
 export async function GET(request:Request){
- try{const id=new URL(request.url).searchParams.get('organizationId')||'',access=await organizationAccess(id)
+ try{const id=new URL(request.url).searchParams.get('organizationId')||'',access=await organizationAccess(id,new URL(request.url).searchParams.get('accessOnly')==='1')
  if(!access)return reply({error:'Unauthorized'},403)
  if(new URL(request.url).searchParams.get('accessOnly')==='1')return reply({locked:access.org.require_details&&access.org.details_status!=='approved',status:access.org.details_status})
  return reply({...await departmentDetails(access.db,id),canSubmit:access.canFinance})

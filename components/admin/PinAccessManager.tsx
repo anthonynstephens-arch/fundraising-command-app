@@ -1,5 +1,6 @@
 "use client"
 
+import PinCollectionAssignments from "./PinCollectionAssignments"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 
@@ -19,10 +20,12 @@ export default function PinAccessManager({
   organizationId,
   credentials,
   canApprove = true,
+  canAssignCollections = false,
 }: {
   organizationId: string
   credentials: Credential[]
   canApprove?: boolean
+  canAssignCollections?: boolean
 }) {
   const router = useRouter()
   const [displayName, setDisplayName] = useState("")
@@ -129,7 +132,7 @@ export default function PinAccessManager({
         <tbody>{credentials.map(credential =>
           <tr key={credential.id}>
             <td><strong>{credential.display_name}</strong>{credential.email&&<small className="fc-member-id">{credential.email}</small>}<small className="fc-member-id">Created {new Date(credential.created_at).toLocaleDateString()}</small></td>
-            <td><span className="fc-pill">{credential.role}</span></td>
+            <td><span className="fc-pill">{credential.role}</span>{canAssignCollections&&<PinCollectionAssignments credentialId={credential.id}/>}</td>
             <td><span className={"fc-member-status " + (credential.active ? "active" : "pending")}>{credential.access_status === "pending" ? "Pending approval" : credential.active ? "Active" : "Disabled"}</span></td>
             <td>{credential.lastLogin ? new Date(credential.lastLogin).toLocaleString() : "Never"}</td>
             <td>{credential.loginCount}</td>

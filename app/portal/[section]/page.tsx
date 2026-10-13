@@ -27,7 +27,8 @@ export default async function PortalSection({params,searchParams}:{params:Promis
   const {section}=await params
   const {org,campaign}=await searchParams
   const d=await getPortalData(org,campaign)
-  if(d.org.slug==='britton-mane')redirect('/designers/britton-mane'+(section==='notifications'?'#notifications':section==='payouts'?'#payments':section==='orders'||section==='sales'?'#sales':''))
+  if(!d.pinSession?.delegated&&d.org.slug==='britton-mane')redirect('/designers/britton-mane'+(section==='notifications'?'#notifications':section==='payouts'?'#payments':section==='orders'||section==='sales'?'#sales':''))
+  if(d.pinSession?.delegated&&!['sales','orders','products','progress','reports','help'].includes(section))redirect('/portal?org='+d.organizationId+'&campaign='+d.campaign?.id)
   const s=portalStats(d)
   const goal=Number(d.campaign?.goal_amount||0)
   const salesGoal=Number(d.campaign?.sales_goal||0)
@@ -139,5 +140,5 @@ export default async function PortalSection({params,searchParams}:{params:Promis
   </>
   else content=<><div className="agency-page-head"><div><h1>Help Center</h1><p>Support for your fundraiser</p></div></div><section className="agency-card"><header><div><h2>Campaign Support</h2></div></header><div className="agency-detail-list"><div><span>Fundraising calculation</span><b>Based on contribution rules stored with each campaign product</b></div><div><span>Customer checkout</span><b>Shopify</b></div><div><span>Order synchronization</span><b>Shopify webhooks</b></div></div></section></>
 
-  return <PortalShell org={d.org} campaign={d.campaign} campaigns={d.campaigns} userEmail={d.user.email||""} organizationId={d.organizationId} platform={d.platform} lastSynced={lastSynced} pinAccess={!!d.pinSession}>{content}</PortalShell>
+  return <PortalShell org={d.org} campaign={d.campaign} campaigns={d.campaigns} userEmail={d.user.email||""} organizationId={d.organizationId} platform={d.platform} lastSynced={lastSynced} pinAccess={!!d.pinSession} collectionOnly={!!d.pinSession?.delegated}>{content}</PortalShell>
 }

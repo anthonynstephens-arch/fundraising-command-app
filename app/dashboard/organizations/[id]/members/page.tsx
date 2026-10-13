@@ -57,7 +57,7 @@ export default async function MembersPage({params}:{params:Promise<{id:string}>}
     </section>
     <section className="fc-card">
       <div className="fc-card-head"><div><div className="fc-kicker">QUICK ACCESS</div><h2>PIN Logins</h2><p>Create department portal access without requiring an email account.</p></div><span className="fc-count">{pins.length}</span></div>
-      <PinAccessManager organizationId={id} credentials={pins}/>
+      <PinAccessManager organizationId={id} credentials={pins} canAssignCollections/>
     </section>
   </>
 }
