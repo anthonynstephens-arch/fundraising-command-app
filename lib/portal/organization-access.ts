@@ -1,3 +1,4 @@
+import {assignedCampaignIds} from './collection-access'
 import {createClient} from '@/lib/supabase/server'
 import {createAdminClient} from '@/lib/supabase/admin'
 import {getPortalPinSession} from '@/lib/pin-auth'
@@ -9,7 +10,9 @@ export async function organizationAccess(organizationId:string, includeCollectio
  const [{data:platform},{data:memberships}]=await Promise.all([
   user?db.from('platform_admins').select('user_id').eq('user_id',user.id).eq('is_active',true).maybeSingle():Promise.resolve({data:null}),
   user?db.from('organization_members').select('organization_id,role').eq('user_id',user.id):Promise.resolve({data:[]})])
- const context=resolvePortalContext(organizationId,!!platform,memberships||[],pin)
+ const effective=[...(memberships||[])]
+ if(includeCollectionAccess&&user&&!platform){const ids=await assignedCampaignIds(db,user.id);if(ids.length){const {data:grants}=await db.from('campaigns').select('organization_id').in('id',ids).eq('organization_id',organizationId);if(grants?.length&&!effective.some(m=>m.organization_id===organizationId))effective.push({organization_id:organizationId,role:'viewer'})}}
+ const context=resolvePortalContext(organizationId,!!platform,effective,pin)
  if(context.denied)return null
  const {data:org}=await db.from('organizations').select('id,organization_type,is_active,require_details,details_status,is_union').eq('id',organizationId).maybeSingle()
  if(!org?.is_active)return null
