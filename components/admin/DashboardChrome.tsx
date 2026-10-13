@@ -7,6 +7,7 @@ const nav = [
   { href: "/dashboard/designers/britton-mane", label: "Designer Commissions" },
   { href: "/dashboard/stations", label: "Detroit Fire Stations" },
   { href: "/dashboard", label: "Overview", exact: true },
+  { href: "/dashboard/users", label: "Users & Access" },
   { href: "/dashboard/organizations", label: "Departments" },
   { href: "/dashboard/campaigns", label: "Campaigns" },
   { href: "/dashboard/orders", label: "Orders" },
