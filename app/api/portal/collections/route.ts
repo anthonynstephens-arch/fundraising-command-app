@@ -1,3 +1,4 @@
+import {assignedCampaignIds} from '@/lib/portal/collection-access'
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
@@ -15,16 +16,11 @@ async function accessible() {
     user ? db.from('organization_members').select('organization_id').eq('user_id',user.id) : {data:[],error:null},
   ])
   if(pe || me) throw pe || me
-  const orgIds = [...new Set([...(members||[]).map(m=>m.organization_id), ...(pin?[pin.homeOrganizationId]:[])])]
-  let query = db.from('campaigns').select('id,name,organization_id,organizations!inner(name,is_active)').eq('organizations.is_active',true).order('name')
-  const {data:home,error} = platform ? await query : orgIds.length ? await query.in('organization_id',orgIds) : {data:[],error:null}
-  if(error) throw error
-  const {data:grants,error:ge} = pin ? await db.from('portal_pin_campaign_access').select('campaign_id').eq('credential_id',pin.credentialId) : {data:[],error:null}
-  if(ge) throw ge
-  const ids=(grants||[]).map(g=>g.campaign_id)
-  const {data:extra,error:ee}=ids.length ? await db.from('campaigns').select('id,name,organization_id,organizations!inner(name,is_active)').eq('organizations.is_active',true).in('id',ids) : {data:[],error:null}
-  if(ee) throw ee
-  const collections=[...new Map([...(home||[]),...(extra||[])].map((c:any)=>[c.id,{id:c.id,name:c.name,organizationId:c.organization_id,organizationName:(Array.isArray(c.organizations)?c.organizations[0]:c.organizations).name}])).values()]
+  const ids=platform?null:await assignedCampaignIds(db,user?.id,pin?.credentialId)
+  const query=db.from('campaigns').select('id,name,organization_id,organizations!inner(name,is_active)').eq('organizations.is_active',true).order('name')
+  const {data:rows,error}=ids===null?await query:ids.length?await query.in('id',ids):{data:[],error:null}
+  if(error)throw error
+  const collections=(rows||[]).map((c:any)=>({id:c.id,name:c.name,organizationId:c.organization_id,organizationName:(Array.isArray(c.organizations)?c.organizations[0]:c.organizations).name}))
   return {collections,pin}
 }
 export async function GET() {
