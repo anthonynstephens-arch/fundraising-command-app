@@ -8,7 +8,7 @@ const transport=load('lib/portal/email-transport.ts',{nodemailer:{createTranspor
  const request=assigned=>({json:async()=>({kind:'pin',identityId:'pin',campaignId:'collection',assigned})})
  assert.equal((await route.GET({url:'https://example.test'})).status,403)
  assert.equal((await route.POST(request(true))).status,403);assert.equal(calls.length,0)
- allowed=true;assert.equal((await route.POST(request(true))).status,400);assert.equal(calls.length,0,'missing email must not grant access silently')
+ allowed=true;const missingEmail=await route.POST(request(true));assert.equal(missingEmail.status,200);assert.equal(missingEmail.body.notificationPending,true);assert.equal(calls[0].args.recipient_email,'');calls=[]
  email='user@example.test';assert.equal((await route.POST(request(true))).status,200);assert.equal(calls[0].name,'set_collection_assignment');assert.equal(calls[0].args.recipient_email,email)
  assert.equal((await route.POST(request(false))).status,200);assert.equal(calls[1].args.assigned,false)
  assert.equal(transport.emailSender().bcc,'anthony@detroitdecalandapparel.com')
@@ -17,5 +17,5 @@ const transport=load('lib/portal/email-transport.ts',{nodemailer:{createTranspor
  const mail=load('lib/portal/collection-assignment-email.ts',{'@/lib/supabase/admin':{createAdminClient:()=>mailDb},'./email-transport':{emailSender:transport.emailSender,emailTransport:()=>({sendMail:async m=>sends.push(m),close(){}})},'./email-template':{defaultEmailDesign:()=>({}),renderEmail:()=>({html:'Test',text:'Test'})}})
  assert.equal((await mail.deliverCollectionAssignmentEmails()).sent,1);assert.equal(sends[0].to,email);assert.equal(sends[0].bcc,'anthony@detroitdecalandapparel.com')
  granted=false;await mail.deliverCollectionAssignmentEmails();assert.equal(sends.length,1,'revoked access must cancel pending notice');assert(updates.some(u=>u.cancelled_at))
- console.log('PASS: administrator-only grants, required recipient, assignment/revoke RPC, BCC, queued delivery, and revoked-notice cancellation.')
+ console.log('PASS: administrator-only grants, pending-email assignments, assignment/revoke RPC, BCC, queued delivery, and revoked-notice cancellation.')
 })().catch(e=>{console.error(e);process.exitCode=1})
