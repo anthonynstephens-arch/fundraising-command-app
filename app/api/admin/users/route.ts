@@ -36,13 +36,12 @@ export async function POST(request:Request){
   const {kind,identityId,campaignId,assigned,email}=await request.json(),db=createAdminClient()
   if(!['pin','user'].includes(kind)||typeof identityId!=='string')return reply({error:'Invalid user.'},400)
   if(email!==undefined){if(kind!=='pin'||typeof email!=='string'||!/^\S+@\S+\.\S+$/.test(email)||email.length>254)return reply({error:'Enter a valid email address.'},400)
-   const {error}=await db.from('portal_pin_credentials').update({email:email.trim().toLowerCase()}).eq('id',identityId);if(error)throw error;return reply({ok:true})}
+   const {error}=await db.rpc('set_pin_notification_email',{identity:identityId,email_address:email.trim().toLowerCase()});if(error)throw error;return reply({ok:true,message:'Email saved. Pending collection notices are queued for delivery.'})}
   if(typeof campaignId!=='string'||typeof assigned!=='boolean')return reply({error:'Invalid collection assignment.'},400)
   let recipient=''
   if(kind==='pin'){const {data,error}=await db.from('portal_pin_credentials').select('email').eq('id',identityId).single();if(error)throw error;recipient=data.email||''}
   else {const {data,error}=await db.auth.admin.getUserById(identityId);if(error||!data.user)throw error||Error();recipient=data.user.email||''}
-  if(assigned&&!recipient)return reply({error:'Add an email address for this user before assigning a collection so they can be notified.'},400)
   const {error}=await db.rpc('set_collection_assignment',{kind,identity:identityId,campaign:campaignId,assigned,recipient_email:recipient});if(error)throw error
-  return reply({ok:true,message:assigned?'Access assigned. Notification email queued.':'Collection access removed.'})
+  return reply({ok:true,assigned,campaignId,notificationPending:assigned&&!recipient,message:assigned?(recipient?'Access assigned. Notification email queued.':'Access assigned. Add a notification email to send their collection notice.'):'Collection access removed.'})
  }catch{return reply({error:'Unable to save access.'},400)}
 }
