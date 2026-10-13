@@ -63,6 +63,7 @@ export default function LoginForm({designer=false,branded=false,macac=false,plym
       setMsg(error.message)
       return
     }
+    await fetch('/api/auth/sign-in-record',{method:'POST'}).catch(()=>{})
     router.push(departmentPortal ? departmentPortal : plymouth ? '/stores/plymouth/portal' : macac ? '/stores/macac/portal' : branded ? '/stores/dmd/portal' : '/home')
     router.refresh()
   }
