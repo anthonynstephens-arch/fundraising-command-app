@@ -5,7 +5,7 @@ let platform=false,user={id:'fixture-user'},pin=null,status='incomplete',require
 const touched=[]
 const db={from(table){touched.push(table);if(!['organizations','organization_members','platform_admins'].includes(table))throw Error('DATA_QUERY');const q={select(){return q},eq(){return q},order(){return q},maybeSingle:async()=>({data:table==='platform_admins'?(platform?{role:'owner'}:null):{id:'fixture',require_details:required,details_status:status},error:null}),then(resolve){resolve({data:table==='organization_members'?[{organization_id:'fixture',role:'owner'}]:[],error:null})}};return q}}
 const data=load('lib/portal/data.ts',{
- '@/lib/orders/status':{},'./reporting-period':{},'./context':context,
+ '@/lib/orders/status':{},'./reporting-period':{},'./context':context,'./collection-access':{assignedCampaignIds:async()=>[]},
  '@/lib/supabase/server':{createClient:async()=>({auth:{getUser:async()=>({data:{user}})}})},
  '@/lib/supabase/admin':{createAdminClient:()=>db},'@/lib/pin-auth':{getPortalPinSession:async()=>pin},
  'next/navigation':{redirect:p=>{throw Error('redirect:'+p)},notFound:()=>{throw Error('notFound')}}
