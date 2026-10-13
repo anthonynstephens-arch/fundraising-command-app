@@ -51,11 +51,11 @@ export async function getPortalPinSession({ allowPendingPinChange = false, inclu
   if (!data || !credential?.active || (credential.must_change_pin && !allowPendingPinChange)) return null
 
   const selected = includeCollectionAccess ? (await cookies()).get(PIN_COLLECTION_COOKIE)?.value : undefined
-  const { data: grants, error: grantError } = selected ? await db.from("portal_pin_campaign_access")
-    .select("campaign:campaigns!inner(id,organization_id)").eq("credential_id", credential.id) : {data:[],error:null}
+  const { data: grants, error: grantError } = await db.from("portal_pin_campaign_access")
+    .select("campaign:campaigns!inner(id,organization_id)").eq("credential_id", credential.id)
   if (grantError) throw grantError
   const assigned = (grants || []).flatMap((row: any) => Array.isArray(row.campaign) ? row.campaign : [row.campaign])
-  const context = pinCollectionContext(credential.organization_id, credential.role, selected, assigned)
+  const context = pinCollectionContext(credential.organization_id, credential.role, selected, includeCollectionAccess ? assigned : assigned.filter((c:any)=>c.organization_id===credential.organization_id))
   return {
     homeOrganizationId: credential.organization_id,
     delegated: context.delegated,
