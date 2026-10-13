@@ -1,5 +1,6 @@
 "use client"
 import { stationNavigation } from '@/lib/portal/context'
+import CollectionSwitcher from "@/components/portal/CollectionSwitcher"
 import Image from "next/image"
 import {isDmdOrganization,DMD_LOGO,DMD_LOGIN,DMD_MONOGRAM} from "@/lib/branding/dmd"
 import Link from "next/link"
@@ -16,16 +17,16 @@ const nav=[
   ["Agency Contacts","/portal/contacts","♙"],["Notifications","/portal/notifications","◉"],["Help","/portal/help","?"],["Account Settings","/portal/settings","⚙"],
 ]
 
-export default function PortalShell({children,org,campaign,campaigns,userEmail,organizationId,platform,lastSynced,pinAccess=false}:{children:React.ReactNode;org:any;campaign:any;campaigns:any[];userEmail:string;organizationId:string;platform:boolean;lastSynced?:string|null;pinAccess?:boolean}){
+export default function PortalShell({children,org,campaign,campaigns,userEmail,organizationId,platform,lastSynced,pinAccess=false,collectionOnly=false}:{children:React.ReactNode;org:any;campaign:any;campaigns:any[];userEmail:string;organizationId:string;platform:boolean;lastSynced?:string|null;pinAccess?:boolean;collectionOnly?:boolean}){
   const dmd=isDmdOrganization(org)
   const plymouth=org?.slug === "plymouth-township-fire-department"
   const macac=org?.slug === "macac"
   const path=usePathname()
   const router=useRouter()
   const [menuOpen,setMenuOpen]=useState(false)
-  const stationMode = org.organization_type === "detroit_fire_station" || path.startsWith("/station")
+  const stationMode = !collectionOnly && (org.organization_type === "detroit_fire_station" || path.startsWith("/station"))
   const stationHome = organizationId ? "/station/" + organizationId : "/station"
-  const navigation = stationMode ? (organizationId ? stationNavigation(organizationId) : []) : nav
+  const navigation = collectionOnly ? nav.filter(([,href])=>["/portal","/portal/sales","/portal/orders","/portal/products","/portal/progress","/portal/reports","/portal/help"].includes(href)) : stationMode ? (organizationId ? stationNavigation(organizationId) : []) : nav
   const storefrontHref = macac ? "/stores/macac" : campaign?.slug ? "/fundraisers/" + encodeURIComponent(campaign.slug) : "/fundraisers"
   function destination(href: string) {
     if(!stationMode || !href.startsWith('/station')) return href + q
@@ -62,9 +63,9 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
       <nav id="agency-navigation" className={menuOpen?"mobile-open":""}>
         {navigation.map(([label,href,icon])=>{
           const active=href.startsWith("/station") ? path===href : href==="/portal"?path==="/portal":path.startsWith(href)
-          return <Fragment key={href}><Link href={destination(href)} className={active?"active":""} onClick={()=>setMenuOpen(false)}><i>{icon}</i><span>{label}</span></Link>{dmd&&href==='/portal'&&<><Link href="/stores/dmd/private" className={path==='/stores/dmd/private'?'active':''} onClick={()=>setMenuOpen(false)}><i aria-hidden="true">✦</i><span>Private Store</span></Link><Link href={destination('/portal/proofs')} className={path==='/portal/proofs'?'active':''} onClick={()=>setMenuOpen(false)}><i aria-hidden="true">▣</i><span>PROOFS</span><span className="dmd-proofs-new">NEW</span></Link></>}</Fragment>
+          return <Fragment key={href}><Link href={destination(href)} className={active?"active":""} onClick={()=>setMenuOpen(false)}><i>{icon}</i><span>{label}</span></Link>{!collectionOnly&&dmd&&href==='/portal'&&<><Link href="/stores/dmd/private" className={path==='/stores/dmd/private'?'active':''} onClick={()=>setMenuOpen(false)}><i aria-hidden="true">✦</i><span>Private Store</span></Link><Link href={destination('/portal/proofs')} className={path==='/portal/proofs'?'active':''} onClick={()=>setMenuOpen(false)}><i aria-hidden="true">▣</i><span>PROOFS</span><span className="dmd-proofs-new">NEW</span></Link></>}</Fragment>
         })}
-        {<Link href={"/portal/members?org="+encodeURIComponent(organizationId)} onClick={()=>setMenuOpen(false)}><i aria-hidden="true">♙</i><span>Users & Access</span></Link>}
+        {!collectionOnly&&<Link href={"/portal/members?org="+encodeURIComponent(organizationId)} onClick={()=>setMenuOpen(false)}><i aria-hidden="true">♙</i><span>Users & Access</span></Link>}
         <Link className="agency-storefront-link" href={storefrontHref} target="_blank" rel="noopener noreferrer" onClick={()=>setMenuOpen(false)}><i aria-hidden="true">↗</i><span>View Storefront</span></Link>
       </nav>
       <div className={"agency-side-bottom "+(menuOpen?"mobile-open":"")}>
@@ -73,7 +74,7 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
         <div className="agency-menu-sync"><span>↻</span><div><small>LAST CAMPAIGN SYNC</small><strong>{lastSynced?new Date(lastSynced).toLocaleString("en-US",{timeZone:"America/Detroit",timeZoneName:"short"}):(stationMode ? "Not synced yet" : "No campaign sync recorded")}</strong></div></div>
         <div className="agency-live"><b>{!lastSynced?"Sync not verified":Date.now()-new Date(lastSynced).getTime()>86400000?"Sync may be out of date":"Recent campaign sync"}</b><span>{lastSynced?"Last recorded collection sync; not a live connection check":"Open Products to check the collection and sync"}</span></div>
         <button type="button" className="fc-replay-tour" onClick={()=>{setMenuOpen(false);window.dispatchEvent(new Event('fc-replay-tour'))}}>↻ Guided walkthrough</button>
-        <div className="fc-mobile-bell"><NotificationInbox organizationId={organizationId}/></div>
+        <div className="fc-mobile-bell">{!collectionOnly&&<NotificationInbox organizationId={organizationId}/>}</div>
         {platform&&<Link href="/dashboard">Platform Admin ↗</Link>}
       </div>
     </aside>
@@ -85,13 +86,13 @@ export default function PortalShell({children,org,campaign,campaigns,userEmail,o
           <div><strong>{org.name}</strong><span>{dmd || macac ? "Merchandise Portal" : stationMode ? "Station Portal" : "Agency Portal"}</span></div>
         </div>
         <div className="agency-top-actions">
-          <NotificationInbox organizationId={organizationId}/>
+          {!collectionOnly&&<NotificationInbox organizationId={organizationId}/>}
           <div className="agency-avatar" title={userEmail}>{(userEmail||"U").slice(0,2).toUpperCase()}</div>
           <button type="button" className="agency-signout" onClick={signOut}>Sign out</button>
         </div>
       </header>
-      <main className="agency-content">{!dmd && <p className="fc-note">Reporting period: {org.reporting_start_date || "All history"} through today · Detroit time</p>}{children}</main>
+      <main className="agency-content"><CollectionSwitcher campaignId={campaign?.id}/>{!dmd && <p className="fc-note">Reporting period: {org.reporting_start_date || "All history"} through today · Detroit time</p>}{children}</main>
     </div>
-    {organizationId&&<PortalOnboarding organizationId={organizationId} query={q}/>}
+    {!collectionOnly&&organizationId&&<PortalOnboarding organizationId={organizationId} query={q}/>}
   </div></DepartmentPortalGate>
 }
