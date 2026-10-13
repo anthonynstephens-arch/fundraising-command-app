@@ -1829,3 +1829,6 @@ input:focus,select:focus,textarea:focus{
 /* Square fundraiser slideshow tiles with uncropped artwork */
 .pub-campaign-card .pub-campaign-image{width:100%;height:auto!important;aspect-ratio:1/1;background:linear-gradient(135deg,#f8f8ff,#eef1ff)}
 .pub-campaign-card .pub-campaign-slideshow>img{object-fit:contain!important;padding:18px;background:transparent}
+
+.agency-tracking-lines .agency-line-head,.agency-tracking-lines .agency-line-item{grid-template-columns:minmax(220px,2fr) minmax(90px,1fr) 55px 85px 90px}
+@media(max-width:900px){.agency-tracking-lines .agency-line-head,.agency-tracking-lines .agency-line-item{grid-template-columns:minmax(180px,2fr) 55px 80px}}

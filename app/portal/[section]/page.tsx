@@ -17,7 +17,7 @@ import CampaignProductContributionManager from "@/components/CampaignProductCont
 import PortalNotificationSettings from '@/components/portal/PortalNotificationSettings'
 import DmdProductReview from '@/components/portal/DmdProductReview'
 import DmdSignProofs from '@/components/portal/DmdSignProofs'
-import { getPortalData, money, portalStats } from "@/lib/portal/data"
+import { getPortalData, money, portalStats, portalOrderRows, isTrackingOnlyCollection } from "@/lib/portal/data"
 import { customerName, orderLabel } from "@/lib/orders/display"
 import {isDmdOrganization} from "@/lib/branding/dmd"
 
@@ -38,31 +38,7 @@ export default async function PortalSection({params,searchParams}:{params:Promis
   const end=d.campaign?.ends_at?new Date(d.campaign.ends_at):null
   const daysRemaining=end?Math.max(0,Math.ceil((end.getTime()-Date.now())/86400000)):0
 
-  const orderRows=d.orders.map((o:any)=>{
-    const oi=d.items.filter((i:any)=>i.order_id===o.id)
-    const items=oi.reduce((a:number,i:any)=>a+Number(i.quantity||0),0)
-    const gross=oi.reduce((a:number,i:any)=>a+Number(i.unit_price||0)*Number(i.quantity||0),0)
-    const refund=oi.reduce((a:number,i:any)=>a+Number(i.refunded_merchandise_amount||0),0)
-    const eligible=Math.max(0,gross-refund)
-    const raised=oi.reduce((a:number,i:any)=>a+Number(i.contribution_amount||0)-Number(i.refunded_contribution_amount||0),0)
-    const lines=oi.map((i:any)=>({
-      id:i.id,
-      title:i.title,
-      variant:i.variant_title,
-      sku:i.sku,
-      quantity:Number(i.quantity||0),
-      unitPrice:Number(i.unit_price||0),
-      total:Number(i.unit_price||0)*Number(i.quantity||0),
-      contribution:Number(i.contribution_amount||0)-Number(i.refunded_contribution_amount||0)
-    }))
-    const address=[
-      o.shipping_address1,
-      o.shipping_address2,
-      [o.shipping_city,o.shipping_province,o.shipping_postal_code].filter(Boolean).join(", "),
-      o.shipping_country
-    ].filter(Boolean)
-    return {id:o.id,order:orderLabel(o.shopify_order_number),date:o.placed_at?new Date(o.placed_at).toLocaleDateString():"—",customer:customerName(o),email:o.customer_email||"",phone:o.customer_phone||"",address,addressText:address.join(" "),items,gross,eligible,refund,raised,payment:o.status||"unknown",fulfillment:orderFulfillment(o),lines}
-  })
+  const orderRows=portalOrderRows(d)
 
   const productMap=new Map<string,any>()
   for(const p of d.products){
@@ -94,7 +70,7 @@ export default async function PortalSection({params,searchParams}:{params:Promis
   if(section==="proofs" && isDmdOrganization(d.org)) content=<DmdSignProofs organizationId={d.organizationId} adminView={d.platform}/>
   else if(section==="contacts") content=<AgencyContacts organizationId={d.organizationId}/>
   else if(section==="sales") content=<SalesExplorer orders={d.orders} items={d.items} products={d.products}/>
-  else if(section==="orders") content=<OrdersExplorer rows={orderRows}/>
+  else if(section==="orders") content=<OrdersExplorer rows={orderRows} trackingOnly={isTrackingOnlyCollection(d.campaign)}/>
   else if(section==="reports") content=<ReportsTool org={d.org.name} campaign={d.campaign?.name||"Campaign"} orders={orderRows} products={products} payouts={payoutRows} totals={s}/>
   else if(section==="marketing") content=<MarketingTools campaignId={d.campaign?.id||""} organizationId={d.organizationId} url={d.campaign?.public_store_url||""} orgName={d.org.name} orgLogo={d.org.logo_url||null} campaignName={d.campaign?.name||"Campaign"} daysRemaining={daysRemaining} pct={pct} raised={money(s.raised)} goal={money(goal)} startsAt={d.campaign?.starts_at||null} endsAt={d.campaign?.ends_at||null} products={products.slice(0,8)} last3Sales={last3Sales} previous3Sales={previous3Sales}/>
   else if(section==="products") content=<>
