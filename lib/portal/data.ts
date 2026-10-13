@@ -11,7 +11,7 @@ export async function getPortalData(requestedOrg?:string, requestedCampaign?:str
   const auth=await createClient()
   const [{data:{user}},savedPinSession]=await Promise.all([
     auth.auth.getUser(),
-    getPortalPinSession()
+    getPortalPinSession({includeCollectionAccess:true})
   ])
   if(!user&&!savedPinSession) redirect("/login")
   const db=createAdminClient()
@@ -45,8 +45,9 @@ export async function getPortalData(requestedOrg?:string, requestedCampaign?:str
     db.from("webhook_events").select("created_at,processed_at,event_type").not("processed_at","is",null).order("created_at",{ascending:false}).limit(1).maybeSingle()
   ])
   if(!org) redirect("/apply")
+  if(pinSession?.delegated && !org.is_active) notFound()
 
-  const allCampaigns=campaigns||[]
+  const allCampaigns=(campaigns||[]).filter((c:any)=>!pinSession?.delegated || pinSession.campaignIds?.includes(c.id))
   if(requestedCampaign && !allCampaigns.some((c:any)=>c.id===requestedCampaign)) notFound()
   const selectedCampaign=
     (requestedCampaign&&allCampaigns.find((c:any)=>c.id===requestedCampaign))||
@@ -95,7 +96,7 @@ export async function getPortalData(requestedOrg?:string, requestedCampaign?:str
   const memberRole=context.role
   const canManage=!!platform||memberRole==="owner"||memberRole==="admin"||memberRole==="manager"
   const canEditCampaign=canManage
-  const canEditStorefront=!!platform||!!memberRole
+  const canEditStorefront=!pinSession?.delegated&&(!!platform||!!memberRole)
   const canEditContributions=!!platform||memberRole==="owner"
   const userMap=new Map<string,string>()
   if(canManage){
