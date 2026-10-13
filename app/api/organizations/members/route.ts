@@ -1,3 +1,4 @@
+import {inviteMember} from '@/lib/portal/member-invite'
 import { NextRequest, NextResponse } from "next/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { authorizeOrganizationManagement } from "@/lib/portal/authorize-organization-management"
@@ -43,21 +44,15 @@ export async function POST(req:NextRequest){
       const {data:userData}=await db.auth.admin.getUserById(membership.user_id)
       const oldUser=userData?.user
       if(oldUser?.email_confirmed_at) return NextResponse.json({error:"This member has already activated their account."},{status:400})
-      if(oldUser) await db.auth.admin.deleteUser(oldUser.id)
-      const {data:inviteData,error:inviteError}=await db.auth.admin.inviteUserByEmail(email,{redirectTo:"https://fundraising-command-app.vercel.app/auth/callback?next=/auth/invite"})
-      if(inviteError) return NextResponse.json({error:inviteError.message},{status:400})
-      if(!inviteData.user) return NextResponse.json({error:"Unable to resend invitation."},{status:400})
-      const {error:updateError}=await db.from("organization_members").update({user_id:inviteData.user.id}).eq("id",membershipId).eq("organization_id",organizationId)
-      if(updateError) return NextResponse.json({error:updateError.message},{status:400})
-      return NextResponse.json({ok:true,invited:true,userId:inviteData.user.id})
+      if(!oldUser?.email)return NextResponse.json({error:'User email not found.'},{status:400})
+      await inviteMember(db,oldUser.email)
+      return NextResponse.json({ok:true,invited:true,userId:oldUser.id})
     }
 
     let authUser=await findUserByEmail(db,email)
     let invited=false
     if(!authUser){
-      const {data,error}=await db.auth.admin.inviteUserByEmail(email,{redirectTo:"https://fundraising-command-app.vercel.app/auth/callback?next=/auth/invite"})
-      if(error) return NextResponse.json({error:error.message},{status:400})
-      authUser=data.user
+      authUser=await inviteMember(db,email)
       invited=true
     }
     if(!authUser) return NextResponse.json({error:"Unable to create user access."},{status:400})
@@ -66,7 +61,7 @@ export async function POST(req:NextRequest){
       .upsert({organization_id:organizationId,user_id:authUser.id,role},{onConflict:"organization_id,user_id"})
       .select("id,user_id,role,created_at").single()
     if(error) return NextResponse.json({error:error.message},{status:400})
-    return NextResponse.json({member:data,email:authUser.email,invited})
+    return NextResponse.json({member:data,email:authUser.email,invited,message:"User added. Assign collections in Users & Access."})
   }catch(e:any){return NextResponse.json({error:e?.message||"Unable to add member."},{status:500})}
 }
 
