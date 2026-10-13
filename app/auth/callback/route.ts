@@ -1,3 +1,4 @@
+import {recordSignIn} from '@/lib/portal/sign-in-record'
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 
@@ -8,7 +9,7 @@ export async function GET(request:Request){
   if(code){
     const supabase=await createClient()
     const {error}=await supabase.auth.exchangeCodeForSession(code)
-    if(!error) return NextResponse.redirect(new URL(next,url.origin))
+    if(!error) {await recordSignIn().catch(()=>{});return NextResponse.redirect(new URL(next.startsWith('/')&&!next.startsWith('//')?next:'/home',url.origin))}
   }
   const err=url.searchParams.get("error_description")||"Invitation link is invalid or has expired."
   return NextResponse.redirect(new URL("/auth/invite?error="+encodeURIComponent(err),url.origin))
