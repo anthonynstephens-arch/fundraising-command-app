@@ -3,7 +3,7 @@ import 'server-only'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { shopifyGraphQL, clearShopifyAccessToken } from './admin'
 import { reportingDay } from '@/lib/portal/reporting-period'
-const ORDERS="query DepartmentHistory($after:String,$query:String!){orders(first:5,after:$after,query:$query,sortKey:CREATED_AT){nodes{id name createdAt cancelledAt displayFinancialStatus displayFulfillmentStatus fulfillments{status displayStatus deliveredAt} currencyCode email phone shippingAddress{firstName lastName company address1 address2 city province provinceCode zip country countryCodeV2 phone} billingAddress{firstName lastName company address1 address2 city province provinceCode zip country countryCodeV2 phone} subtotalPriceSet{shopMoney{amount}} totalPriceSet{shopMoney{amount}} lineItems(first:25){nodes{id title variantTitle sku quantity currentQuantity product{id} variant{id} discountedUnitPriceAfterAllDiscountsSet{shopMoney{amount}}} pageInfo{hasNextPage endCursor}}} pageInfo{hasNextPage endCursor}}}"
+const ORDERS="query DepartmentHistory($after:String,$query:String!){orders(first:20,after:$after,query:$query,sortKey:CREATED_AT){nodes{id name createdAt cancelledAt displayFinancialStatus displayFulfillmentStatus fulfillments{status displayStatus deliveredAt} currencyCode email phone shippingAddress{firstName lastName company address1 address2 city province provinceCode zip country countryCodeV2 phone} billingAddress{firstName lastName company address1 address2 city province provinceCode zip country countryCodeV2 phone} subtotalPriceSet{shopMoney{amount}} totalPriceSet{shopMoney{amount}} lineItems(first:25){nodes{id title variantTitle sku quantity currentQuantity product{id} variant{id} discountedUnitPriceAfterAllDiscountsSet{shopMoney{amount}}} pageInfo{hasNextPage endCursor}}} pageInfo{hasNextPage endCursor}}}"
 const LINES="query DepartmentHistoryLines($id:ID!,$after:String){order(id:$id){lineItems(first:100,after:$after){nodes{id title variantTitle sku quantity currentQuantity product{id} variant{id} discountedUnitPriceAfterAllDiscountsSet{shopMoney{amount}}} pageInfo{hasNextPage endCursor}}}}"
 const SCOPES="query HistoryAccess{currentAppInstallation{accessScopes{handle}}}"
 export async function importDepartmentHistory(organizationId:string, cursor:string|null, expectedStart:string|null, through:string) {
@@ -25,7 +25,8 @@ export async function importDepartmentHistory(organizationId:string, cursor:stri
   const end=new Date(through+'T00:00:00Z');end.setUTCDate(end.getUTCDate()+2)
   const result=await shopifyGraphQL(ORDERS,{after:cursor,query:'created_at:>='+start+'T00:00:00Z created_at:<'+end.toISOString()})
   if(result.orders.pageInfo.hasNextPage&&(!result.orders.pageInfo.endCursor||result.orders.pageInfo.endCursor===cursor))throw new Error('Shopify order pagination stalled. Retry the import.')
-  let imported=0,items=0,scanned=0
+  let scanned=0
+  const payloads:any[]=[]
   for(const order of result.orders.nodes){
     scanned++
     if(reportingDay(order.createdAt)>through)continue
@@ -40,9 +41,9 @@ export async function importDepartmentHistory(organizationId:string, cursor:stri
       page=more.order.lineItems.pageInfo
       if(page.hasNextPage&&page.endCursor===previousCursor)throw new Error('Shopify line-item pagination stalled. Retry the import.')
     }
-    const {data,error}=await db.rpc('import_department_order',{target_org:organizationId,payload:{...order,displayFulfillmentStatus:fulfillmentStatus(order),lines}})
-    if(error)throw error
-    if(data>0){imported++;items+=data}
+    payloads.push({...order,displayFulfillmentStatus:fulfillmentStatus(order),lines})
   }
-  return {scanned,imported,items,nextCursor:result.orders.pageInfo.hasNextPage?result.orders.pageInfo.endCursor:null,through}
+  const {data:batch,error:batchError}=await db.rpc('import_department_orders',{target_org:organizationId,payloads})
+  if(batchError)throw batchError
+  return {scanned,imported:Number(batch.imported),items:Number(batch.items),nextCursor:result.orders.pageInfo.hasNextPage?result.orders.pageInfo.endCursor:null,through}
 }
