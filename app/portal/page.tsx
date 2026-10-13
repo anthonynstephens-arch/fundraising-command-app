@@ -15,10 +15,10 @@ export const dynamic="force-dynamic"
 export default async function PortalOverview({searchParams}:{searchParams:Promise<{org?:string;campaign?:string}>}){
   const {org,campaign}=await searchParams
   const d=await getPortalData(org,campaign)
-  if(d.org.slug==='britton-mane')redirect('/designers/britton-mane')
+  if(!d.pinSession?.delegated&&d.org.slug==='britton-mane')redirect('/designers/britton-mane')
   let dmdOrders:Awaited<ReturnType<typeof getDmdPortalOrders>>=[]
   let dmdOrderError=false
-  if(isDmdOrganization(d.org)){
+  if(!d.pinSession?.delegated&&isDmdOrganization(d.org)){
     try{dmdOrders=await getDmdPortalOrders()}catch(error){console.error('DMD company orders unavailable',error);dmdOrderError=true}
   }
   const s=portalStats(d)
@@ -46,7 +46,7 @@ export default async function PortalOverview({searchParams}:{searchParams:Promis
   }
   const top=[...productTotals.values()].sort((a,b)=>b.gross-a.gross).slice(0,4)
 
-  return <PortalShell org={d.org} campaign={d.campaign} campaigns={d.campaigns} userEmail={d.user.email||""} organizationId={d.organizationId} platform={d.platform} lastSynced={d.lastWebhook?.created_at||null} pinAccess={!!d.pinSession}>
+  return <PortalShell org={d.org} campaign={d.campaign} campaigns={d.campaigns} userEmail={d.user.email||""} organizationId={d.organizationId} platform={d.platform} lastSynced={d.lastWebhook?.created_at||null} pinAccess={!!d.pinSession} collectionOnly={!!d.pinSession?.delegated}>
     <section className="agency-hero">
       <span>Welcome back,</span><h1>{firstName}</h1>
       <div className="agency-hero-tags">
