@@ -30,6 +30,7 @@ export default function StationLogin() {
         return
       } else {
         const { error } = await createClient().auth.signInWithPassword({ email, password })
+        if(!error)await fetch('/api/auth/sign-in-record',{method:'POST'}).catch(()=>{})
         if (error) throw error
         router.replace('/station')
       }

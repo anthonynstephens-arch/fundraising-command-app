@@ -1,3 +1,4 @@
+import {assignedCampaignIds} from '@/lib/portal/collection-access'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -29,7 +30,7 @@ async function canManageProducts(ids: string[]) {
 
   const organizationIds = [...new Set(campaigns.map(campaign => campaign.organization_id))]
   if (pinSession?.role === 'owner') {
-    if (organizationIds.every(id => id === pinSession.organizationId)) return true
+    if (organizationIds.every(id => id === pinSession.organizationId) && campaignIds.every(id=>pinSession.campaignIds?.includes(id))) return true
   }
   if (!user) return false
 
@@ -39,6 +40,8 @@ async function canManageProducts(ids: string[]) {
   ])
   if (platform) return true
 
+  const assigned=await assignedCampaignIds(admin,user.id)
+  if(!campaignIds.every(id=>assigned.includes(id)))return false
   const manageable = new Set((memberships || [])
     .filter(member => member.role === 'owner')
     .map(member => member.organization_id))

@@ -24,7 +24,7 @@ const auth={auth:{getUser:async()=>({data:{user}})}}
 const db={from(table){const filters={};const q={select(){return q},eq(k,v){filters[k]=v;return q},then(resolve){resolve({data:user?[{organization_id:org,role:memberRole}]:[]})},maybeSingle:async()=>({data:table==='platform_admins'?(platform?{user_id:'admin'}:null):{id:filters.id,is_active:true,organization_type:'fire_department'}})};return q}}
 const context={};vm.runInNewContext(stripTypeScriptTypes(fs.readFileSync('lib/portal/context.ts','utf8')).replace(/export function/g,'function')+'\nexports.resolvePortalContext=resolvePortalContext',{exports:context})
 const code=stripTypeScriptTypes(fs.readFileSync('lib/portal/organization-access.ts','utf8')).replace(/import \{([^}]+)\} from '([^']+)'/g,(_,names,path)=>'const {'+names+'}=require('+JSON.stringify(path)+')').replace('export async function','async function')+'\nexports.access=organizationAccess'
-vm.runInNewContext(code,{exports:gate,require(name){if(name.includes('supabase/server'))return {createClient:async()=>auth};if(name.includes('supabase/admin'))return {createAdminClient:()=>db};if(name.includes('pin-auth'))return {getPortalPinSession:async()=>pin};if(name.includes('context'))return context;throw Error(name)}})
+vm.runInNewContext(code,{exports:gate,require(name){if(name.includes('supabase/server'))return {createClient:async()=>auth};if(name.includes('supabase/admin'))return {createAdminClient:()=>db};if(name.includes('pin-auth'))return {getPortalPinSession:async()=>pin};if(name.includes('context'))return context;if(name.includes('collection-access'))return {assignedCampaignIds:async()=>[]};throw Error(name)}})
 ;(async()=>{
  assert.equal(await gate.access(org),null)
  pin={organizationId:org,credentialId:'test-pin',role:'viewer'}

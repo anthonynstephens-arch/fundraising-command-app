@@ -1,3 +1,4 @@
+import {userCanViewCampaign} from '@/lib/portal/collection-access'
 import {organizationAccess} from '@/lib/portal/organization-access'
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
@@ -15,6 +16,7 @@ async function gate(campaignId:string,organizationId:string){
     db.from("organization_members").select("role").eq("organization_id",organizationId).eq("user_id",user.id).maybeSingle(),
     db.from("campaigns").select("id").eq("id",campaignId).eq("organization_id",organizationId).maybeSingle()
   ])
+  if(!await userCanViewCampaign(user.id,campaignId))return {ok:false as const,status:403,user:null}
   if(!campaign) return {ok:false as const,status:404,user:null}
   if(!platform&&!member) return {ok:false as const,status:403,user:null}
   return {ok:true as const,status:200,user}

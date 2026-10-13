@@ -11,7 +11,7 @@ export default async function Station({ params }: { params: Promise<{ id: string
   const collections = await stationCollections(d.db, id)
   const {data:syncs}=collections.length ? await d.db.from('campaign_shopify_collections').select('last_synced_at').in('campaign_id',collections.map(c=>c.id)).order('last_synced_at',{ascending:false}).limit(1) : {data:[]}
   const lastSynced=syncs?.[0]?.last_synced_at||null
-  const { data: history, error } = await d.db.from('payout_requests').select('id,status,requested_amount,requested_at,admin_note,paid_at').eq('organization_id', id).order('requested_at', { ascending: false })
+  const { data: history, error } = await d.db.from('payout_requests').select('id,status,requested_amount,requested_at,admin_note,paid_at').eq('organization_id', id).in('campaign_id',collections.map(c=>c.id)).order('requested_at', { ascending: false })
   if (error) throw error
   const sum = (key: string) => collections.reduce((a, c) => a + Number(c[key] || 0), 0)
   const color = /^#[0-9a-f]{6}$/i.test(d.station.brand_primary_color || '') ? d.station.brand_primary_color : '#cf4538'

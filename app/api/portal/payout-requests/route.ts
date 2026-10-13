@@ -1,3 +1,4 @@
+import {userCanViewCampaign} from '@/lib/portal/collection-access'
 import {organizationAccess} from '@/lib/portal/organization-access'
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
@@ -11,6 +12,7 @@ export async function POST(request:Request){
   const {organizationId,campaignId,note}=await request.json()
   if(!organizationId||!campaignId) return NextResponse.json({error:"Missing organization or campaign"},{status:400})
 
+  if(!await userCanViewCampaign(user.id,campaignId))return NextResponse.json({error:'Collection not assigned.'},{status:403})
   const db=createAdminClient()
   const access=await organizationAccess(organizationId)
   if(!access?.canFinance)return NextResponse.json({error:'Owner or admin access required.'},{status:403})

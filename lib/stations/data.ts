@@ -1,3 +1,4 @@
+import {assignedCampaignIds} from '@/lib/portal/collection-access'
 import 'server-only'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -39,7 +40,10 @@ export async function stationAccess(id?: string) {
 export async function stationCollections(db: ReturnType<typeof createAdminClient>, organizationId: string): Promise<Array<{id:string;name:string;available:number;[key:string]:any}>> {
   const { data: campaigns, error } = await db.from('campaigns').select('*').eq('organization_id', organizationId).order('created_at', { ascending: false })
   if (error) throw error
-  return Promise.all((campaigns || []).map(async campaign => {
+  const auth=await createClient(),[{data:{user}},pin]=await Promise.all([auth.auth.getUser(),getPortalPinSession()])
+  const {data:platform}=user?await db.from('platform_admins').select('user_id').eq('user_id',user.id).eq('is_active',true).maybeSingle():{data:null}
+  const allowed=platform?null:await assignedCampaignIds(db,user?.id,pin?.credentialId)
+  return Promise.all((campaigns || []).filter(c=>allowed===null||allowed.includes(c.id)).map(async campaign => {
     const { data, error } = await db.rpc('station_collection_balance', { target_campaign: campaign.id })
     if (error) throw error
     return { ...campaign, ...data[0] }

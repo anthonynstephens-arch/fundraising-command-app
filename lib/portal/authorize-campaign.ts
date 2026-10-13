@@ -1,3 +1,4 @@
+import {assignedCampaignIds} from './collection-access'
 import 'server-only'
 
 import { createClient } from '@/lib/supabase/server'
@@ -44,7 +45,7 @@ async function authorizeCampaignForRoles(
   if (
     !pinSession?.delegated &&
     pinSession?.organizationId === organizationId &&
-    allowedRoles.has(pinSession.role)
+    allowedRoles.has(pinSession.role) && pinSession.campaignIds?.includes(campaignId)
   ) {
     return { ok: true as const, db, campaign, actorId: `pin:${pinSession.credentialId}` }
   }
@@ -58,7 +59,7 @@ async function authorizeCampaignForRoles(
     db.from('organization_members').select('role').eq('organization_id', organizationId).eq('user_id', user.id).maybeSingle(),
   ])
 
-  if (platform || allowedRoles.has(membership?.role || '')) {
+  if (platform || (allowedRoles.has(membership?.role || '') && (await assignedCampaignIds(db,user.id)).includes(campaignId))) {
     return { ok: true as const, db, campaign, actorId: user.id }
   }
 
