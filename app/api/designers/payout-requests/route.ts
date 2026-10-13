@@ -1,3 +1,4 @@
+import {assignedCampaignIds} from '@/lib/portal/collection-access'
 import {NextResponse} from 'next/server'
 import {organizationAccess} from '@/lib/portal/organization-access'
 export async function POST(request:Request){
@@ -5,6 +6,8 @@ export async function POST(request:Request){
  if(!body||typeof body.organizationId!=='string'||typeof body.campaignId!=='string'||![body.organizationId,body.campaignId].every(id=>/^[0-9a-f-]{36}$/i.test(id)))return NextResponse.json({error:'Invalid designer program.'},{status:400})
  const access=await organizationAccess(body.organizationId)
  if(!access?.canFinance||access.org.organization_type!=='designer')return NextResponse.json({error:'Designer payout access required.'},{status:403})
+ const [kind,identityId]=access.actor.split(':')
+ if(!access.platform&&!(await assignedCampaignIds(access.db,kind==='user'?identityId:null,kind==='pin'?identityId:null)).includes(body.campaignId))return NextResponse.json({error:'This collection is not assigned to you.'},{status:403})
  const {data:campaign,error:campaignError}=await access.db.from('campaigns').select('id').eq('id',body.campaignId).eq('organization_id',body.organizationId).eq('campaign_type','designer').maybeSingle()
  if(campaignError)return NextResponse.json({error:'Unable to check designer program.'},{status:500})
  if(!campaign)return NextResponse.json({error:'Designer program not found.'},{status:404})
