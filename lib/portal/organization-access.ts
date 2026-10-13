@@ -2,9 +2,9 @@ import {createClient} from '@/lib/supabase/server'
 import {createAdminClient} from '@/lib/supabase/admin'
 import {getPortalPinSession} from '@/lib/pin-auth'
 import {resolvePortalContext} from '@/lib/portal/context'
-export async function organizationAccess(organizationId:string){
+export async function organizationAccess(organizationId:string, includeCollectionAccess=false){
  const db=createAdminClient(),auth=await createClient()
- const [{data:{user}},pin]=await Promise.all([auth.auth.getUser(),getPortalPinSession()])
+ const [{data:{user}},pin]=await Promise.all([auth.auth.getUser(),getPortalPinSession({includeCollectionAccess})])
  if(!user&&!pin)return null
  const [{data:platform},{data:memberships}]=await Promise.all([
   user?db.from('platform_admins').select('user_id').eq('user_id',user.id).eq('is_active',true).maybeSingle():Promise.resolve({data:null}),
