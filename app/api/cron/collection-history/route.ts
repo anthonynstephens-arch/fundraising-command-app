@@ -20,5 +20,5 @@ export async function GET(request:Request){
   }while(cursor&&Date.now()-started<230000)
   await db.from('collection_history_imports').update({lease_until:null}).eq('organization_id',job.organization_id).eq('lease_until',lease)
   return NextResponse.json({ok:true,state,scanned,imported,items})
- }catch(e){await db.from('collection_history_imports').update({state:'failed',lease_until:null,last_error:e instanceof Error?e.message:'Import failed.',updated_at:new Date().toISOString()}).eq('organization_id',job.organization_id).eq('lease_until',lease);return NextResponse.json({error:'Historical import failed; details recorded.'},{status:500})}
+ }catch(e){await db.from('collection_history_imports').update({state:'failed',lease_until:null,last_error:typeof (e as any)?.message==='string'?(e as any).message.slice(0,1000):'Import failed.',updated_at:new Date().toISOString()}).eq('organization_id',job.organization_id).eq('lease_until',lease);return NextResponse.json({error:'Historical import failed; details recorded.'},{status:500})}
 }
