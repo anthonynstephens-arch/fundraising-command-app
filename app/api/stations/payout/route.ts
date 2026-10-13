@@ -1,3 +1,4 @@
+import {userCanViewCampaign} from '@/lib/portal/collection-access'
 import {organizationAccess} from '@/lib/portal/organization-access'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
@@ -8,6 +9,7 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: 'Email sign-in required.' }, { status: 401 })
   const body = await request.json().catch(() => null)
   if (!body?.campaignId || !/^[0-9a-f-]{36}$/i.test(body.campaignId)) return NextResponse.json({ error: 'Invalid collection.' }, { status: 400 })
+  if(!await userCanViewCampaign(user.id,body.campaignId))return NextResponse.json({error:'Collection not assigned.'},{status:403})
   const db=createAdminClient()
   const {data:campaign}=await db.from('campaigns').select('organization_id').eq('id',body.campaignId).maybeSingle()
   const access=campaign?await organizationAccess(campaign.organization_id):null
