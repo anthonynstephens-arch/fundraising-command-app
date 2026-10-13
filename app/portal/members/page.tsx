@@ -83,7 +83,7 @@ export default async function PortalMembers({searchParams}:{searchParams:Promise
         <div><span>QUICK ACCESS</span><h2>PIN Members</h2><p>Approve requested access or create a department PIN.</p></div>
         <strong>{pins.length}</strong>
       </div>
-      <PinAccessManager organizationId={organizationId} credentials={pins} canApprove={!!platform||role==="owner"||role==="admin"}/>
+      <PinAccessManager organizationId={organizationId} credentials={pins} canAssignCollections={!!platform} canApprove={!!platform||role==="owner"||role==="admin"}/>
     </div>
   </div>
 }
