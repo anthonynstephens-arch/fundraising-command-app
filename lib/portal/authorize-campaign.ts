@@ -42,6 +42,7 @@ async function authorizeCampaignForRoles(
   }
 
   if (
+    !pinSession?.delegated &&
     pinSession?.organizationId === organizationId &&
     allowedRoles.has(pinSession.role)
   ) {
