@@ -1,3 +1,4 @@
+import {assignedCampaignIds} from './collection-access'
 import { isDmdSampleOrder } from '@/lib/branding/dmd'
 import { awaitingFulfillment, orderFulfillment } from '@/lib/orders/status'
 import { inReportingPeriod } from './reporting-period'
@@ -21,15 +22,20 @@ export async function getPortalData(requestedOrg?:string, requestedCampaign?:str
     user?db.from("organization_members").select("organization_id,role").eq("user_id",user.id):Promise.resolve({data:[] as any[]})
   ])
 
-  const context = resolvePortalContext(requestedOrg, !!platform, memberships || [], savedPinSession)
+  const allowedCampaignIds=platform?null:await assignedCampaignIds(db,user?.id,savedPinSession?.credentialId)
+  const {data:assigned}=allowedCampaignIds?.length ? await db.from('campaigns').select('id,organization_id').in('id',allowedCampaignIds) : {data:[]}
+  const effectiveMemberships=[...(memberships||[])]
+  for(const c of user?assigned||[]:[])if(!effectiveMemberships.some(m=>m.organization_id===c.organization_id))effectiveMemberships.push({organization_id:c.organization_id,role:'viewer'})
+  if(!platform&&!requestedOrg&&assigned?.length)requestedOrg=savedPinSession?.organizationId||assigned[0].organization_id
+  const context = resolvePortalContext(requestedOrg, !!platform, effectiveMemberships, savedPinSession)
   if(context.denied) notFound()
-  const pinSession = context.usePin ? savedPinSession : null
+  const pinSession = !user ? savedPinSession : context.usePin ? savedPinSession : null
   let organizationId = context.organizationId
   if(!organizationId&&platform){
     const {data:first}=await db.from("organizations").select("id").eq("is_active",true).order("name").limit(1).maybeSingle()
     organizationId=first?.id||null
   }
-  if(!organizationId) redirect("/apply")
+  if(!organizationId) redirect("/portal/no-access")
 
   const {data:accessOrg,error:accessError}=await db.from('organizations').select('require_details,details_status').eq('id',organizationId).maybeSingle()
   if(accessError)throw accessError
@@ -47,7 +53,8 @@ export async function getPortalData(requestedOrg?:string, requestedCampaign?:str
   if(!org) redirect("/apply")
   if(pinSession?.delegated && !org.is_active) notFound()
 
-  const allCampaigns=(campaigns||[]).filter((c:any)=>!pinSession?.delegated || pinSession.campaignIds?.includes(c.id))
+  const allCampaigns=(campaigns||[]).filter((c:any)=>allowedCampaignIds===null || allowedCampaignIds.includes(c.id))
+  if(!platform&&!allCampaigns.length) redirect("/portal/no-access")
   if(requestedCampaign && !allCampaigns.some((c:any)=>c.id===requestedCampaign)) notFound()
   const selectedCampaign=
     (requestedCampaign&&allCampaigns.find((c:any)=>c.id===requestedCampaign))||
@@ -96,7 +103,8 @@ export async function getPortalData(requestedOrg?:string, requestedCampaign?:str
   const memberRole=context.role
   const canManage=!!platform||memberRole==="owner"||memberRole==="admin"||memberRole==="manager"
   const canEditCampaign=canManage
-  const canEditStorefront=!pinSession?.delegated&&(!!platform||!!memberRole)
+  const collectionOnly=!!pinSession?.delegated||(!platform&&!pinSession&&!memberships?.some((m:any)=>m.organization_id===organizationId))
+  const canEditStorefront=!collectionOnly&&(!!platform||!!memberRole)
   const canEditContributions=!!platform||memberRole==="owner"
   const userMap=new Map<string,string>()
   if(canManage){
@@ -116,7 +124,7 @@ export async function getPortalData(requestedOrg?:string, requestedCampaign?:str
   }
 
   return {
-    db,user:portalUser,pinSession,platform:!!platform,organizationId,org,campaigns:allCampaigns,campaign:selectedCampaign,
+    db,user:portalUser,pinSession,collectionOnly,platform:!!platform,organizationId,org,campaigns:allCampaigns,campaign:selectedCampaign,
     orders:campaignOrders,items:campaignItems,products,payouts:campaignPayouts,payoutRequests:payoutRequests||[],members:members||[],pinMembers:pinMembers||[],allOrgs:allOrgs||[],
     balance,memberRole,canManage,canEditCampaign,canEditStorefront,canEditContributions,userMap,lastWebhook:collectionSync?.last_synced_at ? {created_at:collectionSync.last_synced_at} : null
   }
