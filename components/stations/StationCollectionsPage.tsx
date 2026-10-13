@@ -1,10 +1,9 @@
 import PortalShell from '@/components/portal/PortalShell'
 import StationCollectionManager from './StationCollectionManager'
-import {stationAccess} from '@/lib/stations/data'
+import {stationAccess,stationCollections} from '@/lib/stations/data'
 export default async function StationCollectionsPage({id,adminView=false}:{id:string;adminView?:boolean}) {
   const d=await stationAccess(id)
-  const {data:campaigns,error}=await d.db.from('campaigns').select('id,name,status').eq('organization_id',id).order('created_at',{ascending:false})
-  if(error)throw error
+  const campaigns=await stationCollections(d.db,id)
   const funds=await Promise.all((campaigns||[]).map(async c=>{
     const [links,products]=await Promise.all([
       d.db.from('campaign_shopify_collections').select('id,title,shopify_collection_id,last_synced_at').eq('campaign_id',c.id).order('title'),
