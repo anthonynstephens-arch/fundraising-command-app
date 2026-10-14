@@ -1,3 +1,4 @@
+import {hasDmdPortalAccess} from '@/lib/shopify/dmd-access'
 import {redirect} from 'next/navigation'
 import PortalShell from '@/components/portal/PortalShell'
 import DmdPrivateStore from '@/components/portal/DmdPrivateStore'
@@ -10,6 +11,7 @@ export const dynamic='force-dynamic'
 export const metadata={title:'Private store | Detroit Metropolitan Dance'}
 
 export default async function Page(){
+  if(!await hasDmdPortalAccess())redirect(DMD_LOGIN)
   const d=await getPortalData(DMD_ORGANIZATION_ID)
   if(d.org.slug!=='detroit-metropolitan-dance')redirect(DMD_LOGIN)
   const products=await getDmdPrivateProducts()

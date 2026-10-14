@@ -129,6 +129,11 @@ export async function importShopifyOrder(
   payload: any,
   shopDomain: string
 ) {
+  const attributes=payload.note_attributes||payload.customAttributes||[]
+  if(attributes.some((a:any)=>(a.name||a.key)==='fundraiser_private_store'&&a.value==='dmd')
+    &&attributes.some((a:any)=>(a.name||a.key)==='fundraiser_organization_id'&&a.value===DMD_ORGANIZATION_ID)){
+    return {skipped:true,reason:'DMD private base-price purchase',campaignId:null,lineItemCount:0}
+  }
   const supabase = createAdminClient()
 
   const { data: store } = await supabase

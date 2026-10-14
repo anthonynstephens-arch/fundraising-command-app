@@ -1,6 +1,9 @@
+import {getCampaignStorefront,type StoreProduct,type StoreVariant} from '@/lib/public/storefront'
+import {DMD_SLUG} from '@/lib/branding/dmd'
+import {DMD_REVIEW_PRODUCTS} from '@/lib/branding/dmd-products'
 import { isDmdSampleOrder } from '@/lib/branding/dmd'
 import { fulfillmentStatus } from '@/lib/orders/status'
-import {shopifyGraphQL,stripShopifyGid} from '@/lib/shopify/admin'
+import {stripShopifyGid} from '@/lib/shopify/admin'
 import {createAdminClient} from '@/lib/supabase/admin'
 
 export const DMD_ORGANIZATION_ID='4eaaf553-8adf-478c-8118-5ddb9795326c'
@@ -10,30 +13,30 @@ export const DMD_COMPANY_ID='gid://shopify/Company/5742690597'
 type Variant={id:string;title:string;price:string;inventoryQuantity:number|null;inventoryPolicy:'DENY'|'CONTINUE'}
 export type PrivateProduct={id:string;title:string;description:string;image:string|null;variants:Variant[]}
 
-const catalogQuery=`query DmdPrivateProducts($id: ID!, $after: String) {
-  collection(id: $id) { id title products(first: 100, after: $after) {
-    nodes { id title status description featuredMedia { preview { image { url } } }
-      variants(first: 100) { nodes { id title price inventoryQuantity inventoryPolicy } pageInfo { hasNextPage endCursor } } }
-    pageInfo { hasNextPage endCursor } } }
-}`
+// Map the live storefront to the same base prices shown in the DMD review.
+const REVIEW_KEYS:Record<string,string>={
+  'detroit-met-zip-up':'cultivator-zip',
+  'detroit-met-t-shirt':'comfort-colors-tee',
+  'detroit-met-youth-size-t-shirt':'youth-softstyle',
+  'detroit-met-logomark-crewneck':'softstyle-crewneck',
+  'det-met-long-sleeve-cotton-tee':'long-sleeve',
+  'det-met-pocket-7-inch-athletic-short':'pocketed-short',
+  'det-met-ring-spun-hoodie':'comfort-colors-hoodie',
+}
 
 export async function getDmdPrivateProducts():Promise<PrivateProduct[]>{
-  const products:PrivateProduct[]=[]
-  let after:string|null=null
-  do{
-    const result:any=await shopifyGraphQL(catalogQuery,{id:DMD_PRIVATE_COLLECTION_ID,after})
-    if(!result.collection)throw new Error('The DMD private Shopify collection could not be found.')
-    for(const product of result.collection.products.nodes){
-      if(product.status!=='ACTIVE')continue
-      // Reject incomplete variant pages instead of silently displaying an unbuyable catalog.
-      if(product.variants.pageInfo.hasNextPage)throw new Error(`Too many variants on ${product.title}; contact the store administrator.`)
-      products.push({id:product.id,title:product.title,description:product.description,image:product.featuredMedia?.preview?.image?.url||null,variants:product.variants.nodes})
+  const campaign=await getCampaignStorefront(DMD_SLUG)
+  if(!campaign||!campaign.shopifyConnected)throw new Error('The live DMD catalog is temporarily unavailable.')
+  return campaign.products.map((product:StoreProduct)=>{
+    const review=DMD_REVIEW_PRODUCTS.find(item=>item.id===REVIEW_KEYS[product.handle])
+    if(!review)throw new Error('Detroit Decal base pricing needs to be configured for '+product.title)
+    return {id:product.id,title:product.title,description:product.description,
+      image:product.images[0]?.url||review.image,
+      variants:product.variants.map((variant:StoreVariant)=>({id:variant.id,title:variant.title,
+        price:review.basePrice.toFixed(2),inventoryQuantity:variant.available?null:0,
+        inventoryPolicy:'DENY' as const})),
     }
-    const page=result.collection.products.pageInfo
-    after=page.hasNextPage?page.endCursor:null
-    if(page.hasNextPage&&!after)throw new Error('Shopify returned an incomplete private catalog.')
-  }while(after)
-  return products
+  })
 }
 
 export type DmdOrder={

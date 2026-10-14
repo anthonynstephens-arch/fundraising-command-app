@@ -1,7 +1,7 @@
 import {NextResponse} from 'next/server'
 import {hasDmdPortalAccess} from '@/lib/shopify/dmd-access'
 import {getDmdPrivateProducts,DMD_ORGANIZATION_ID,DMD_COMPANY_ID} from '@/lib/shopify/dmd-private'
-import {getShopifyConfig,stripShopifyGid} from '@/lib/shopify/admin'
+import {shopifyGraphQL,stripShopifyGid,toShopifyGid} from '@/lib/shopify/admin'
 
 export const dynamic='force-dynamic'
 
@@ -29,16 +29,27 @@ export async function POST(request:Request){
       const variant=variants.get(id)
       if(!variant||(variant.inventoryPolicy==='DENY'&&variant.inventoryQuantity!==null&&variant.inventoryQuantity<quantity))return NextResponse.json({error:'An item is unavailable. Refresh the private store and try again.'},{status:409})
     }
-    const {shopDomain}=getShopifyConfig()
-    const params=new URLSearchParams()
-    params.set('attributes[fundraiser_organization_id]',DMD_ORGANIZATION_ID)
-    params.set('attributes[fundraiser_private_store]','dmd')
-    params.set('attributes[shopify_company_id]',stripShopifyGid(DMD_COMPANY_ID)!)
-    if(date)params.set('attributes[In hands by]',date)
-    params.set('utm_source','fundraiser_command')
-    params.set('utm_medium','dmd_private_portal')
-    const lines=[...byId].map(([id,q])=>`${id}:${q}`).join(',')
-    return NextResponse.json({checkoutUrl:`https://${shopDomain}/cart/${lines}?${params.toString()}`})
+    const customAttributes=[
+      {key:'fundraiser_organization_id',value:DMD_ORGANIZATION_ID},
+      {key:'fundraiser_private_store',value:'dmd'},
+      {key:'shopify_company_id',value:stripShopifyGid(DMD_COMPANY_ID)!},
+    ]
+    if(date)customAttributes.push({key:'In hands by',value:date})
+    // Never accept a price, discount, title, or Shopify variant from the browser.
+    // A draft holds these prices for this authorized order only; public catalog prices stay intact.
+    const lineItems=[...byId].map(([id,quantity])=>{
+      const variant=variants.get(id)!
+      return {variantId:toShopifyGid('ProductVariant',id),quantity,
+        priceOverride:{amount:variant.price,currencyCode:'USD'}}
+    })
+    const result=await shopifyGraphQL(`mutation DmdPrivateCheckout($input: DraftOrderInput!) {
+      draftOrderCreate(input: $input) { draftOrder { id invoiceUrl } userErrors { field message } }
+    }`,{input:{lineItems,customAttributes,tags:['DMD private store'],
+      presentmentCurrencyCode:'USD',acceptAutomaticDiscounts:false,allowDiscountCodesInCheckout:false}})
+    const draft=result.draftOrderCreate
+    if(draft.userErrors?.length||!draft.draftOrder?.invoiceUrl)throw new Error('Unable to prepare the private order: '+JSON.stringify(draft.userErrors))
+    return NextResponse.json({checkoutUrl:draft.draftOrder.invoiceUrl},{headers:{'Cache-Control':'private, no-store'}})
+
   }catch(error){
     console.error('DMD private checkout failed',error)
     return NextResponse.json({error:'Shopify checkout is unavailable. Please try again.'},{status:500})
