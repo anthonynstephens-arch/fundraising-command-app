@@ -1,10 +1,11 @@
 "use client"
+import { recordActivity } from "@/lib/activity/client"
 import { statusLabel } from "@/lib/orders/status"
 import { Fragment,useMemo,useState } from "react"
 
 function money(v:number){return new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(v||0)}
 function csvCell(v:any){return '"'+String(v??"").replaceAll('"','""')+'"'}
-function download(name:string,body:string,type="text/csv"){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([body],{type}));a.download=name;a.click();URL.revokeObjectURL(a.href)}
+function download(name:string,body:string,type="text/csv"){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([body],{type}));a.download=name;recordActivity("download",name);a.click();URL.revokeObjectURL(a.href)}
 
 export default function OrdersExplorer({rows,trackingOnly=false}:{rows:any[];trackingOnly?:boolean}){
   const [search,setSearch]=useState("");const [payment,setPayment]=useState("all");const [fulfillment,setFulfillment]=useState("all")

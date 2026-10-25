@@ -1,4 +1,5 @@
 "use client"
+import { recordActivity } from "@/lib/activity/client"
 import { useMemo,useState } from "react"
 import { jsPDF } from "jspdf"
 
@@ -14,7 +15,7 @@ const reportTypes=[
 function money(v:any){return new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format(Number(v||0))}
 function csvCell(v:any){return '"'+String(v??"").replaceAll('"','""')+'"'}
 function slug(v:string){return v.replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"").toLowerCase()}
-function saveCsv(name:string,rows:any[][]){const body=rows.map(r=>r.map(csvCell).join(",")).join("\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([body],{type:"text/csv"}));a.download=name;a.click();URL.revokeObjectURL(a.href)}
+function saveCsv(name:string,rows:any[][]){const body=rows.map(r=>r.map(csvCell).join(",")).join("\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([body],{type:"text/csv"}));a.download=name;recordActivity("download",name);a.click();URL.revokeObjectURL(a.href)}
 
 export default function ReportsTool({org,campaign,orders,products,payouts,totals}:{org:string;campaign:string;orders:any[];products:any[];payouts:any[];totals:any}){
   const [type,setType]=useState<(typeof reportTypes)[number][0]>("Campaign Summary")
@@ -145,6 +146,7 @@ export default function ReportsTool({org,campaign,orders,products,payouts,totals
     }
 
     addFooter(doc)
+    recordActivity("download",type+" PDF · "+campaign)
     doc.save(slug(campaign||"campaign")+"-"+slug(type)+".pdf")
   }
 

@@ -1,4 +1,5 @@
 "use client"
+import { recordActivity } from "@/lib/activity/client"
 
 import { useEffect,useMemo,useRef,useState } from "react"
 import QRCode from "qrcode"
@@ -13,7 +14,7 @@ function copyText(text:string,setNotice:(s:string)=>void,label:string){
 }
 function downloadCanvas(canvas:HTMLCanvasElement|null,name:string){
   if(!canvas)return
-  const a=document.createElement("a");a.href=canvas.toDataURL("image/png");a.download=name;a.click()
+  const a=document.createElement("a");a.href=canvas.toDataURL("image/png");a.download=name;recordActivity("download",name);a.click()
 }
 function wrap(ctx:CanvasRenderingContext2D,text:string,x:number,y:number,max:number,lineHeight:number,maxLines=5){
   const words=text.split(" ");let line="";let lines=0

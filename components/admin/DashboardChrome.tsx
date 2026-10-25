@@ -18,7 +18,7 @@ const nav = [
   { href: "/dashboard/launch-check", label: "Launch Check" },
 ]
 
-export default function DashboardChrome({ children }: { children: React.ReactNode }) {
+export default function DashboardChrome({ children, showActivity=false }: { children: React.ReactNode; showActivity?:boolean }) {
   const pathname = usePathname()
 
   return (
@@ -34,7 +34,7 @@ export default function DashboardChrome({ children }: { children: React.ReactNod
 
         <div className="fc-nav-label">PLATFORM</div>
         <nav className="fc-app-nav">
-          {nav.map((item) => {
+          {[...nav,...(showActivity?[{href:'/dashboard/activity',label:'Activity Log'}]:[])].map((item) => {
             const active = item.exact ? pathname === item.href : pathname.startsWith(item.href)
             return <Link key={item.href} href={item.href} className={active ? "active" : ""}>{item.label}</Link>
           })}
