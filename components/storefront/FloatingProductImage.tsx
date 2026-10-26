@@ -6,6 +6,11 @@ import type { StoreImage } from "@/lib/public/storefront";
 // Clear only white pixels connected to the outer edge. White printing inside
 // the garment stays intact; the original Shopify asset is never changed.
 export function clearExteriorWhite(pixels: Uint8ClampedArray, width: number, height: number) {
+  // Already-cut-out assets own their alpha mask. Flooding through transparent
+  // pixels into white fabric destroys light garments (especially the shorts).
+  for (let offset = 3; offset < pixels.length; offset += 4) {
+    if (pixels[offset] < 255) return;
+  }
   const visited = new Uint8Array(width * height);
   const queue = new Uint32Array(width * height);
   let head = 0, tail = 0;
