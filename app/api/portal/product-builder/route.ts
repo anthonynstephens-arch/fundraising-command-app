@@ -95,7 +95,7 @@ export async function POST(request:Request){
         return {id:v.id,price:p.price.toFixed(2),optionValues:v.selectedOptions.map((o:any)=>({optionName:o.name,name:o.value}))}
       })
       const updated={...record,pricingVersion:3,markupShare:0.75,baseMultiplier:1,pricing,updatedAt:new Date().toISOString(),updatedBy:a.actorId}
-      errors((await shopifyGraphQL(setProduct,{identifier:{id:existing.id},input:{id:existing.id,productOptions:current.product.options.map((o:any)=>({name:o.name,values:[...new Set(current.product.variants.nodes.map((v:any)=>v.selectedOptions.find((x:any)=>x.name===o.name)?.value))].map(name=>({name}))})),variants,metafields:[{namespace:BUILDER_NAMESPACE,key:'record',type:'json',value:JSON.stringify(updated)}]}})).productSet)
+      errors((await shopifyGraphQL(setProduct,{identifier:{id:existing.id},input:{productOptions:current.product.options.map((o:any)=>({name:o.name,values:[...new Set(current.product.variants.nodes.map((v:any)=>v.selectedOptions.find((x:any)=>x.name===o.name)?.value))].map(name=>({name}))})),variants,metafields:[{namespace:BUILDER_NAMESPACE,key:'record',type:'json',value:JSON.stringify(updated)}]}})).productSet)
       if(existing.status==='ACTIVE')await syncCollection(a.campaign.id,record.collectionId,body.organizationId)
       return NextResponse.json({ok:true,productId:existing.id,prices:pricing})
     }
