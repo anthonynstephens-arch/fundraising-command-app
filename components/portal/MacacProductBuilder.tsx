@@ -21,6 +21,7 @@ export default function MacacProductBuilder({organizationId,campaignId}:{organiz
   const [missingScopes,setMissingScopes]=useState<string[]>([])
   const [prices,setPrices]=useState<any[]>([])
   const [markupShare,setMarkupShare]=useState(0.75)
+  const [pricingDirty,setPricingDirty]=useState(false)
   const [draftId,setDraftId]=useState(''),[saved,setSaved]=useState(false),[busy,setBusy]=useState(''),[message,setMessage]=useState(''),[waiting,setWaiting]=useState(false)
   const popup=useRef<Window|null>(null),nonce=useRef('')
   const context=new URLSearchParams({organizationId,campaignId}).toString()
@@ -28,13 +29,22 @@ export default function MacacProductBuilder({organizationId,campaignId}:{organiz
   async function refresh(reconnect=false){const data=await json('/api/portal/product-builder?'+context+(reconnect?'&refresh=1':''));setMissingScopes(data.missingScopes||[]);setProducts(data.products);setCollections(data.collections);setCollectionId(c=>c||data.collections[0]?.shopify_collection_id||'')}
   useEffect(()=>{void refresh().catch(e=>setMessage(e.message))},[organizationId,campaignId]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(()=>{
-    function receive(e:MessageEvent){
-      if(e.origin!==STUDIO_ORIGIN||e.source!==popup.current||e.data?.type!=='fc:design-export'||e.data.nonce!==nonce.current)return
+    async function receive(e:MessageEvent){
+      if(e.origin!==STUDIO_ORIGIN||e.source!==popup.current||e.data?.nonce!==nonce.current)return
+      if(e.data?.type==='fc:graphics-request'||e.data?.type==='fc:graphic-upload'){
+        try{
+          if(e.data.type==='fc:graphic-upload')await json('/api/portal/product-builder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({organizationId,campaignId,action:'save-graphic',url:e.data.url,name:e.data.name})})
+          const data=await json('/api/portal/product-builder?'+context+'&graphics=1')
+          popup.current?.postMessage({type:'fc:graphics',nonce:nonce.current,graphics:data.graphics},STUDIO_ORIGIN)
+        }catch(error){popup.current?.postMessage({type:'fc:graphics-error',nonce:nonce.current,error:(error as Error).message},STUDIO_ORIGIN)}
+        return
+      }
+      if(e.data?.type!=='fc:design-export')return
       setPrices([]);setMarkupShare(0.75);setDesign(e.data.design);setTitle('MACAC '+(e.data.design.productTitle||'Custom apparel'));setDraftId(crypto.randomUUID());setSaved(false);setWaiting(false);setMessage('Design received. Review the proofs, get your base pricing, and set your selling prices.')
       popup.current?.postMessage({type:'fc:design-received',nonce:nonce.current},STUDIO_ORIGIN)
     }
     window.addEventListener('message',receive);return()=>window.removeEventListener('message',receive)
-  },[])
+  },[organizationId,campaignId,context])
   async function search(more=false){
     catalogRequest.current?.abort()
     const controller=new AbortController();catalogRequest.current=controller
@@ -60,14 +70,15 @@ export default function MacacProductBuilder({organizationId,campaignId}:{organiz
     popup.current=window.open(url.href,'macac-product-designer','popup,width=1440,height=1000')
     setWaiting(!!popup.current);setMessage(popup.current?'Use the customizer to choose a color, add artwork, and review your design. Then choose “Use in MACAC store.”':'Your browser blocked the customizer window. Allow pop-ups for this site and select Customize again.')
   }
-  async function action(type:'save'|'publish'|'quote',id=draftId){
+  async function action(type:'save'|'publish'|'quote'|'update-pricing',id=draftId){
     setBusy(type);setMessage('')
     try{
       const data=await json('/api/portal/product-builder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({organizationId,campaignId,action:type,draftId:id,title,retailPrices:Object.fromEntries(prices.map(p=>[p.sourceVariantId,p.price])),collectionId,design})})
       if(type==='quote'){setMarkupShare(0.75);setPrices(data.prices);setMessage('Live retail prices calculated below.');return}
       if(type==='save')setSaved(true)
+      if(type==='save'||type==='update-pricing'){setPricingDirty(false);if(data.prices)setPrices(data.prices)}
       recordActivity('request',`MACAC product ${type}: ${data.productId}`)
-      setMessage(type==='save'?'Shopify draft saved. Review the product below, then publish when ready.':'Published to the MACAC store. Your per-item donation is connected to fundraising reports.')
+      setMessage(type==='update-pricing'?'Pricing saved. MACAC receives 75% of the markup on each size.':type==='save'?'Shopify draft saved. Review the product below, then publish when ready.':'Published to the MACAC store. Your per-item donation is connected to fundraising reports.')
       await refresh()
     }catch(e){setMessage((e as Error).message)}finally{setBusy('')}
   }
@@ -80,6 +91,7 @@ export default function MacacProductBuilder({organizationId,campaignId}:{organiz
     return low===high?money(low):`${money(low)}–${money(high)}`
   }
   function setStartingPrice(raw:string){
+    setPricingDirty(true)
     const startingBase=Math.min(...prices.map(p=>p.base))
     setPrices(current=>current.map(p=>({...p,price:raw===''?'':(Math.round((p.base+Number(raw)-startingBase)*100)/100).toFixed(2)})))
   }
@@ -111,17 +123,17 @@ export default function MacacProductBuilder({organizationId,campaignId}:{organiz
         {!saved&&<button disabled={!!busy||!title.trim()||!collectionId} onClick={()=>void action('quote')}>{busy==='quote'?'Calculating…':prices.length?'Refresh base pricing':'Get base pricing'}</button>}
         {starting&&<div className="mb-price-summary">
           <div><span>BASE PRICE</span><strong>{money(starting.base)}</strong></div>
-          <label><span>Your starting selling price</span><input aria-label="Starting selling price" inputMode="decimal" type="number" min={starting.base} max="10000" step="0.01" value={starting.price} disabled={saved||!!busy} onChange={e=>setStartingPrice(e.target.value)}/></label>
+          <label><span>Your starting selling price</span><input aria-label="Starting selling price" inputMode="decimal" type="number" min={starting.base} max="10000" step="0.01" value={starting.price} disabled={!!busy} onChange={e=>setStartingPrice(e.target.value)}/></label>
           <div className="mb-proceeds"><span>MACAC receives per sale · {markupShare===0.75?'75% of markup':'saved pricing'}</span><strong>{validPrices?earningsLabel(prices):'Check your prices'}</strong></div>
           <p>Changing the starting price applies the same markup to every size and preserves size upcharges. You can also adjust individual size prices below.</p>
         </div>}
-        {!!prices.length&&<div className="mb-price-table"><table><caption>Customer pricing by size</caption><thead><tr><th>Variant</th><th>Our base</th><th>Your selling price</th><th>MACAC receives</th></tr></thead><tbody>{prices.map((p,i)=><tr key={p.sourceVariantId}><td>{p.title}</td><td>{money(p.base)}</td><td><input aria-label={p.title+' selling price'} inputMode="decimal" type="number" step="0.01" min={p.base} max="10000" value={p.price} disabled={saved||!!busy} onChange={e=>setPrices(current=>current.map((row,index)=>index===i?{...row,price:e.target.value}:row))}/></td><td>{p.price!==''&&Number(p.price)>=p.base?money(Math.round((Math.round(Number(p.price)*100)-Math.round(p.base*100))*markupShare)/100):'Below base'}</td></tr>)}</tbody></table></div>}
+        {!!prices.length&&<div className="mb-price-table"><table><caption>Customer pricing by size</caption><thead><tr><th>Variant</th><th>Our base</th><th>Your selling price</th><th>MACAC receives</th></tr></thead><tbody>{prices.map((p,i)=><tr key={p.sourceVariantId}><td>{p.title}</td><td>{money(p.base)}</td><td><input aria-label={p.title+' selling price'} inputMode="decimal" type="number" step="0.01" min={p.base} max="10000" value={p.price} disabled={!!busy} onChange={e=>{setPricingDirty(true);setPrices(current=>current.map((row,index)=>index===i?{...row,price:e.target.value}:row))}}/></td><td>{p.price!==''&&Number(p.price)>=p.base?money(Math.round((Math.round(Number(p.price)*100)-Math.round(p.base*100))*markupShare)/100):'Below base'}</td></tr>)}</tbody></table></div>}
         {!!prices.length&&!validPrices&&<p role="alert">Each selling price must be at least the Detroit Decal base price for that size.</p>}
         <p>Original artwork, placement details, and proofs are saved with the Shopify product for production. Self-service products use printing; contact us for embroidery.</p>
-        <button disabled={!!busy||missingScopes.includes('write_products')||saved||!validPrices||!title.trim()||!collectionId} onClick={()=>void action('save')}>{busy==='save'?'Saving…':saved?'Shopify draft saved':'Save Shopify draft'}</button>
-        {saved&&<button disabled={!!busy||!!missingScopes.length} onClick={()=>void action('publish')}>{busy==='publish'?'Publishing…':'Publish to MACAC store'}</button>}
+        <button disabled={!!busy||missingScopes.includes('write_products')||(saved&&!pricingDirty)||!validPrices||!title.trim()||!collectionId} onClick={()=>void action(saved?'update-pricing':'save')}>{busy==='save'||busy==='update-pricing'?'Saving…':saved?pricingDirty?'Save updated pricing':'Pricing saved':'Save Shopify draft'}</button>
+        {saved&&<button disabled={!!busy||!!missingScopes.length||pricingDirty} onClick={()=>void action('publish')}>{busy==='publish'?'Publishing…':'Publish to MACAC store'}</button>}
       </div></div>
     </section>}
-    <section className="agency-card mb-panel"><h2>Your created products</h2><p>Drafts stay off the storefront until you publish. If publication or sync is interrupted, retry on the same product.</p><div className="mb-catalog">{products.map(p=><article key={p.id}>{p.image&&<img src={p.image} alt=""/>}<strong>{p.title}</strong><span>{p.status==='ACTIVE'?'Active in Shopify':'Shopify draft'} · {earningsLabel(p.record.pricing,p.record.markup||0,p.record.pricingVersion===3?0.75:1)} to MACAC per sale</span><button disabled={!!busy} onClick={()=>{setMarkupShare(p.record.pricingVersion===3?0.75:1);setPrices(p.record.pricing||[]);setDesign(p.record.design);setTitle(p.title);setCollectionId(collections.find(c=>c.shopify_collection_id.split('/').pop()===p.record.collectionId.split('/').pop())?.shopify_collection_id||'');setDraftId(p.record.draftId);setSaved(true);setMessage('Saved product loaded. Publishing again safely retries storefront sync.')}}>Review product</button></article>)}</div>{!products.length&&<p>No products created yet.</p>}</section>
+    <section className="agency-card mb-panel"><h2>Your created products</h2><p>Drafts stay off the storefront until you publish. If publication or sync is interrupted, retry on the same product.</p><div className="mb-catalog">{products.map(p=><article key={p.id}>{p.image&&<img src={p.image} alt=""/>}<strong>{p.title}</strong><span>{p.status==='ACTIVE'?'Active in Shopify':'Shopify draft'} · {earningsLabel(p.record.pricing,p.record.markup||0,p.record.pricingVersion===3?0.75:1)} to MACAC per sale</span><button disabled={!!busy} onClick={()=>{setMarkupShare(0.75);setPricingDirty(p.record.pricingVersion!==3);setPrices((p.record.pricing||[]).map((row:any)=>({...row,base:p.record.pricingVersion===2?row.customizerPrice:row.base})));setDesign(p.record.design);setTitle(p.title);setCollectionId(collections.find(c=>c.shopify_collection_id.split('/').pop()===p.record.collectionId.split('/').pop())?.shopify_collection_id||'');setDraftId(p.record.draftId);setSaved(true);setMessage(p.record.pricingVersion===3?'Edit selling prices below, then save updated pricing before publishing.':'Pricing recalculated with the new formula. Review your selling prices and save updated pricing before publishing.')}}>Review product</button></article>)}</div>{!products.length&&<p>No products created yet.</p>}</section>
   </div>
 }

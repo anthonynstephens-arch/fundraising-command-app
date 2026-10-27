@@ -2,7 +2,7 @@ import {NextResponse} from 'next/server'
 import {authorizeCampaignManagement} from '@/lib/portal/authorize-campaign'
 import {shopifyGraphQL,clearShopifyAccessToken} from '@/lib/shopify/admin'
 import {collectionGid,syncCollection} from '@/lib/shopify/sync-collection'
-import {STUDIO_ORIGIN,BUILDER_NAMESPACE,requireBuilderId,validateDesign,contributionPrice,MACAC_BASE_MULTIPLIER,normalizeCatalogProduct} from '@/lib/portal/product-builder'
+import {STUDIO_ORIGIN,BUILDER_NAMESPACE,requireBuilderId,assetUrl,validateDesign,contributionPrice,MACAC_BASE_MULTIPLIER,normalizeCatalogProduct} from '@/lib/portal/product-builder'
 
 export const dynamic='force-dynamic'
 export const maxDuration=120
@@ -33,6 +33,11 @@ export async function GET(request:Request){
     const q=new URL(request.url).searchParams
     const a=await access(q.get('organizationId')||'',q.get('campaignId')||'')
     if(!a.ok)return NextResponse.json({error:a.error},{status:a.status})
+    if(q.get('graphics')==='1'){
+      const {data,error}=await a.db.from('organization_graphics').select('id,name,url').eq('organization_id',q.get('organizationId')!).order('created_at',{ascending:false}).limit(500)
+      if(error)throw error
+      return NextResponse.json({graphics:data||[]},{headers:{'Cache-Control':'no-store'}})
+    }
     if(q.get('catalog')==='1'){
       const url=new URL('/api/shopify/collection',STUDIO_ORIGIN)
       url.searchParams.set('query',(q.get('query')||'').slice(0,100));url.searchParams.set('pageSize','24')
@@ -60,11 +65,43 @@ export async function POST(request:Request){
     const body=await request.json()
     const a=await access(body.organizationId||'',body.campaignId||'')
     if(!a.ok)return NextResponse.json({error:a.error},{status:a.status})
+    if(body.action==='save-graphic'){
+      const url=assetUrl(body.url)
+      if(new URL(url).hostname!=='xdlgfhoirpcivtxlxmec.supabase.co'||!new URL(url).pathname.startsWith('/storage/v1/object/public/design-assets/artwork/'))throw new Error('Use artwork uploaded through the MACAC designer.')
+      const name=typeof body.name==='string'?body.name.trim().slice(0,180):''
+      if(!name)throw new Error('Give this artwork a name.')
+      const {error}=await a.db.from('organization_graphics').upsert({organization_id:body.organizationId,name,url,created_by:a.actorId},{onConflict:'organization_id,url',ignoreDuplicates:true})
+      if(error)throw error
+      return NextResponse.json({saved:true})
+    }
     const id=requireBuilderId(body.draftId)
     const handle=`macac-${a.campaign.id}-${id}`
     const existing=await getDraft(handle,a.campaign.id)
+    if(body.action==='update-pricing'){
+      if(!existing)throw new Error('Save this product before updating its pricing.')
+      const record=existing.record
+      const pricing=(record.pricing||[]).map((p:any)=>{
+        if(!Object.prototype.hasOwnProperty.call(body.retailPrices||{},p.sourceVariantId))throw new Error('Set a selling price for every size.')
+        const base=record.pricingVersion===2?p.customizerPrice:p.base
+        if(!Number.isFinite(base)||base<0)throw new Error('This product needs a fresh customizer quote.')
+        return {...p,...contributionPrice(base,1,body.retailPrices[p.sourceVariantId],0)}
+      })
+      if(!pricing.length)throw new Error('This product needs size pricing.')
+      const current=await shopifyGraphQL(`query BuilderSavedVariants($id:ID!){product(id:$id){options{name} variants(first:250){pageInfo{hasNextPage} nodes{id sku selectedOptions{name value}}}}}`,{id:existing.id})
+      if(!current.product||current.product.variants.pageInfo.hasNextPage||current.product.variants.nodes.length!==pricing.length)throw new Error('Shopify sizes changed. Contact Detroit Decal before updating pricing.')
+      const variants=current.product.variants.nodes.map((v:any)=>{
+        const p=pricing.find((row:any)=>row.sku===v.sku)
+        if(!p)throw new Error('Unable to match Shopify sizes to saved pricing.')
+        return {id:v.id,price:p.price.toFixed(2),optionValues:v.selectedOptions.map((o:any)=>({optionName:o.name,name:o.value}))}
+      })
+      const updated={...record,pricingVersion:3,markupShare:0.75,baseMultiplier:1,pricing,updatedAt:new Date().toISOString(),updatedBy:a.actorId}
+      errors((await shopifyGraphQL(setProduct,{identifier:{id:existing.id},input:{id:existing.id,productOptions:current.product.options.map((o:any)=>({name:o.name,values:[...new Set(current.product.variants.nodes.map((v:any)=>v.selectedOptions.find((x:any)=>x.name===o.name)?.value))].map(name=>({name}))})),variants,metafields:[{namespace:BUILDER_NAMESPACE,key:'record',type:'json',value:JSON.stringify(updated)}]}})).productSet)
+      if(existing.status==='ACTIVE')await syncCollection(a.campaign.id,record.collectionId,body.organizationId)
+      return NextResponse.json({ok:true,productId:existing.id,prices:pricing})
+    }
     if(body.action==='publish'){
       if(!existing)throw new Error('Save the Shopify draft before publishing.')
+      if(existing.record.pricingVersion!==3)throw new Error('Save the updated 75% markup pricing before publishing.')
       const {data:links,error}=await a.db.from('campaign_shopify_collections').select('shopify_collection_id').eq('campaign_id',a.campaign.id)
       if(error)throw error
       const collection=links?.find((l:any)=>collectionGid(l.shopify_collection_id)===existing.record.collectionId)

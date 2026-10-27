@@ -18,17 +18,18 @@ for(const bad of [null,'',NaN,Infinity])assert.throws(()=>helpers.contributionPr
 assert.throws(()=>helpers.assetUrl('https://localhost/art.png'))
 assert.throws(()=>helpers.assetUrl('https://cdn.shopify.com@localhost/art.png'))
 assert.throws(()=>helpers.assetUrl('http://test.supabase.co/art.png'))
-let denied=false,slug='macac',existing=null,savedInput=null,syncs=0,ruleUpdate=null,paginate=false,deniedWrite=false,clears=0,grantedScopes=['read_products'],catalogUrl=null
+let denied=false,slug='macac',existing=null,savedInput=null,syncs=0,ruleUpdate=null,paginate=false,deniedWrite=false,clears=0,grantedScopes=['read_products'],catalogUrl=null,graphicSaved=null
 const collection='gid://shopify/Collection/99'
-function dbQuery(table){let update;const q={select:()=>q,eq:()=>q,single:async()=>({data:{slug},error:null}),maybeSingle:async()=>({data:{slug},error:null}),update:value=>{update=value;return q},then:resolve=>{if(update)ruleUpdate=update;resolve({data:table==='campaign_shopify_collections'?[{shopify_collection_id:'99',title:'MACAC'}]:[],error:null})}};return q}
+function dbQuery(table){let update;const q={select:()=>q,eq:()=>q,order:()=>q,limit:()=>q,upsert:value=>{graphicSaved=value;return q},single:async()=>({data:{slug},error:null}),maybeSingle:async()=>({data:{slug},error:null}),update:value=>{update=value;return q},then:resolve=>{if(update)ruleUpdate=update;resolve({data:table==='campaign_shopify_collections'?[{shopify_collection_id:'99',title:'MACAC'}]:table==='organization_graphics'?[{id:'g',name:'MACAC Logo',url:'https://xdlgfhoirpcivtxlxmec.supabase.co/storage/v1/object/public/design-assets/artwork/logo.png'}]:[],error:null})}};return q}
 const db={from:dbQuery}
 async function gql(query,variables){
   if(query.includes('BuilderPermissions'))return {currentAppInstallation:{app:{title:'Connected test app',apiKey:'public-client-id'},accessScopes:grantedScopes.map(handle=>({handle}))}}
   if(query.includes('BuilderDraft'))return {products:{nodes:existing?[existing]:[]}}
+  if(query.includes('BuilderSavedVariants'))return {product:{options:[{name:'Color'},{name:'Size'}],variants:{pageInfo:{hasNextPage:false},nodes:JSON.parse(existing.metafield.value).pricing.map((p,i)=>({id:'gid://shopify/ProductVariant/'+(100+i),sku:p.sku,selectedOptions:[{name:'Color',value:'Black'},{name:'Size',value:i?'2XL':'S'}]}))}}}
   if(query.includes('BuilderCatalog'))return {collections:{nodes:[{id:collection,handle:'customizable-apparel'}]}}
   if(query.includes('BuilderSourcePage'))return {product:{variants:{pageInfo:{hasNextPage:false,endCursor:'end'},nodes:[{id:'gid://shopify/ProductVariant/4',price:'14',selectedOptions:[{name:'Color',value:'Black'},{name:'Size',value:'3XL'}],sku:'BLANK-4'}]}}}
   if(query.includes('BuilderSource'))return {product:{id:'gid://shopify/Product/1',title:'Tee',status:'ACTIVE',inCollection:true,options:[{name:'Color'},{name:'Size'}],variants:{pageInfo:{hasNextPage:paginate,endCursor:paginate?'next':null},nodes:[['1','Black','S',10],['2','Black','2XL',12],['3','White','S',10]].map(([id,color,size,price])=>({id:'gid://shopify/ProductVariant/'+id,price:String(price),selectedOptions:[{name:'Color',value:color},{name:'Size',value:size}],sku:'BLANK-'+id}))}}}
-  if(query.includes('BuilderProduct')){if(deniedWrite)throw new Error('Shopify GraphQL ACCESS_DENIED write_products access scope');savedInput=variables.input;existing={id:'gid://shopify/Product/100',handle:variables.input.handle,status:'DRAFT',metafield:{value:variables.input.metafields[0].value}};return {productSet:{product:existing,userErrors:[]}}}
+  if(query.includes('BuilderProduct')){if(deniedWrite)throw new Error('Shopify GraphQL ACCESS_DENIED write_products access scope');savedInput=variables.input;existing={id:'gid://shopify/Product/100',handle:variables.input.handle||existing?.handle,status:existing?.status||'DRAFT',metafield:{value:variables.input.metafields[0].value}};return {productSet:{product:existing,userErrors:[]}}}
   if(query.includes('BuilderMedia'))return {product:{media:{nodes:[{status:'READY'}]}}}
   if(query.includes('BuilderChannels'))return {publications:{nodes:[{id:'gid://shopify/Publication/4',name:'Online Store'}]}}
   if(query.includes('BuilderPublish'))return {publishablePublish:{userErrors:[]}}
@@ -56,6 +57,10 @@ async function send(body,origin='https://www.fundraisercommand.com'){return rout
   denied=true;assert.equal((await send({action:'save'})).status,403);denied=false
   slug='other';assert.equal((await send({action:'save'})).status,403);slug='macac'
   assert.equal((await send({action:'save'},'https://evil.example')).status,403)
+  const gallery=await route.GET({url:'https://www.fundraisercommand.com/api/portal/product-builder?organizationId=org&campaignId=campaign&graphics=1'});assert.equal(gallery.value.graphics[0].name,'MACAC Logo')
+  denied=true;assert.equal((await send({action:'save-graphic',url:'https://xdlgfhoirpcivtxlxmec.supabase.co/storage/v1/object/public/design-assets/artwork/logo.png',name:'Logo'})).status,403);denied=false
+  assert.equal((await send({action:'save-graphic',url:'https://cdn.shopify.com/foreign.png',name:'Wrong source'})).status,400)
+  assert.equal((await send({action:'save-graphic',url:'https://xdlgfhoirpcivtxlxmec.supabase.co/storage/v1/object/public/design-assets/artwork/logo.png',name:'Uploaded logo'})).status,200);assert.equal(graphicSaved.organization_id,'org');assert.equal(graphicSaved.created_by,'manager')
   const quote=await send({action:'quote'});assert.equal(quote.status,200);assert.equal(quote.value.prices.length,2);assert.equal(quote.value.prices[0].customizerPrice,15);assert.equal(quote.value.prices[0].base,15);assert.equal(quote.value.prices[0].price,25);assert.equal(quote.value.prices[0].donation,7.5);assert.equal(quote.value.prices[1].base,17);assert.equal(quote.value.prices[1].price,28);assert.equal(quote.value.prices[1].donation,8.25)
   assert.equal(savedInput,null,'Quotes must not create a product')
   paginate=true;const paginated=await send({action:'quote'});assert.equal(paginated.value.prices.length,3);assert.equal(paginated.value.prices[2].base,19);assert.equal(paginated.value.prices[2].donation,0);paginate=false
@@ -77,6 +82,10 @@ async function send(body,origin='https://www.fundraisercommand.com'){return rout
   assert.throws(()=>helpers.builderContribution(record,'campaign',{title:'Missing size'}))
   assert.equal(helpers.builderContribution({campaignId:'campaign',markup:5},'campaign',{title:'Legacy'}),5)
   const previous=savedInput;assert.equal((await send({action:'save'})).value.existing,true);assert.equal(savedInput,previous,'Retries must reuse the original Shopify product')
+  const legacy={...record,pricingVersion:2,pricing:record.pricing.map(p=>({...p,base:p.customizerPrice*1.2}))};existing.metafield.value=JSON.stringify(legacy)
+  assert.equal((await send({action:'publish'})).status,400,'Old pricing must be upgraded before publication')
+  assert.equal((await send({action:'update-pricing',retailPrices:{'gid://shopify/ProductVariant/1':14,'gid://shopify/ProductVariant/2':28}})).status,400,'Saved prices cannot go below the new base')
+  const updated=await send({action:'update-pricing'});assert.equal(updated.status,200);assert.equal(updated.value.prices[0].base,15);assert.equal(updated.value.prices[0].donation,7.5);assert.equal(updated.value.prices[1].donation,8.25);assert.equal(savedInput.status,undefined,'Pricing updates preserve publication status');assert.equal(savedInput.files,undefined,'Pricing updates preserve artwork');assert.ok(savedInput.variants.every(v=>v.id),'Pricing updates keep Shopify variant identities')
   assert.equal((await send({action:'publish'})).status,200);assert.equal(syncs,1);assert.equal(ruleUpdate,null,'Publishing must preserve per-variant proceeds rather than overwrite all sizes with one amount')
   existing.metafield.value=JSON.stringify({...record,campaignId:'other'});assert.equal((await send({action:'publish'})).status,400,'Cross-campaign drafts must be rejected')
   console.log('PASS product builder: manager/tenant/origin gates, live quote pricing, selected color and size upcharges, draft isolation, production assets, idempotent saves, publication sync and donations.')
