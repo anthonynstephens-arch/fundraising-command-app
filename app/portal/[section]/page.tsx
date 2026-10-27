@@ -1,3 +1,4 @@
+import MacacProductBuilder from '@/components/portal/MacacProductBuilder'
 import {redirect} from 'next/navigation'
 import { orderFulfillment } from '@/lib/orders/status'
 import PayoutPreferences from '@/components/portal/PayoutPreferences'
@@ -67,7 +68,8 @@ export default async function PortalSection({params,searchParams}:{params:Promis
 
   let content:React.ReactNode
 
-  if(section==="proofs" && isDmdOrganization(d.org)) content=<DmdSignProofs organizationId={d.organizationId} adminView={d.platform}/>
+  if(section==="product-builder" && d.org.slug==='macac' && d.canEditCampaign && d.campaign) content=<MacacProductBuilder organizationId={d.organizationId} campaignId={d.campaign.id}/>
+  else if(section==="proofs" && isDmdOrganization(d.org)) content=<DmdSignProofs organizationId={d.organizationId} adminView={d.platform}/>
   else if(section==="contacts") content=<AgencyContacts organizationId={d.organizationId}/>
   else if(section==="sales") content=<SalesExplorer orders={d.orders} items={d.items} products={d.products}/>
   else if(section==="orders") content=<OrdersExplorer rows={orderRows} trackingOnly={isTrackingOnlyCollection(d.campaign)}/>

@@ -5,12 +5,12 @@ import { shopifyGraphQL, stripShopifyGid, getShopifyConfig } from './admin'
 
 type PageInfo = { hasNextPage:boolean; endCursor:string|null }
 type Variant = {id:string; title:string; sku:string|null; price:string}
-type Product = {id:string; title:string; handle:string; vendor:string; productType:string; status:string; featuredImage:{url:string}|null; variants:{nodes:Variant[];pageInfo:PageInfo}}
+type Product = {builderRecord?:{value:string}|null;id:string; title:string; handle:string; vendor:string; productType:string; status:string; featuredImage:{url:string}|null; variants:{nodes:Variant[];pageInfo:PageInfo}}
 type Collection = {id:string;title:string;handle:string;products:{nodes:Product[];pageInfo:PageInfo}}
 export const collectionQuery = `query StationCollection($id: ID!, $after: String) {
   collection(id:$id) { id title handle products(first:10,after:$after,sortKey:ID) {
     pageInfo { hasNextPage endCursor }
-    nodes { id title handle vendor productType status featuredImage { url }
+    nodes { id title handle vendor productType status builderRecord:metafield(namespace:"fundraiser_builder",key:"record"){value} featuredImage { url }
       variants(first:50) { pageInfo { hasNextPage endCursor } nodes { id title sku price } }
     }
   } }
@@ -103,8 +103,11 @@ export async function syncCollection(campaignId:string,collectionId:string,organ
   const rows=variants.map(({product:p,variant:v})=>{
     const vid=stripShopifyGid(v.id)!
     const old=byVariant.get(vid)
+    let builder:any=null
+    try { builder=p.builderRecord?.value?JSON.parse(p.builderRecord.value):null } catch {}
+    const builderMarkup=builder?.campaignId===campaignId && Number.isFinite(builder.markup) && builder.markup>=0 ? builder.markup : null
     return {id:old?.id||stableVariantId(campaignId,vid),campaign_id:campaignId,shopify_product_id:stripShopifyGid(p.id),shopify_variant_id:vid,title:p.title,variant_title:v.title,sku:v.sku||null,image_url:p.featuredImage?.url||null,retail_price:Number(v.price),
-      contribution_type:old?.contribution_type||(Number(campaign.fundraising_percentage)>0?'percentage':'fixed'),contribution_value:old?.contribution_value||(old ? 0 : Number(campaign.fundraising_percentage)||Number(campaign.flat_amount_per_item)||0),is_active:old?.is_active??true,
+      contribution_type:builderMarkup!==null?'fixed':old?.contribution_type||(Number(campaign.fundraising_percentage)>0?'percentage':'fixed'),contribution_value:builderMarkup!==null?builderMarkup:old?.contribution_value||(old ? 0 : Number(campaign.fundraising_percentage)||Number(campaign.flat_amount_per_item)||0),is_active:old?.is_active??true,
       shopify_product_ref_id:productRefs.get(stripShopifyGid(p.id)),shopify_variant_ref_id:variantRefs.get(vid)}
   })
   for(let i=0;i<rows.length;i+=200) {
