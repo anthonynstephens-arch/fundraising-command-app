@@ -1,6 +1,6 @@
 import {NextResponse} from 'next/server'
 import {authorizeCampaignManagement} from '@/lib/portal/authorize-campaign'
-import {shopifyGraphQL,stripShopifyGid} from '@/lib/shopify/admin'
+import {shopifyGraphQL,stripShopifyGid,clearShopifyAccessToken} from '@/lib/shopify/admin'
 import {collectionGid,syncCollection} from '@/lib/shopify/sync-collection'
 import {STUDIO_ORIGIN,BUILDER_NAMESPACE,requireBuilderId,validateDesign,contributionPrice} from '@/lib/portal/product-builder'
 
@@ -41,10 +41,14 @@ export async function GET(request:Request){
       if(!response.ok)throw new Error('Unable to load the Design Studio catalog. Retry search.')
       return NextResponse.json(await response.json())
     }
+    if(q.get('refresh')==='1')clearShopifyAccessToken()
+    const scopeData=await shopifyGraphQL(`query BuilderPermissions{currentAppInstallation{accessScopes{handle}}}`)
+    const scopes=new Set(scopeData.currentAppInstallation.accessScopes.map((s:any)=>s.handle))
+    const missingScopes=['write_products','read_publications','write_publications'].filter(s=>!scopes.has(s))
     const {data:collections,error:collectionError}=await a.db.from('campaign_shopify_collections').select('shopify_collection_id,title').eq('campaign_id',a.campaign.id)
     if(collectionError)throw collectionError
     const result=await shopifyGraphQL(queryDraft,{query:`tag:fc-builder-${a.campaign.id}`})
-    return NextResponse.json({collections:collections||[],products:result.products.nodes.map((p:any)=>({id:p.id,title:p.title,handle:p.handle,status:p.status,image:p.featuredImage?.url,record:JSON.parse(p.metafield?.value||'{}')})),locationFee:fee()},{headers:{'Cache-Control':'no-store'}})
+    return NextResponse.json({missingScopes,collections:collections||[],products:result.products.nodes.map((p:any)=>({id:p.id,title:p.title,handle:p.handle,status:p.status,image:p.featuredImage?.url,record:JSON.parse(p.metafield?.value||'{}')})),locationFee:fee()},{headers:{'Cache-Control':'no-store'}})
   }catch(e){console.error('Product builder read failed',e);return NextResponse.json({error:'Unable to load the product builder. Check Shopify product permissions and try again.'},{status:400})}
 }
 export async function POST(request:Request){
@@ -123,5 +127,10 @@ export async function POST(request:Request){
     const result=errors((await shopifyGraphQL(setProduct,{input,identifier:{handle}})).productSet)
     if(!result.product)throw new Error('Shopify did not return a product. Retry with the same draft.')
     return NextResponse.json({ok:true,productId:result.product.id,status:result.product.status})
-  }catch(e){console.error('Product builder write failed',e);return NextResponse.json({error:e instanceof Error?e.message:'Unable to save this product.'},{status:400})}
+  }catch(e){
+    console.error('Product builder write failed',e)
+    const message=e instanceof Error?e.message:'Unable to save this product.'
+    if(/ACCESS_DENIED|access scope|Access denied/i.test(message)){clearShopifyAccessToken();return NextResponse.json({error:'The Shopify connection needs permission to create and publish products. Please contact Detroit Decal & Apparel to complete the store connection.'},{status:403})}
+    return NextResponse.json({error:message},{status:400})
+  }
 }
