@@ -9,14 +9,15 @@ assert.throws(()=>helpers.contributionPrice(12,2,-1,5))
 assert.throws(()=>helpers.assetUrl('https://localhost/art.png'))
 assert.throws(()=>helpers.assetUrl('https://cdn.shopify.com@localhost/art.png'))
 assert.throws(()=>helpers.assetUrl('http://test.supabase.co/art.png'))
-let denied=false,slug='macac',existing=null,savedInput=null,syncs=0,ruleUpdate=null
+let denied=false,slug='macac',existing=null,savedInput=null,syncs=0,ruleUpdate=null,paginate=false
 const collection='gid://shopify/Collection/99'
 function dbQuery(table){let update;const q={select:()=>q,eq:()=>q,single:async()=>({data:{slug},error:null}),maybeSingle:async()=>({data:{slug},error:null}),update:value=>{update=value;return q},then:resolve=>{if(update)ruleUpdate=update;resolve({data:table==='campaign_shopify_collections'?[{shopify_collection_id:'99',title:'MACAC'}]:[],error:null})}};return q}
 const db={from:dbQuery}
 async function gql(query,variables){
   if(query.includes('BuilderDraft'))return {products:{nodes:existing?[existing]:[]}}
   if(query.includes('BuilderCatalog'))return {collections:{nodes:[{id:collection,handle:'customizable-apparel'}]}}
-  if(query.includes('BuilderSource'))return {product:{id:'gid://shopify/Product/1',title:'Tee',status:'ACTIVE',inCollection:true,options:[{name:'Color'},{name:'Size'}],variants:{pageInfo:{hasNextPage:false},nodes:[['1','Black','S',10],['2','Black','2XL',12],['3','White','S',10]].map(([id,color,size,price])=>({id:'gid://shopify/ProductVariant/'+id,price:String(price),selectedOptions:[{name:'Color',value:color},{name:'Size',value:size}],inventoryItem:{sku:'BLANK-'+id}}))}}}
+  if(query.includes('BuilderSourcePage'))return {product:{variants:{pageInfo:{hasNextPage:false,endCursor:'end'},nodes:[{id:'gid://shopify/ProductVariant/4',price:'14',selectedOptions:[{name:'Color',value:'Black'},{name:'Size',value:'3XL'}],sku:'BLANK-4'}]}}}
+  if(query.includes('BuilderSource'))return {product:{id:'gid://shopify/Product/1',title:'Tee',status:'ACTIVE',inCollection:true,options:[{name:'Color'},{name:'Size'}],variants:{pageInfo:{hasNextPage:paginate,endCursor:paginate?'next':null},nodes:[['1','Black','S',10],['2','Black','2XL',12],['3','White','S',10]].map(([id,color,size,price])=>({id:'gid://shopify/ProductVariant/'+id,price:String(price),selectedOptions:[{name:'Color',value:color},{name:'Size',value:size}],sku:'BLANK-'+id}))}}}
   if(query.includes('BuilderProduct')){savedInput=variables.input;existing={id:'gid://shopify/Product/100',handle:variables.input.handle,status:'DRAFT',metafield:{value:variables.input.metafields[0].value}};return {productSet:{product:existing,userErrors:[]}}}
   if(query.includes('BuilderMedia'))return {product:{media:{nodes:[{status:'READY'}]}}}
   if(query.includes('BuilderChannels'))return {publications:{nodes:[{id:'gid://shopify/Publication/4',name:'Online Store'}]}}
@@ -43,6 +44,7 @@ async function send(body,origin='https://www.fundraisercommand.com'){return rout
   assert.equal((await send({action:'save'},'https://evil.example')).status,403)
   const quote=await send({action:'quote'});assert.equal(quote.status,200);assert.equal(quote.value.prices.length,2);assert.equal(quote.value.prices[0].price,20);assert.equal(quote.value.prices[1].price,22)
   assert.equal(savedInput,null,'Quotes must not create a product')
+  paginate=true;const paginated=await send({action:'quote'});assert.equal(paginated.value.prices.length,3);assert.equal(paginated.value.prices[2].price,24);paginate=false
   assert.equal((await send({action:'save',collectionId:'88'})).status,400)
   assert.equal((await send({action:'save'})).status,200)
   assert.equal(savedInput.status,'DRAFT');assert.equal(savedInput.collections,undefined,'Drafts must remain outside live collections')

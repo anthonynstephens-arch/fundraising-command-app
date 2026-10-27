@@ -95,10 +95,17 @@ export async function POST(request:Request){
     const catalog=await shopifyGraphQL(`query BuilderCatalog($query:String!){collections(first:2,query:$query){nodes{id handle}}}`,{query:`handle:${process.env.SHOPIFY_CUSTOMIZABLE_COLLECTION_HANDLE||'customizable-apparel'}`})
     const catalogId=catalog.collections.nodes.find((c:any)=>c.handle===(process.env.SHOPIFY_CUSTOMIZABLE_COLLECTION_HANDLE||'customizable-apparel'))?.id
     if(!catalogId)throw new Error('The approved blank garment catalog is unavailable.')
-    const data=await shopifyGraphQL(`query BuilderSource($id:ID!,$collection:ID!){product(id:$id){id title status inCollection(id:$collection) options{name} variants(first:250){pageInfo{hasNextPage} nodes{id price selectedOptions{name value} inventoryItem{sku}}}}}`,{id:design.shopifyProductId,collection:catalogId})
+    const data=await shopifyGraphQL(`query BuilderSource($id:ID!,$collection:ID!,$after:String){product(id:$id){id title status inCollection(id:$collection) options{name} variants(first:250,after:$after){pageInfo{hasNextPage endCursor} nodes{id price selectedOptions{name value} sku}}}}`,{id:design.shopifyProductId,collection:catalogId})
     const source=data.product
     if(!source||source.status!=='ACTIVE'||!source.inCollection)throw new Error('Choose an active garment from the approved customizer catalog.')
-    if(source.variants.pageInfo.hasNextPage)throw new Error('This garment has too many variants for self-service publishing. Contact us to add it.')
+    while(source.variants.pageInfo.hasNextPage){
+      const after=source.variants.pageInfo.endCursor
+      if(!after||source.variants.nodes.length>2500)throw new Error('Unable to finish loading garment sizes. Try again.')
+      const more=await shopifyGraphQL(`query BuilderSourcePage($id:ID!,$after:String!){product(id:$id){variants(first:250,after:$after){pageInfo{hasNextPage endCursor} nodes{id price selectedOptions{name value} sku}}}}`,{id:source.id,after})
+      if(!more.product||more.product.variants.pageInfo.endCursor===after)throw new Error('Unable to finish loading garment sizes. Try again.')
+      source.variants.nodes.push(...more.product.variants.nodes)
+      source.variants.pageInfo=more.product.variants.pageInfo
+    }
     const selected=source.variants.nodes.find((v:any)=>v.id===design.shopifyVariantId)
     if(!selected)throw new Error('The selected garment variant no longer exists.')
     const color=selected.selectedOptions.find((o:any)=>/colou?r/i.test(o.name))
@@ -107,10 +114,10 @@ export async function POST(request:Request){
     const locations=Object.keys(design.proofImages).length
     const pricing=variants.map((v:any)=>contributionPrice(v.price,locations,body.markup,fee()))
     if(body.action==='quote')return NextResponse.json({prices:variants.map((v:any,i:number)=>({title:v.selectedOptions.map((o:any)=>o.value).join(' / '),...pricing[i]}))})
-    const record={campaignId:a.campaign.id,organizationId:body.organizationId,draftId:id,collectionId:collectionGid(target.shopify_collection_id),markup:pricing[0].donation,locationFee:fee(),basePrices:variants.map((v:any,i:number)=>({sourceVariantId:v.id,base:pricing[i].base,sku:v.inventoryItem?.sku})),design,createdBy:a.actorId,createdAt:new Date().toISOString()}
+    const record={campaignId:a.campaign.id,organizationId:body.organizationId,draftId:id,collectionId:collectionGid(target.shopify_collection_id),markup:pricing[0].donation,locationFee:fee(),basePrices:variants.map((v:any,i:number)=>({sourceVariantId:v.id,base:pricing[i].base,sku:v.sku})),design,createdBy:a.actorId,createdAt:new Date().toISOString()}
     const input={title,handle,status:'DRAFT',vendor:'Detroit Decal & Apparel',tags:['fc-macac-builder',`fc-builder-${a.campaign.id}`],descriptionHtml:`<p>Made to order for MACAC.</p>`,
       productOptions:source.options.map((o:any)=>({name:o.name,values:[...new Set(variants.map((v:any)=>v.selectedOptions.find((s:any)=>s.name===o.name)?.value))].map(name=>({name}))})),
-      variants:variants.map((v:any,i:number)=>({price:pricing[i].price.toFixed(2),inventoryPolicy:'CONTINUE',optionValues:v.selectedOptions.map((o:any)=>({optionName:o.name,name:o.value})),inventoryItem:{sku:`MACAC-${id.slice(0,8)}-${v.inventoryItem?.sku||i}`,tracked:false,requiresShipping:true}})),
+      variants:variants.map((v:any,i:number)=>({price:pricing[i].price.toFixed(2),inventoryPolicy:'CONTINUE',optionValues:v.selectedOptions.map((o:any)=>({optionName:o.name,name:o.value})),inventoryItem:{sku:`MACAC-${id.slice(0,8)}-${v.sku||i}`,tracked:false,requiresShipping:true}})),
       files:Object.entries(design.proofImages).map(([placement,url])=>({originalSource:url,contentType:'IMAGE',alt:`${title} — ${placement}`})),
       metafields:[{namespace:BUILDER_NAMESPACE,key:'record',type:'json',value:JSON.stringify(record)}]}
     const result=errors((await shopifyGraphQL(setProduct,{input,identifier:{handle}})).productSet)
