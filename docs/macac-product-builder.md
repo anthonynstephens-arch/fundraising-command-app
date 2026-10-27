@@ -15,3 +15,7 @@ Verification: `npm run test:product-builder`, the existing full build test chain
 Live verification on 2026-10-27: the editor handoff, fresh proofs, and live Navy S–5XL retail prices passed. Shopify denied the draft write because the Fundraiser Command app lacks `write_products`. Grant `write_products`, `read_publications`, and `write_publications` in that app’s Shopify configuration, authorize the updated access, then use Recheck store connection. This clears the cached client-credentials token. The MACAC manual collection is linked; no test product was created or published.
 
 2026-10-27 retry: the installed Shopify app now returns no missing scopes after refreshing its token. MACAC pricing is customizer × 1.20; customer price − that base belongs entirely to MACAC.
+
+Live save and publish verification passed on 2026-10-27: the test item used a $17.14 customizer price, $20.57 base, and $30 standard-size retail price. Shopify product creation, Online Store publication, collection assignment, and Fundraiser Command sync all succeeded. All eight sizes recorded $9.43 in fixed MACAC proceeds. The test item was returned to DRAFT afterward.
+
+Catalog browsing now uses the Design Studio hierarchy (category and subcategory counts) and its alphabetical brand list. These filters combine with keywords before catalog pagination. The portal resolves relative prepared-thumbnail URLs against the Design Studio origin and falls back to the Shopify product image if a thumbnail fails. Requests are cancelled when filters change to prevent stale results.

@@ -1,11 +1,21 @@
 'use client'
 import {useEffect,useRef,useState} from 'react'
-import {STUDIO_ORIGIN} from '@/lib/portal/product-builder'
+import {STUDIO_ORIGIN,catalogImageUrl} from '@/lib/portal/product-builder'
 import {recordActivity} from '@/lib/activity/client'
 import './product-builder.css'
 
+type CatalogCategory={id:string;name:string;count:number;children:{id:string;name:string;count:number}[]}
+function CatalogProductImage({product}:{product:any}){
+  const [index,setIndex]=useState(0)
+  const sources=[...new Set([product.cardImage?.url,product.featuredImage?.url].map(catalogImageUrl).filter((url):url is string=>!!url))]
+  return sources[index]?<img src={sources[index]} alt={product.title} loading="lazy" decoding="async" onError={()=>setIndex(current=>current+1)}/>:<div className="mb-image-placeholder">Image unavailable</div>
+}
+
 export default function MacacProductBuilder({organizationId,campaignId}:{organizationId:string;campaignId:string}){
   const [query,setQuery]=useState(''),[catalog,setCatalog]=useState<any[]>([]),[cursor,setCursor]=useState<string|null>(null)
+  const [activeQuery,setActiveQuery]=useState(''),[category,setCategory]=useState(''),[subcategory,setSubcategory]=useState(''),[vendor,setVendor]=useState('')
+  const [categories,setCategories]=useState<CatalogCategory[]>([]),[vendors,setVendors]=useState<string[]>([]),[totalCount,setTotalCount]=useState<number|null>(null)
+  const catalogRequest=useRef<AbortController|null>(null)
   const [products,setProducts]=useState<any[]>([]),[collections,setCollections]=useState<any[]>([]),[collectionId,setCollectionId]=useState('')
   const [design,setDesign]=useState<any>(null),[title,setTitle]=useState('')
   const [missingScopes,setMissingScopes]=useState<string[]>([])
@@ -25,10 +35,24 @@ export default function MacacProductBuilder({organizationId,campaignId}:{organiz
     window.addEventListener('message',receive);return()=>window.removeEventListener('message',receive)
   },[])
   async function search(more=false){
-    setBusy('catalog');setMessage('')
-    try{const data=await json('/api/portal/product-builder?'+context+'&catalog=1&query='+encodeURIComponent(query)+(more&&cursor?'&cursor='+encodeURIComponent(cursor):''));if(data.demo)throw new Error('The customizer catalog is in demo mode. Live products are required.');setCatalog(current=>more?[...current,...data.products]:data.products);setCursor(data.nextCursor||null);if(!data.products.length)setMessage('No matching garments. Try a style number, brand, or garment type.')}
-    catch(e){setMessage((e as Error).message)}finally{setBusy('')}
+    catalogRequest.current?.abort()
+    const controller=new AbortController();catalogRequest.current=controller
+    setBusy('catalog');setMessage('');if(!more)setCatalog([])
+    const params=new URLSearchParams({organizationId,campaignId,catalog:'1',query:activeQuery,category,subcategory,vendor})
+    if(more&&cursor)params.set('cursor',cursor)
+    try{
+      const data=await json('/api/portal/product-builder?'+params,{signal:controller.signal})
+      if(controller.signal.aborted)return
+      if(data.demo)throw new Error('The customizer catalog is in demo mode. Live products are required.')
+      setCatalog(current=>more?[...current,...data.products]:data.products);setCursor(data.nextCursor||null)
+      setCategories(data.categories||[]);setVendors(data.vendors||[]);setTotalCount(data.totalCount??data.products.length)
+      if(!data.products.length)setMessage('No matching garments. Try another category, subcategory, brand, or search term.')
+    }catch(e){if((e as Error).name!=='AbortError')setMessage((e as Error).message)}
+    finally{if(catalogRequest.current===controller)setBusy('')}
   }
+  useEffect(()=>{void search();return()=>catalogRequest.current?.abort()},[organizationId,campaignId,activeQuery,category,subcategory,vendor]) // eslint-disable-line react-hooks/exhaustive-deps
+  const currentCategory=categories.find(item=>item.id===category)
+
   function launch(product:any){
     nonce.current=crypto.randomUUID()
     const url=new URL('/design',STUDIO_ORIGIN);url.searchParams.set('product',product.id);url.searchParams.set('fundraiserOrigin',window.location.origin);url.searchParams.set('fundraiserNonce',nonce.current)
@@ -66,9 +90,16 @@ export default function MacacProductBuilder({organizationId,campaignId}:{organiz
     <ol className="mb-steps"><li>1. Choose a garment</li><li>2. Customize & review</li><li>3. Price & publish</li></ol>
     {!!missingScopes.length&&<div role="alert" className="mb-message"><strong>Shopify connection setup required</strong><p>Detroit Decal & Apparel needs to finish the store permissions for creating and publishing products. You can browse garments, customize designs, and calculate pricing while the connection is completed.</p><button type="button" disabled={!!busy} onClick={()=>void refresh(true).catch(e=>setMessage(e.message))}>Recheck store connection</button></div>}
     <p role="status" aria-live="polite" className="mb-message">{message}</p>
-    {!design&&<section className="agency-card mb-panel"><h2>Start with a blank garment</h2><p>The same garment catalog and artwork tools as Detroit Design Studio. Select a color in the customizer; your product will include that color’s available sizes.</p><form onSubmit={e=>{e.preventDefault();void search()}} className="mb-search"><label htmlFor="mb-query">Search garments<input id="mb-query" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Brand, style number, T-shirt, hoodie…" maxLength={100}/></label><button disabled={!!busy}>{busy==='catalog'?'Searching…':'Search catalog'}</button></form>
+    {!design&&<section className="agency-card mb-panel"><h2>Start with a blank garment</h2><p>Browse by category and subcategory, choose a brand, or search by garment name and style number.</p>
+      <div className="mb-filters">
+        <label>Category<select value={category} onChange={e=>{setCategory(e.target.value);setSubcategory('')}}><option value="">All categories</option>{categories.map(c=><option key={c.id} value={c.id}>{c.name} ({c.count})</option>)}</select></label>
+        <label>Subcategory<select value={subcategory} disabled={!category||!currentCategory?.children.length} onChange={e=>setSubcategory(e.target.value)}><option value="">{category?'All subcategories':'Choose a category first'}</option>{currentCategory?.children.map(c=><option key={c.id} value={c.id}>{c.name} ({c.count})</option>)}</select></label>
+        <label>Shop by brand<select value={vendor} onChange={e=>setVendor(e.target.value)}><option value="">All brands</option>{vendors.map(name=><option key={name} value={name}>{name}</option>)}</select></label>
+      </div>
+      <form onSubmit={e=>{e.preventDefault();if(activeQuery===query.trim())void search();else setActiveQuery(query.trim())}} className="mb-search"><label htmlFor="mb-query">Search garments<input id="mb-query" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Garment name or style number…" maxLength={100}/></label><button disabled={!!busy}>{busy==='catalog'?'Searching…':'Search catalog'}</button><button type="button" className="mb-clear" disabled={!!busy} onClick={()=>{setQuery('');setActiveQuery('');setCategory('');setSubcategory('');setVendor('')}}>Clear filters</button></form>
+      <p className="mb-result-count" role="status">{busy==='catalog'?'Loading garments…':totalCount!==null?`${totalCount.toLocaleString()} matching items · ${catalog.length} shown`:''}</p>
       {waiting&&<button type="button" onClick={()=>popup.current?.focus()}>Return to open customizer</button>}
-      <div className="mb-catalog">{catalog.map(p=><article key={p.id}>{(p.cardImage?.url||p.featuredImage?.url)&&<img src={p.cardImage?.url||p.featuredImage?.url} alt={p.title}/>}<strong>{p.title}</strong><button type="button" onClick={()=>launch(p)}>Customize</button></article>)}</div>
+      <div className="mb-catalog">{catalog.map(p=><article key={p.id}><CatalogProductImage product={p}/><small>{p.vendor}</small><strong>{p.title}</strong><button type="button" disabled={!!busy} onClick={()=>launch(p)}>Customize</button></article>)}</div>
       {cursor&&<button type="button" disabled={!!busy} onClick={()=>void search(true)}>Load more garments</button>}
     </section>}
     {design&&<section className="agency-card mb-panel"><div className="mb-heading"><h2>Name and price your MACAC product</h2><button type="button" onClick={reset} disabled={!!busy}>Create another</button></div><p>{design.productTitle} · {design.garmentColor||'Selected garment color'} · {proofs.length} print placement{proofs.length===1?'':'s'}</p>

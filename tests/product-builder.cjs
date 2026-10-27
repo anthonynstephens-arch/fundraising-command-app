@@ -2,8 +2,14 @@ const assert=require('node:assert/strict')
 const fs=require('node:fs')
 const vm=require('node:vm')
 const {stripTypeScriptTypes}=require('node:module')
-function load(path,imports){const exports={};let source=stripTypeScriptTypes(fs.readFileSync(path,'utf8'));const names=[...source.matchAll(/export (?:async )?(?:function|const) (\w+)/g)].map(m=>m[1]);source=source.replace(/import \{([^}]+)\} from '([^']+)'/g,(_,names,path)=>'const {'+names+'}=require('+JSON.stringify(path)+')').replace(/export /g,'')+'\n'+names.map(n=>'exports.'+n+'='+n+';').join('\n');vm.runInNewContext(source,{exports,require:name=>imports[name],process,console:{...console,error:()=>{}},URL,Headers,AbortSignal,Buffer,Error});return exports}
+function load(path,imports){const exports={};let source=stripTypeScriptTypes(fs.readFileSync(path,'utf8'));const names=[...source.matchAll(/export (?:async )?(?:function|const) (\w+)/g)].map(m=>m[1]);source=source.replace(/import \{([^}]+)\} from '([^']+)'/g,(_,names,path)=>'const {'+names+'}=require('+JSON.stringify(path)+')').replace(/export /g,'')+'\n'+names.map(n=>'exports.'+n+'='+n+';').join('\n');vm.runInNewContext(source,{exports,require:name=>imports[name],process,console:{...console,error:()=>{}},URL,Headers,AbortSignal,Buffer,Error,fetch:imports.fetch||fetch});return exports}
 const helpers=load('lib/portal/product-builder.ts',{})
+assert.equal(helpers.catalogImageUrl('/catalog-cutouts/test.webp'),'https://detroit-design-studio.vercel.app/catalog-cutouts/test.webp')
+assert.equal(helpers.catalogImageUrl('https://cdn.shopify.com/test.jpg'),'https://cdn.shopify.com/test.jpg')
+assert.equal(helpers.catalogImageUrl('javascript:alert(1)'),null)
+const card=helpers.normalizeCatalogProduct({id:'p',cardImage:{url:'/catalog-cutouts/test.webp'},featuredImage:{url:'https://cdn.shopify.com/test.jpg'}})
+assert.equal(card.cardImage.url,'https://detroit-design-studio.vercel.app/catalog-cutouts/test.webp')
+assert.equal(card.featuredImage.url,'https://cdn.shopify.com/test.jpg')
 assert.deepEqual(JSON.parse(JSON.stringify(helpers.contributionPrice('12',2,30,5))),{customizerPrice:22,base:26.4,price:30,donation:3.6})
 assert.throws(()=>helpers.contributionPrice(12,2,26.39,5))
 assert.deepEqual(JSON.parse(JSON.stringify(helpers.contributionPrice('10.24',1,20,5))),{customizerPrice:15.24,base:18.29,price:20,donation:1.71})
@@ -11,7 +17,7 @@ for(const bad of [null,'',NaN,Infinity])assert.throws(()=>helpers.contributionPr
 assert.throws(()=>helpers.assetUrl('https://localhost/art.png'))
 assert.throws(()=>helpers.assetUrl('https://cdn.shopify.com@localhost/art.png'))
 assert.throws(()=>helpers.assetUrl('http://test.supabase.co/art.png'))
-let denied=false,slug='macac',existing=null,savedInput=null,syncs=0,ruleUpdate=null,paginate=false,deniedWrite=false,clears=0,grantedScopes=['read_products']
+let denied=false,slug='macac',existing=null,savedInput=null,syncs=0,ruleUpdate=null,paginate=false,deniedWrite=false,clears=0,grantedScopes=['read_products'],catalogUrl=null
 const collection='gid://shopify/Collection/99'
 function dbQuery(table){let update;const q={select:()=>q,eq:()=>q,single:async()=>({data:{slug},error:null}),maybeSingle:async()=>({data:{slug},error:null}),update:value=>{update=value;return q},then:resolve=>{if(update)ruleUpdate=update;resolve({data:table==='campaign_shopify_collections'?[{shopify_collection_id:'99',title:'MACAC'}]:[],error:null})}};return q}
 const db={from:dbQuery}
@@ -31,6 +37,7 @@ async function gql(query,variables){
   throw new Error('Unexpected query: '+query)
 }
 const route=load('app/api/portal/product-builder/route.ts',{
+  fetch:async url=>{catalogUrl=new URL(url);return {ok:true,json:async()=>({products:[{id:'p',title:'Jacket',cardImage:{url:'/catalog-cutouts/jacket.webp'},featuredImage:{url:'https://cdn.shopify.com/jacket.jpg'}}],categories:[{id:'outerwear'}],vendors:['Nike'],totalCount:1})}},
   'next/server':{NextResponse:{json:(value,init)=>({value,status:init?.status||200})}},
   '@/lib/portal/authorize-campaign':{authorizeCampaignManagement:async()=>denied?{ok:false,status:403,error:'Denied'}:{ok:true,db,campaign:{id:'campaign'},actorId:'manager'}},
   '@/lib/shopify/admin':{shopifyGraphQL:gql,stripShopifyGid:value=>value.split('/').pop(),clearShopifyAccessToken:()=>{clears++}},
@@ -42,6 +49,7 @@ const design={designId:'saved-design',shopifyProductId:'gid://shopify/Product/1'
 const base={organizationId:'org',campaignId:'campaign',draftId,title:'MACAC Tee',retailPrices:{'gid://shopify/ProductVariant/1':25,'gid://shopify/ProductVariant/2':28},collectionId:'99',design}
 async function send(body,origin='https://www.fundraisercommand.com'){return route.POST({url:'https://www.fundraisercommand.com/api/portal/product-builder',headers:new Headers({origin}),json:async()=>({...base,...body})})}
 ;(async()=>{
+  const catalog=await route.GET({url:'https://www.fundraisercommand.com/api/portal/product-builder?organizationId=org&campaignId=campaign&catalog=1&category=outerwear&subcategory=vests&vendor=Nike&query=fleece'});assert.equal(catalog.status,200);assert.equal(catalogUrl.searchParams.get('category'),'outerwear');assert.equal(catalogUrl.searchParams.get('subcategory'),'vests');assert.equal(catalogUrl.searchParams.get('vendor'),'Nike');assert.equal(catalogUrl.searchParams.get('query'),'fleece');assert.equal(catalog.value.products[0].cardImage.url,'https://detroit-design-studio.vercel.app/catalog-cutouts/jacket.webp');assert.equal(catalog.value.totalCount,1)
   const check=await route.GET({url:'https://www.fundraisercommand.com/api/portal/product-builder?organizationId=org&campaignId=campaign&refresh=1'});assert.equal(check.status,200);assert.equal(check.value.missingScopes.join(','),'write_products,read_publications,write_publications');assert.equal(clears,1)
   grantedScopes=['write_products','write_publications'];const writable=await route.GET({url:'https://www.fundraisercommand.com/api/portal/product-builder?organizationId=org&campaignId=campaign'});assert.equal(writable.value.missingScopes.length,0,'Write publication scope also permits publication reads');grantedScopes=['read_products']
   denied=true;assert.equal((await send({action:'save'})).status,403);denied=false

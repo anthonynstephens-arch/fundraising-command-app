@@ -2,7 +2,7 @@ import {NextResponse} from 'next/server'
 import {authorizeCampaignManagement} from '@/lib/portal/authorize-campaign'
 import {shopifyGraphQL,clearShopifyAccessToken} from '@/lib/shopify/admin'
 import {collectionGid,syncCollection} from '@/lib/shopify/sync-collection'
-import {STUDIO_ORIGIN,BUILDER_NAMESPACE,requireBuilderId,validateDesign,contributionPrice,MACAC_BASE_MULTIPLIER} from '@/lib/portal/product-builder'
+import {STUDIO_ORIGIN,BUILDER_NAMESPACE,requireBuilderId,validateDesign,contributionPrice,MACAC_BASE_MULTIPLIER,normalizeCatalogProduct} from '@/lib/portal/product-builder'
 
 export const dynamic='force-dynamic'
 export const maxDuration=120
@@ -36,10 +36,12 @@ export async function GET(request:Request){
     if(q.get('catalog')==='1'){
       const url=new URL('/api/shopify/collection',STUDIO_ORIGIN)
       url.searchParams.set('query',(q.get('query')||'').slice(0,100));url.searchParams.set('pageSize','24')
+      for(const filter of ['category','subcategory','vendor'])url.searchParams.set(filter,(q.get(filter)||'').slice(0,100))
       if(q.get('cursor'))url.searchParams.set('cursor',q.get('cursor')!)
       const response=await fetch(url,{cache:'no-store',signal:AbortSignal.timeout(30000)})
       if(!response.ok)throw new Error('Unable to load the Design Studio catalog. Retry search.')
-      return NextResponse.json(await response.json())
+      const data=await response.json()
+      return NextResponse.json({...data,products:(data.products||[]).map(normalizeCatalogProduct)})
     }
     if(q.get('refresh')==='1')clearShopifyAccessToken()
     const scopeData=await shopifyGraphQL(`query BuilderPermissions{currentAppInstallation{accessScopes{handle}}}`)

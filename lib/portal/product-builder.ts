@@ -1,5 +1,13 @@
 export const STUDIO_ORIGIN = 'https://detroit-design-studio.vercel.app'
 export const BUILDER_NAMESPACE = 'fundraiser_builder'
+export function catalogImageUrl(value:unknown) {
+  if(typeof value!=='string'||!value.trim())return null
+  try { const url=new URL(value,STUDIO_ORIGIN);return url.protocol==='https:'&&!url.username&&!url.password?url.href:null } catch { return null }
+}
+export function normalizeCatalogProduct(product:any) {
+  const normalize=(image:any)=>{const url=catalogImageUrl(image?.url);return url?{...image,url}:null}
+  return {...product,cardImage:normalize(product.cardImage),featuredImage:normalize(product.featuredImage)}
+}
 export function requireBuilderId(value: unknown) {
   if(typeof value !== 'string' || !/^[a-f0-9-]{36}$/i.test(value)) throw new Error('Invalid draft identifier.')
   return value
