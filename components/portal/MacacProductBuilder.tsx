@@ -106,11 +106,10 @@ export default function MacacProductBuilder({organizationId,campaignId}:{organiz
       <div className="mb-review"><div className="mb-proofs">{proofs.map(([side,url])=><figure key={side}><img src={url} alt={side+' proof'}/><figcaption>{side.replace(/([A-Z])/g,' $1')}</figcaption><a href={url} target="_blank" rel="noreferrer">View full-size proof</a></figure>)}</div><div className="mb-fields">
         <label>What should this item be called?<input value={title} maxLength={150} disabled={saved||!!busy} onChange={e=>setTitle(e.target.value)}/></label>
         <label>MACAC collection<select value={collectionId} disabled={saved||!!busy} onChange={e=>setCollectionId(e.target.value)}>{collections.map(c=><option key={c.shopify_collection_id} value={c.shopify_collection_id}>{c.title||'MACAC collection'}</option>)}</select></label>
-        <p>Detroit Decal’s base price is the customizer price, including printing, plus 20%. Set your customer-facing selling price. MACAC receives the entire difference above our base price.</p>
+        <p>The base price covers fulfillment, printing, and platform costs. Set your customer-facing selling price. MACAC receives the entire difference above the base price.</p>
         {!saved&&<button disabled={!!busy||!title.trim()||!collectionId} onClick={()=>void action('quote')}>{busy==='quote'?'Calculating…':prices.length?'Refresh base pricing':'Get base pricing'}</button>}
         {starting&&<div className="mb-price-summary">
-          <div><span>Customizer price · from</span><strong>{money(starting.customizerPrice)}</strong></div>
-          <div><span>Detroit Decal base price · includes 20%</span><strong>{money(starting.base)}</strong></div>
+          <div><span>BASE PRICE</span><strong>{money(starting.base)}</strong></div>
           <label><span>Your starting selling price</span><input aria-label="Starting selling price" inputMode="decimal" type="number" min={starting.base} max="10000" step="0.01" value={starting.price} disabled={saved||!!busy} onChange={e=>setStartingPrice(e.target.value)}/></label>
           <div className="mb-proceeds"><span>MACAC receives per sale</span><strong>{validPrices?earningsLabel(prices):'Check your prices'}</strong></div>
           <p>Changing the starting price applies the same donation to every size and preserves size upcharges. You can also adjust individual size prices below.</p>
