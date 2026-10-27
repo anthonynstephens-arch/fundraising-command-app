@@ -34,7 +34,8 @@ export function validateDesign(value:any) {
   if(typeof value.garmentColor!=='string'||value.garmentColor.length>120)throw new Error('Choose a garment color.')
   return value
 }
-export const MACAC_BASE_MULTIPLIER = 1.2
+export const MACAC_BASE_MULTIPLIER = 1
+export const MACAC_MARKUP_SHARE = 0.75
 export function contributionPrice(blankPrice:unknown,locations:number,retailPrice:unknown,locationFee:number) {
   const blank=Number(blankPrice)
   if(!Number.isFinite(blank)||blank<0||!Number.isInteger(locations)||locations<1||!Number.isFinite(locationFee)||locationFee<0)throw new Error('Invalid product pricing.')
@@ -44,15 +45,15 @@ export function contributionPrice(blankPrice:unknown,locations:number,retailPric
   if(retailPrice===null||retailPrice===''||!Number.isFinite(retail)||retail<0||retail>10000)throw new Error('Enter a valid selling price.')
   const retailCents=Math.round(retail*100)
   if(retailCents<baseCents)throw new Error('Your selling price cannot be below the Detroit Decal base price.')
-  return {customizerPrice:customizerCents/100,base:baseCents/100,price:retailCents/100,donation:(retailCents-baseCents)/100}
+  return {customizerPrice:customizerCents/100,base:baseCents/100,price:retailCents/100,donation:Math.round((retailCents-baseCents)*MACAC_MARKUP_SHARE)/100}
 }
 export function builderContribution(record:any,campaignId:string,variant:{sku?:string|null;title:string;price?:string|number}) {
   if(record?.campaignId!==campaignId)return null
-  if(record.pricingVersion===2){
+  if(record.pricingVersion===2||record.pricingVersion===3){
     const pricing=record.pricing?.find((p:any)=>p.sku&&p.sku===variant.sku)||record.pricing?.find((p:any)=>p.title===variant.title)
     const price=variant.price===undefined?pricing?.price:Number(variant.price)
     if(!pricing||!Number.isFinite(pricing.base)||!Number.isFinite(price)||pricing.base<0||price<pricing.base)throw new Error('MACAC product is missing its saved size pricing. Review it before syncing.')
-    return (Math.round(price*100)-Math.round(pricing.base*100))/100
+    return Math.round((Math.round(price*100)-Math.round(pricing.base*100))*(record.pricingVersion===3?MACAC_MARKUP_SHARE:1))/100
   }
   return Number.isFinite(record.markup)&&record.markup>=0?record.markup:null
 }

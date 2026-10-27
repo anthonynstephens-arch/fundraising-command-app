@@ -2,7 +2,7 @@
 
 MACAC managers can open **Create a Product** in the portal, search the existing Design Studio catalog, customize a garment in the existing editor, and return the saved production design and fresh proofs to the portal. The editor uses an allowlisted origin, opener identity and one-use correlation nonce for the handoff; no Shopify credentials go to the browser.
 
-The portal calculates live customizer prices by size from the source garment variant price plus printed-placement fees (`CUSTOMIZER_DECORATION_LOCATION_FEE`, default $5). Detroit Decal’s MACAC base is that customizer price multiplied by 1.20, rounded to cents. MACAC chooses each customer-facing selling price and receives 100% of the difference above that base. Prices cannot go below the base. A starting selling-price control applies equal proceeds across sizes while preserving the base differences; individual size prices can also be adjusted. This follows the DMD review layout for base, customer price, and organization proceeds, using MACAC’s requested economics rather than DMD’s 25% markup deduction. Self-service publishing supports Printing; embroidery requires a separate quote.
+The base price is the source garment variant price plus printed-placement fees (`CUSTOMIZER_DECORATION_LOCATION_FEE`, default $5). Selling price = base + markup. MACAC keeps 75% of the markup; Detroit Decal receives 25% of the markup in addition to the base. Amounts round to cents. Version 3 pricing records preserve this rule during sync; existing version 2 products retain their saved pricing agreement. Printing only; embroidery requires a quote.
 
 Save creates a Shopify DRAFT without assigning it to a live collection. A stable, campaign-scoped handle makes retries update the same product. Saved products are immutable in this first version; use Create another for a new design. The Shopify `fundraiser_builder.record` JSON metafield preserves the original artwork URLs, Fabric placement data, proofs, original blank SKUs, customizer and base prices, customer prices, source SKUs, per-size proceeds, creator and campaign.
 
@@ -14,7 +14,7 @@ Verification: `npm run test:product-builder`, the existing full build test chain
 
 Live verification on 2026-10-27: the editor handoff, fresh proofs, and live Navy S–5XL retail prices passed. Shopify denied the draft write because the Fundraiser Command app lacks `write_products`. Grant `write_products`, `read_publications`, and `write_publications` in that app’s Shopify configuration, authorize the updated access, then use Recheck store connection. This clears the cached client-credentials token. The MACAC manual collection is linked; no test product was created or published.
 
-2026-10-27 retry: the installed Shopify app now returns no missing scopes after refreshing its token. MACAC pricing is customizer × 1.20; customer price − that base belongs entirely to MACAC.
+2026-10-27 retry: the installed Shopify app now returns no missing scopes after refreshing its token. The original pricing was replaced by the DMD formula in pricing version 3.
 
 Live save and publish verification passed on 2026-10-27: the test item used a $17.14 customizer price, $20.57 base, and $30 standard-size retail price. Shopify product creation, Online Store publication, collection assignment, and Fundraiser Command sync all succeeded. All eight sizes recorded $9.43 in fixed MACAC proceeds. The test item was returned to DRAFT afterward.
 

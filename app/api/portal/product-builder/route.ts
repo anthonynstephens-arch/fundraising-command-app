@@ -123,7 +123,7 @@ export async function POST(request:Request){
       return {sourceVariantId:v.id,title:v.selectedOptions.map((o:any)=>o.value).join(' / '),sku:`MACAC-${id.slice(0,8)}-${v.id.split('/').pop()}`,sourceSku:v.sku||null,...contributionPrice(v.price,locations,retailPrices[v.id],fee())}
     })
     if(body.action==='quote')return NextResponse.json({prices:pricing,baseMultiplier:MACAC_BASE_MULTIPLIER})
-    const record={campaignId:a.campaign.id,organizationId:body.organizationId,draftId:id,collectionId:collectionGid(target.shopify_collection_id),pricingVersion:2,baseMultiplier:MACAC_BASE_MULTIPLIER,locationFee:fee(),pricing,design,createdBy:a.actorId,createdAt:new Date().toISOString()}
+    const record={campaignId:a.campaign.id,organizationId:body.organizationId,draftId:id,collectionId:collectionGid(target.shopify_collection_id),pricingVersion:3,markupShare:0.75,baseMultiplier:MACAC_BASE_MULTIPLIER,locationFee:fee(),pricing,design,createdBy:a.actorId,createdAt:new Date().toISOString()}
     const input={title,handle,status:'DRAFT',vendor:'Detroit Decal & Apparel',tags:['fc-macac-builder',`fc-builder-${a.campaign.id}`],descriptionHtml:`<p>Made to order for MACAC.</p>`,
       productOptions:source.options.map((o:any)=>({name:o.name,values:[...new Set(variants.map((v:any)=>v.selectedOptions.find((s:any)=>s.name===o.name)?.value))].map(name=>({name}))})),
       variants:variants.map((v:any,i:number)=>({price:pricing[i].price.toFixed(2),inventoryPolicy:'CONTINUE',optionValues:v.selectedOptions.map((o:any)=>({optionName:o.name,name:o.value})),inventoryItem:{sku:pricing[i].sku,tracked:false,requiresShipping:true}})),
