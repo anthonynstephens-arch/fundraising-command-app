@@ -7,19 +7,19 @@ import './product-builder.css'
 export default function MacacProductBuilder({organizationId,campaignId}:{organizationId:string;campaignId:string}){
   const [query,setQuery]=useState(''),[catalog,setCatalog]=useState<any[]>([]),[cursor,setCursor]=useState<string|null>(null)
   const [products,setProducts]=useState<any[]>([]),[collections,setCollections]=useState<any[]>([]),[collectionId,setCollectionId]=useState('')
-  const [design,setDesign]=useState<any>(null),[title,setTitle]=useState(''),[markup,setMarkup]=useState('5'),[locationFee,setLocationFee]=useState(5)
+  const [design,setDesign]=useState<any>(null),[title,setTitle]=useState('')
   const [missingScopes,setMissingScopes]=useState<string[]>([])
   const [prices,setPrices]=useState<any[]>([])
   const [draftId,setDraftId]=useState(''),[saved,setSaved]=useState(false),[busy,setBusy]=useState(''),[message,setMessage]=useState(''),[waiting,setWaiting]=useState(false)
   const popup=useRef<Window|null>(null),nonce=useRef('')
   const context=new URLSearchParams({organizationId,campaignId}).toString()
   async function json(url:string,init?:RequestInit){const r=await fetch(url,init);const data=await r.json();if(!r.ok||data.error)throw new Error(data.error||'Request failed.');return data}
-  async function refresh(reconnect=false){const data=await json('/api/portal/product-builder?'+context+(reconnect?'&refresh=1':''));setMissingScopes(data.missingScopes||[]);setProducts(data.products);setCollections(data.collections);setCollectionId(c=>c||data.collections[0]?.shopify_collection_id||'');setLocationFee(data.locationFee)}
+  async function refresh(reconnect=false){const data=await json('/api/portal/product-builder?'+context+(reconnect?'&refresh=1':''));setMissingScopes(data.missingScopes||[]);setProducts(data.products);setCollections(data.collections);setCollectionId(c=>c||data.collections[0]?.shopify_collection_id||'')}
   useEffect(()=>{void refresh().catch(e=>setMessage(e.message))},[organizationId,campaignId]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(()=>{
     function receive(e:MessageEvent){
       if(e.origin!==STUDIO_ORIGIN||e.source!==popup.current||e.data?.type!=='fc:design-export'||e.data.nonce!==nonce.current)return
-      setPrices([]);setDesign(e.data.design);setTitle('MACAC '+(e.data.design.productTitle||'Custom apparel'));setDraftId(crypto.randomUUID());setSaved(false);setWaiting(false);setMessage('Design received. Review the proofs and donation, then save your Shopify draft.')
+      setPrices([]);setDesign(e.data.design);setTitle('MACAC '+(e.data.design.productTitle||'Custom apparel'));setDraftId(crypto.randomUUID());setSaved(false);setWaiting(false);setMessage('Design received. Review the proofs, get your base pricing, and set your selling prices.')
       popup.current?.postMessage({type:'fc:design-received',nonce:nonce.current},STUDIO_ORIGIN)
     }
     window.addEventListener('message',receive);return()=>window.removeEventListener('message',receive)
@@ -38,7 +38,7 @@ export default function MacacProductBuilder({organizationId,campaignId}:{organiz
   async function action(type:'save'|'publish'|'quote',id=draftId){
     setBusy(type);setMessage('')
     try{
-      const data=await json('/api/portal/product-builder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({organizationId,campaignId,action:type,draftId:id,title,markup:Number(markup),collectionId,design})})
+      const data=await json('/api/portal/product-builder',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({organizationId,campaignId,action:type,draftId:id,title,retailPrices:Object.fromEntries(prices.map(p=>[p.sourceVariantId,p.price])),collectionId,design})})
       if(type==='quote'){setPrices(data.prices);setMessage('Live retail prices calculated below.');return}
       if(type==='save')setSaved(true)
       recordActivity('request',`MACAC product ${type}: ${data.productId}`)
@@ -47,6 +47,19 @@ export default function MacacProductBuilder({organizationId,campaignId}:{organiz
     }catch(e){setMessage((e as Error).message)}finally{setBusy('')}
   }
   function reset(){setDesign(null);setTitle('');setDraftId('');setSaved(false);setPrices([]);setMessage('');setWaiting(false);nonce.current=''}
+  const money=(value:number)=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(value)
+  function earningsLabel(rows:any[],legacy=0){
+    if(!rows?.length)return money(legacy)
+    const amounts=rows.map(p=>(Math.round(Number(p.price)*100)-Math.round(Number(p.base)*100))/100)
+    const low=Math.min(...amounts),high=Math.max(...amounts)
+    return low===high?money(low):`${money(low)}–${money(high)}`
+  }
+  function setStartingPrice(raw:string){
+    const startingBase=Math.min(...prices.map(p=>p.base))
+    setPrices(current=>current.map(p=>({...p,price:raw===''?'':(Math.round((p.base+Number(raw)-startingBase)*100)/100).toFixed(2)})))
+  }
+  const validPrices=prices.length>0&&prices.every(p=>p.price!==''&&Number.isFinite(Number(p.price))&&Math.round(Number(p.price)*100)>=Math.round(p.base*100))
+  const starting=prices.length?prices.reduce((a,b)=>a.base<=b.base?a:b):null
   const proofs=Object.entries(design?.proofImages||{}) as [string,string][]
   return <div className="macac-builder">
     <div className="agency-page-head"><div><h1>Create a product</h1><p>Use our Design Studio to build your artwork, then save and publish merchandise to MACAC’s store.</p></div></div>
@@ -58,9 +71,26 @@ export default function MacacProductBuilder({organizationId,campaignId}:{organiz
       <div className="mb-catalog">{catalog.map(p=><article key={p.id}>{(p.cardImage?.url||p.featuredImage?.url)&&<img src={p.cardImage?.url||p.featuredImage?.url} alt={p.title}/>}<strong>{p.title}</strong><button type="button" onClick={()=>launch(p)}>Customize</button></article>)}</div>
       {cursor&&<button type="button" disabled={!!busy} onClick={()=>void search(true)}>Load more garments</button>}
     </section>}
-    {design&&<section className="agency-card mb-panel"><div className="mb-heading"><h2>Review your product</h2><button type="button" onClick={reset} disabled={!!busy}>Create another</button></div><p>{design.productTitle} · {design.garmentColor||'Selected garment color'} · {proofs.length} print placement{proofs.length===1?'':'s'}</p>
-      <div className="mb-review"><div className="mb-proofs">{proofs.map(([side,url])=><figure key={side}><img src={url} alt={side+' proof'}/><figcaption>{side.replace(/([A-Z])/g,' $1')}</figcaption><a href={url} target="_blank" rel="noreferrer">View full-size proof</a></figure>)}</div><div className="mb-fields"><label>Product name<input value={title} maxLength={150} disabled={saved||!!busy} onChange={e=>setTitle(e.target.value)}/></label><label>MACAC collection<select value={collectionId} disabled={saved||!!busy} onChange={e=>setCollectionId(e.target.value)}>{collections.map(c=><option key={c.shopify_collection_id} value={c.shopify_collection_id}>{c.title||'MACAC collection'}</option>)}</select></label><label>Donation per item ($)<input type="number" min="0" max="1000" step="0.01" value={markup} disabled={saved||!!busy} onChange={e=>{setMarkup(e.target.value);setPrices([])}}/></label><p>Retail price = garment price + ${locationFee.toFixed(2)} per printed placement + your ${Number(markup||0).toFixed(2)} donation. Size upcharges are preserved. Printing only; contact us for embroidery.</p><p>Original artwork, placement details, and proofs are saved with the Shopify product for production.</p>{!saved&&<button disabled={!!busy||!title.trim()||!collectionId} onClick={()=>void action('quote')}>{busy==='quote'?'Calculating…':'Calculate retail prices'}</button>}{!!prices.length&&<table><caption>Retail prices by size</caption><thead><tr><th>Variant</th><th>Base</th><th>Retail</th></tr></thead><tbody>{prices.map(p=><tr key={p.title}><td>{p.title}</td><td>${p.base.toFixed(2)}</td><td>${p.price.toFixed(2)}</td></tr>)}</tbody></table>}<button disabled={!!busy||missingScopes.includes('write_products')||saved||!prices.length||!title.trim()||!collectionId} onClick={()=>void action('save')}>{busy==='save'?'Saving…':saved?'Shopify draft saved':'Save Shopify draft'}</button>{saved&&<button disabled={!!busy||!!missingScopes.length} onClick={()=>void action('publish')}>{busy==='publish'?'Publishing…':'Publish to MACAC store'}</button>}</div></div>
+    {design&&<section className="agency-card mb-panel"><div className="mb-heading"><h2>Name and price your MACAC product</h2><button type="button" onClick={reset} disabled={!!busy}>Create another</button></div><p>{design.productTitle} · {design.garmentColor||'Selected garment color'} · {proofs.length} print placement{proofs.length===1?'':'s'}</p>
+      <div className="mb-review"><div className="mb-proofs">{proofs.map(([side,url])=><figure key={side}><img src={url} alt={side+' proof'}/><figcaption>{side.replace(/([A-Z])/g,' $1')}</figcaption><a href={url} target="_blank" rel="noreferrer">View full-size proof</a></figure>)}</div><div className="mb-fields">
+        <label>What should this item be called?<input value={title} maxLength={150} disabled={saved||!!busy} onChange={e=>setTitle(e.target.value)}/></label>
+        <label>MACAC collection<select value={collectionId} disabled={saved||!!busy} onChange={e=>setCollectionId(e.target.value)}>{collections.map(c=><option key={c.shopify_collection_id} value={c.shopify_collection_id}>{c.title||'MACAC collection'}</option>)}</select></label>
+        <p>Detroit Decal’s base price is the customizer price, including printing, plus 20%. Set your customer-facing selling price. MACAC receives the entire difference above our base price.</p>
+        {!saved&&<button disabled={!!busy||!title.trim()||!collectionId} onClick={()=>void action('quote')}>{busy==='quote'?'Calculating…':prices.length?'Refresh base pricing':'Get base pricing'}</button>}
+        {starting&&<div className="mb-price-summary">
+          <div><span>Customizer price · from</span><strong>{money(starting.customizerPrice)}</strong></div>
+          <div><span>Detroit Decal base price · includes 20%</span><strong>{money(starting.base)}</strong></div>
+          <label><span>Your starting selling price</span><input aria-label="Starting selling price" inputMode="decimal" type="number" min={starting.base} max="10000" step="0.01" value={starting.price} disabled={saved||!!busy} onChange={e=>setStartingPrice(e.target.value)}/></label>
+          <div className="mb-proceeds"><span>MACAC receives per sale</span><strong>{validPrices?earningsLabel(prices):'Check your prices'}</strong></div>
+          <p>Changing the starting price applies the same donation to every size and preserves size upcharges. You can also adjust individual size prices below.</p>
+        </div>}
+        {!!prices.length&&<div className="mb-price-table"><table><caption>Customer pricing by size</caption><thead><tr><th>Variant</th><th>Our base</th><th>Your selling price</th><th>MACAC receives</th></tr></thead><tbody>{prices.map((p,i)=><tr key={p.sourceVariantId}><td>{p.title}</td><td>{money(p.base)}</td><td><input aria-label={p.title+' selling price'} inputMode="decimal" type="number" step="0.01" min={p.base} max="10000" value={p.price} disabled={saved||!!busy} onChange={e=>setPrices(current=>current.map((row,index)=>index===i?{...row,price:e.target.value}:row))}/></td><td>{p.price!==''&&Number(p.price)>=p.base?money((Math.round(Number(p.price)*100)-Math.round(p.base*100))/100):'Below base'}</td></tr>)}</tbody></table></div>}
+        {!!prices.length&&!validPrices&&<p role="alert">Each selling price must be at least the Detroit Decal base price for that size.</p>}
+        <p>Original artwork, placement details, and proofs are saved with the Shopify product for production. Self-service products use printing; contact us for embroidery.</p>
+        <button disabled={!!busy||missingScopes.includes('write_products')||saved||!validPrices||!title.trim()||!collectionId} onClick={()=>void action('save')}>{busy==='save'?'Saving…':saved?'Shopify draft saved':'Save Shopify draft'}</button>
+        {saved&&<button disabled={!!busy||!!missingScopes.length} onClick={()=>void action('publish')}>{busy==='publish'?'Publishing…':'Publish to MACAC store'}</button>}
+      </div></div>
     </section>}
-    <section className="agency-card mb-panel"><h2>Your created products</h2><p>Drafts stay off the storefront until you publish. If publication or sync is interrupted, retry on the same product.</p><div className="mb-catalog">{products.map(p=><article key={p.id}>{p.image&&<img src={p.image} alt=""/>}<strong>{p.title}</strong><span>{p.status==='ACTIVE'?'Active in Shopify':'Shopify draft'} · ${Number(p.record.markup||0).toFixed(2)} donation</span><button disabled={!!busy} onClick={()=>{setPrices([]);setDesign(p.record.design);setTitle(p.title);setMarkup(String(p.record.markup));setCollectionId(collections.find(c=>c.shopify_collection_id.split('/').pop()===p.record.collectionId.split('/').pop())?.shopify_collection_id||'');setDraftId(p.record.draftId);setSaved(true);setMessage('Saved product loaded. Publishing again safely retries storefront sync.')}}>Review product</button></article>)}</div>{!products.length&&<p>No products created yet.</p>}</section>
+    <section className="agency-card mb-panel"><h2>Your created products</h2><p>Drafts stay off the storefront until you publish. If publication or sync is interrupted, retry on the same product.</p><div className="mb-catalog">{products.map(p=><article key={p.id}>{p.image&&<img src={p.image} alt=""/>}<strong>{p.title}</strong><span>{p.status==='ACTIVE'?'Active in Shopify':'Shopify draft'} · {earningsLabel(p.record.pricing,p.record.markup||0)} to MACAC per sale</span><button disabled={!!busy} onClick={()=>{setPrices(p.record.pricing||[]);setDesign(p.record.design);setTitle(p.title);setCollectionId(collections.find(c=>c.shopify_collection_id.split('/').pop()===p.record.collectionId.split('/').pop())?.shopify_collection_id||'');setDraftId(p.record.draftId);setSaved(true);setMessage('Saved product loaded. Publishing again safely retries storefront sync.')}}>Review product</button></article>)}</div>{!products.length&&<p>No products created yet.</p>}</section>
   </div>
 }

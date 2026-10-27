@@ -1,8 +1,8 @@
 import {NextResponse} from 'next/server'
 import {authorizeCampaignManagement} from '@/lib/portal/authorize-campaign'
-import {shopifyGraphQL,stripShopifyGid,clearShopifyAccessToken} from '@/lib/shopify/admin'
+import {shopifyGraphQL,clearShopifyAccessToken} from '@/lib/shopify/admin'
 import {collectionGid,syncCollection} from '@/lib/shopify/sync-collection'
-import {STUDIO_ORIGIN,BUILDER_NAMESPACE,requireBuilderId,validateDesign,contributionPrice} from '@/lib/portal/product-builder'
+import {STUDIO_ORIGIN,BUILDER_NAMESPACE,requireBuilderId,validateDesign,contributionPrice,MACAC_BASE_MULTIPLIER} from '@/lib/portal/product-builder'
 
 export const dynamic='force-dynamic'
 export const maxDuration=120
@@ -44,7 +44,7 @@ export async function GET(request:Request){
     if(q.get('refresh')==='1')clearShopifyAccessToken()
     const scopeData=await shopifyGraphQL(`query BuilderPermissions{currentAppInstallation{accessScopes{handle}}}`)
     const scopes=new Set(scopeData.currentAppInstallation.accessScopes.map((s:any)=>s.handle))
-    const missingScopes=['write_products','read_publications','write_publications'].filter(s=>!scopes.has(s))
+    const missingScopes=['write_products','read_publications','write_publications'].filter(s=>!scopes.has(s)&&!(s==='read_publications'&&scopes.has('write_publications')))
     const {data:collections,error:collectionError}=await a.db.from('campaign_shopify_collections').select('shopify_collection_id,title').eq('campaign_id',a.campaign.id)
     if(collectionError)throw collectionError
     const result=await shopifyGraphQL(queryDraft,{query:`tag:fc-builder-${a.campaign.id}`})
@@ -82,8 +82,6 @@ export async function POST(request:Request){
       if(!assignment.product?.inCollection)errors((await shopifyGraphQL(`mutation BuilderAssign($id:ID!,$products:[ID!]!){collectionAddProducts(id:$id,productIds:$products){userErrors{field message}}}`,{id:existing.record.collectionId,products:[existing.id]})).collectionAddProducts)
       // Sync is retryable. If it fails, the UI retains the existing Shopify product.
       await syncCollection(a.campaign.id,collection.shopify_collection_id,body.organizationId)
-      const {error:ruleError}=await a.db.from('campaign_products').update({contribution_type:'fixed',contribution_value:existing.record.markup}).eq('campaign_id',a.campaign.id).eq('shopify_product_id',stripShopifyGid(existing.id))
-      if(ruleError)throw ruleError
       return NextResponse.json({ok:true,productId:existing.id,status:'ACTIVE',url:'/stores/macac'})
     }
     if(!['save','quote'].includes(body.action))throw new Error('Invalid product action.')
@@ -116,12 +114,17 @@ export async function POST(request:Request){
     const variants=source.variants.nodes.filter((v:any)=>!color||v.selectedOptions.some((o:any)=>o.name===color.name&&o.value===color.value))
     if(color?.value!==design.garmentColor&&color)throw new Error('Proof color does not match the selected garment.')
     const locations=Object.keys(design.proofImages).length
-    const pricing=variants.map((v:any)=>contributionPrice(v.price,locations,body.markup,fee()))
-    if(body.action==='quote')return NextResponse.json({prices:variants.map((v:any,i:number)=>({title:v.selectedOptions.map((o:any)=>o.value).join(' / '),...pricing[i]}))})
-    const record={campaignId:a.campaign.id,organizationId:body.organizationId,draftId:id,collectionId:collectionGid(target.shopify_collection_id),markup:pricing[0].donation,locationFee:fee(),basePrices:variants.map((v:any,i:number)=>({sourceVariantId:v.id,base:pricing[i].base,sku:v.sku})),design,createdBy:a.actorId,createdAt:new Date().toISOString()}
+    const retailPrices=body.retailPrices||{}
+    if(typeof retailPrices!=='object'||Array.isArray(retailPrices))throw new Error('Invalid selling prices.')
+    const pricing=variants.map((v:any,i:number)=>{
+      if(body.action==='save'&&!Object.prototype.hasOwnProperty.call(retailPrices,v.id))throw new Error('Set a selling price for every size before saving.')
+      return {sourceVariantId:v.id,title:v.selectedOptions.map((o:any)=>o.value).join(' / '),sku:`MACAC-${id.slice(0,8)}-${v.id.split('/').pop()}`,sourceSku:v.sku||null,...contributionPrice(v.price,locations,retailPrices[v.id],fee())}
+    })
+    if(body.action==='quote')return NextResponse.json({prices:pricing,baseMultiplier:MACAC_BASE_MULTIPLIER})
+    const record={campaignId:a.campaign.id,organizationId:body.organizationId,draftId:id,collectionId:collectionGid(target.shopify_collection_id),pricingVersion:2,baseMultiplier:MACAC_BASE_MULTIPLIER,locationFee:fee(),pricing,design,createdBy:a.actorId,createdAt:new Date().toISOString()}
     const input={title,handle,status:'DRAFT',vendor:'Detroit Decal & Apparel',tags:['fc-macac-builder',`fc-builder-${a.campaign.id}`],descriptionHtml:`<p>Made to order for MACAC.</p>`,
       productOptions:source.options.map((o:any)=>({name:o.name,values:[...new Set(variants.map((v:any)=>v.selectedOptions.find((s:any)=>s.name===o.name)?.value))].map(name=>({name}))})),
-      variants:variants.map((v:any,i:number)=>({price:pricing[i].price.toFixed(2),inventoryPolicy:'CONTINUE',optionValues:v.selectedOptions.map((o:any)=>({optionName:o.name,name:o.value})),inventoryItem:{sku:`MACAC-${id.slice(0,8)}-${v.sku||i}`,tracked:false,requiresShipping:true}})),
+      variants:variants.map((v:any,i:number)=>({price:pricing[i].price.toFixed(2),inventoryPolicy:'CONTINUE',optionValues:v.selectedOptions.map((o:any)=>({optionName:o.name,name:o.value})),inventoryItem:{sku:pricing[i].sku,tracked:false,requiresShipping:true}})),
       files:Object.entries(design.proofImages).map(([placement,url])=>({originalSource:url,contentType:'IMAGE',alt:`${title} — ${placement}`})),
       metafields:[{namespace:BUILDER_NAMESPACE,key:'record',type:'json',value:JSON.stringify(record)}]}
     const result=errors((await shopifyGraphQL(setProduct,{input,identifier:{handle}})).productSet)

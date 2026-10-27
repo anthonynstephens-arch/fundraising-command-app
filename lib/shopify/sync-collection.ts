@@ -1,3 +1,4 @@
+import {builderContribution} from '@/lib/portal/product-builder'
 import 'server-only'
 import { createHash } from 'crypto'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -105,7 +106,7 @@ export async function syncCollection(campaignId:string,collectionId:string,organ
     const old=byVariant.get(vid)
     let builder:any=null
     try { builder=p.builderRecord?.value?JSON.parse(p.builderRecord.value):null } catch {}
-    const builderMarkup=builder?.campaignId===campaignId && Number.isFinite(builder.markup) && builder.markup>=0 ? builder.markup : null
+    const builderMarkup=builderContribution(builder,campaignId,v)
     return {id:old?.id||stableVariantId(campaignId,vid),campaign_id:campaignId,shopify_product_id:stripShopifyGid(p.id),shopify_variant_id:vid,title:p.title,variant_title:v.title,sku:v.sku||null,image_url:p.featuredImage?.url||null,retail_price:Number(v.price),
       contribution_type:builderMarkup!==null?'fixed':old?.contribution_type||(Number(campaign.fundraising_percentage)>0?'percentage':'fixed'),contribution_value:builderMarkup!==null?builderMarkup:old?.contribution_value||(old ? 0 : Number(campaign.fundraising_percentage)||Number(campaign.flat_amount_per_item)||0),is_active:old?.is_active??true,
       shopify_product_ref_id:productRefs.get(stripShopifyGid(p.id)),shopify_variant_ref_id:variantRefs.get(vid)}
