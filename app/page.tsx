@@ -1,160 +1,22 @@
-import Link from "next/link"
-import { PublicHeader } from "@/components/public/PublicHeader"
-import { PublicFooter } from "@/components/public/PublicFooter"
+import Link from 'next/link'
+import Image from 'next/image'
+import './homepage.css'
 
-export default function Page(){
-  return <main className="bca-landing">
-    <PublicHeader/>
-
-    <section className="bca-land-hero bca-land-hero-v2">
-      <div className="bca-land-hero-copy">
-        <div className="bca-land-badge">BREAST CANCER AWARENESS · OCTOBER 2026</div>
-        <h1>Run a better <span>Breast Cancer Awareness</span> fundraiser.</h1>
-        <p>Give your agency a polished storefront, great campaign products, Shopify checkout, live fundraising data, member access, reporting, and payout visibility — all built for you.</p>
-
-        <div className="bca-land-actions">
-          <Link href="/apply" className="bca-land-primary">Start Our BCA Campaign</Link>
-          <Link href="/demo/breast-cancer-awareness" className="bca-land-secondary">View Agency Demo</Link>
-        </div>
-
-        <div className="bca-land-hero-points">
-          <div><b>✓</b><span>Done-for-you setup</span></div>
-          <div><b>✓</b><span>Agency-branded storefront</span></div>
-          <div><b>✓</b><span>Live Shopify-backed reporting</span></div>
-        </div>
-      </div>
-
-      <div className="bca-land-hero-visual bca-land-hero-visual-v2">
-        <div className="bca-land-dashboard bca-land-dashboard-v2">
-          <div className="bca-land-dashboard-top">
-            <div><small>METRO PUBLIC SAFETY</small><strong>October BCA Campaign</strong></div>
-            <span>LIVE</span>
-          </div>
-          <div className="bca-land-mini-kpis">
-            <div><span>Gross Sales</span><strong>$8,460</strong></div>
-            <div><span>Raised</span><strong>$1,692</strong></div>
-            <div><span>Orders</span><strong>214</strong></div>
-          </div>
-          <div className="bca-land-progress-head"><span>Fundraising Goal</span><b>68%</b></div>
-          <div className="bca-land-progress"><i style={{width:"68%"}}/></div>
-          <div className="bca-land-mini-orders">
-            <div><span>BCA Awareness Tee</span><b>96 sold</b></div>
-            <div><span>BCA Hoodie</span><b>54 sold</b></div>
-            <div><span>Pink Crest Duty Shirt</span><b>38 sold</b></div>
-          </div>
-          <Link href="/demo/breast-cancer-awareness" className="bca-land-card-link">Open the department demo →</Link>
-        </div>
-        <div className="bca-land-ribbon-v2">BCA</div>
-      </div>
-    </section>
-
-    <section className="bca-land-strip">
-      <div><strong>Built for agencies</strong><span>Fire · Police · EMS · Public Safety</span></div>
-      <div><strong>One campaign link</strong><span>Easy to share everywhere</span></div>
-      <div><strong>Real admin portal</strong><span>Sales · Orders · Reports · Payouts</span></div>
-      <div><strong>No spreadsheet mess</strong><span>Campaign accounting stays organized</span></div>
-    </section>
-
-
-    <section className="bca-land-visual-showcase">
-      <div className="bca-land-showcase-copy">
-        <span>LOOKS LIKE A REAL CAMPAIGN</span>
-        <h2>Your agency gets more than a link.</h2>
-        <p>Campaign products, department-ready graphics, QR promotion, milestone posts, and a storefront that all look like they belong together.</p>
-        <div className="bca-land-showcase-points"><b>Agency branded</b><b>Ready to share</b><b>Built for October</b></div>
-      </div>
-
-      <div className="bca-land-graphic-wall">
-        <div className="bca-land-poster">
-          <small>METRO PUBLIC SAFETY</small>
-          <strong>BREAST CANCER<br/>AWARENESS</strong>
-          <span>OCTOBER 2026</span>
-          <div className="bca-land-poster-ribbon">BCA</div>
-          <em>SHOP · SUPPORT · SHARE</em>
-        </div>
-
-        <div className="bca-land-shirt-card">
-          <div className="bca-land-shirt">
-            <i className="left"/><i className="right"/>
-            <div><small>MPS</small><b>BCA</b><span>2026</span></div>
-          </div>
-          <strong>Campaign Apparel</strong>
-          <span>Built around your agency</span>
-        </div>
-
-        <div className="bca-land-qr-card">
-          <div className="bca-land-qr-faux">
-            {Array.from({length:49}).map((_,i)=><i key={i} className={(i%3===0||i%7===0||i%8===1)?"on":""}/>)}
-          </div>
-          <strong>SCAN TO SUPPORT</strong>
-          <span>Tracked campaign QR</span>
-        </div>
-
-        <div className="bca-land-milestone-card">
-          <small>CAMPAIGN MILESTONE</small>
-          <strong>75%</strong>
-          <span>OF GOAL</span>
-          <div><i style={{width:"75%"}}/></div>
-          <b>KEEP IT GOING</b>
-        </div>
-      </div>
-    </section>
-
-    <section className="bca-land-section">
-      <div className="bca-land-section-head">
-        <div><span>MORE THAN A SHIRT FUNDRAISER</span><h2>Everything your department needs to run October professionally.</h2></div>
-        <p>Your supporters see a clean campaign experience. Your department admins get the tools behind it.</p>
-      </div>
-
-      <div className="bca-land-feature-grid">
-        <article><b>01</b><h3>Agency-Branded Storefront</h3><p>Your logo, campaign message, products, and public campaign link — built around your department.</p></article>
-        <article><b>02</b><h3>Products People Want</h3><p>Awareness tees, hoodies, duty-friendly options, decals, patches, and more.</p></article>
-        <article><b>03</b><h3>Shopify Checkout</h3><p>Real checkout and order flow with campaign attribution behind the scenes.</p></article>
-        <article><b>04</b><h3>Live Department Dashboard</h3><p>Sales, orders, product performance, goal tracking, and fundraising proceeds in one place.</p></article>
-        <article><b>05</b><h3>Member Access</h3><p>Owners, Admins, Managers, and Viewers get the access appropriate for their role.</p></article>
-        <article><b>06</b><h3>Reports & Payouts</h3><p>CSV/PDF reporting, payout history, and clear visibility into what your campaign has earned.</p></article>
-      </div>
-    </section>
-
-    <section className="bca-land-demo bca-land-demo-v2">
-      <div className="bca-land-demo-copy">
-        <span>SEE THE DEPARTMENT SIDE</span>
-        <h2>This is what your campaign admins actually get.</h2>
-        <p>Not a fake storefront dashboard. A real agency portal designed around the day-to-day questions your committee will actually have.</p>
-        <div className="bca-land-demo-list">
-          <span>✓ Sales analytics</span><span>✓ Searchable orders</span><span>✓ Product performance</span><span>✓ Goal tracking</span>
-          <span>✓ Payout visibility</span><span>✓ PDF / CSV reports</span><span>✓ QR marketing tools</span><span>✓ Member roles</span>
-        </div>
-        <Link href="/demo/breast-cancer-awareness" className="bca-land-primary">Explore the Full BCA Demo</Link>
-      </div>
-
-      <div className="bca-land-screen">
-        <div className="bca-land-screen-sidebar">
-          <strong>Fundraiser Command</strong><span className="active">Overview</span><span>Sales</span><span>Orders</span><span>Products</span><span>Progress</span><span>Payouts</span><span>Reports</span><span>Marketing</span>
-        </div>
-        <div className="bca-land-screen-main">
-          <div className="bca-land-screen-title"><div><small>METRO PUBLIC SAFETY</small><strong>Campaign Overview</strong></div><em>October 2026</em></div>
-          <div className="bca-land-screen-kpis"><div><span>Sales</span><b>$8,460</b></div><div><span>Raised</span><b>$1,692</b></div><div><span>Orders</span><b>214</b></div><div><span>Goal</span><b>68%</b></div></div>
-          <div className="bca-land-screen-chart"><div className="bca-land-screen-chart-line"/></div>
-        </div>
-      </div>
-    </section>
-
-    <section className="bca-land-section bca-land-how">
-      <div className="bca-land-section-head"><div><span>HOW IT WORKS</span><h2>We build it. Your agency shares it. The system tracks it.</h2></div></div>
-      <div className="bca-land-steps">
-        <div><b>1</b><h3>Tell us about your campaign</h3><p>Agency, dates, campaign goal, product direction, and fundraiser structure.</p></div>
-        <div><b>2</b><h3>We build everything</h3><p>Storefront, products, contribution rules, Shopify connection, and portal access.</p></div>
-        <div><b>3</b><h3>You share one link</h3><p>Social, email, QR codes, flyers, station signage, and community outreach.</p></div>
-        <div><b>4</b><h3>Track results live</h3><p>Your admins can see exactly how the fundraiser is performing.</p></div>
-      </div>
-    </section>
-
-    <section className="bca-land-final">
-      <div><span>BREAST CANCER AWARENESS MONTH 2026</span><h2>Make your October fundraiser look as organized as your agency.</h2><p>We&apos;ll build the campaign. Your department gets the storefront, the products, and the system behind it.</p></div>
-      <div className="bca-land-final-actions"><Link href="/apply" className="bca-land-primary">Start Our Campaign</Link><Link href="/demo/breast-cancer-awareness" className="bca-land-dark-outline">View the Demo</Link></div>
-    </section>
-
-    <PublicFooter/>
-  </main>
-}
+const demo='/demo/breast-cancer-awareness'
+const steps=[['01','Launch your store','We create a branded online storefront tailored to your organization.'],['02','Create your merchandise','Choose garments and customize designs, or let our team handle the artwork.'],['03','Sell & fulfill','Supporters order online. Detroit Decal & Apparel handles production, packaging, and fulfillment.'],['04','Track & earn','Follow orders, sales, and fundraising proceeds in your private dashboard.']]
+const features=[['◫','Custom storefronts','Your branding, your merchandise, and a shopping experience made for your organization.'],['✦','Built-in apparel designer','Create products and publish through your authorized storefront workflow.'],['↗','Fulfillment management','Production, packaging, and shipping handled by Detroit Decal & Apparel.'],['◉','Financial visibility','See sales, fundraising proceeds, and payout activity in one place.'],['▤','Order tracking','Follow orders from purchase through fulfillment and delivery.'],['◇','Campaign management','Bring seasonal promotions and ongoing merchandise programs together.']]
+const audiences=['Fire Departments & Firefighter Associations','Police & Public Safety Organizations','Labor Unions & Professional Associations','Schools & Athletic Programs','Dance & Performing Arts Groups','Nonprofits & Community Organizations']
+function Dashboard(){return <div className="fc-dashboard"><div className="fc-dash-top"><span>◈ &nbsp; FUNDRAISER COMMAND</span><small>DEMO DATA</small></div><div className="fc-dash-body"><aside><b>COMMAND CENTER</b><span>● &nbsp; Overview</span><span>◫ &nbsp; Orders</span><span>◇ &nbsp; Products</span><span>↗ &nbsp; Payouts</span><span>▤ &nbsp; Reports</span></aside><div className="fc-dash-main"><div className="fc-dash-title"><div><small>YOUR ORGANIZATION</small><h3>Campaign overview</h3></div><span>Sample campaign</span></div><div className="fc-metrics"><div><small>Gross sales</small><b>$8,460</b></div><div><small>Orders</small><b>214</b></div><div><small>Items sold</small><b>326</b></div></div><div className="fc-chart"><div><b>Sales activity</b><small>Illustrative results</small></div><div className="fc-bars">{[28,43,36,58,49,70,62,88,76,95,83,100].map((n,i)=><i key={i} style={{height:`${n}%`}}/>)}</div></div><div className="fc-order"><span>Recent orders</span><b>Track fulfillment →</b></div></div></div></div>}
+function Shirt(){return <div className="fc-shirt" aria-label="Illustrative shirt mockup"><div className="fc-shirt-shape"><span>YOUR<br/><b>COMMUNITY</b><br/>TOGETHER</span></div></div>}
+export default function Page(){return <main className="fc-home">
+<header className="fc-header"><div className="fc-wrap fc-nav"><Link href="/" aria-label="Fundraiser Command home"><Image src="/brand/fundraiser-command-header.webp" width={190} height={58} alt="Fundraiser Command" /></Link><nav aria-label="Main navigation"><a href="#how">How it works</a><a href="#designer">Apparel designer</a><a href="#features">Features</a><a href="#demo">Demo</a></nav><div className="fc-nav-actions"><Link href="/login">Portal login</Link><Link className="fc-button fc-button-small" href="/apply">Request access ↗</Link></div><details className="fc-mobile-menu"><summary>Menu</summary><div><a href="#how">How it works</a><a href="#designer">Apparel designer</a><a href="#features">Features</a><a href="#demo">Demo</a><Link href="/apply">Request access</Link><Link href="/login">Portal login</Link></div></details></div></header>
+<section className="fc-hero"><div className="fc-wrap fc-hero-grid"><div><div className="fc-eyebrow"><i/> CREATE · SELL · MANAGE</div><h1>Your fundraiser.<br/>Your store.<br/><em>One command center.</em></h1><p>Everything your organization needs to design merchandise, sell online, manage orders, and track fundraising earnings—without the administrative headaches.</p><div className="fc-actions"><Link className="fc-button" href="/apply">Start a fundraiser <span>↗</span></Link><Link className="fc-button fc-outline" href={demo}>Explore live demo <span>→</span></Link></div><div className="fc-hero-note"><span>✦</span> Powered by Detroit Decal &amp; Apparel</div></div><div className="fc-hero-visual"><Dashboard/><div className="fc-floating"><span>YOUR MERCHANDISE</span><Shirt/><b>Community Tee</b><small>Made for your organization</small></div></div></div><div className="fc-wrap fc-hero-bottom"><span>BUILT FOR YOUR COMMUNITY</span><p>Public safety <b>·</b> Associations <b>·</b> Schools <b>·</b> Dance <b>·</b> Nonprofits</p></div></section>
+<section id="how" className="fc-section fc-light"><div className="fc-wrap"><div className="fc-heading"><div><span className="fc-label">THE SIMPLE PART</span><h2>From idea to impact,<br/>all in one place.</h2></div><p>A connected storefront, merchandise partner, and management platform for campaigns of all sizes.</p></div><div className="fc-steps">{steps.map(([n,t,d])=><article key={n}><span>{n} <i>↗</i></span><h3>{t}</h3><p>{d}</p></article>)}</div></div></section>
+<section id="designer" className="fc-section fc-designer"><div className="fc-wrap"><div className="fc-heading"><div><span className="fc-label">CREATE / YOUR APPAREL DESIGNER</span><h2>Your designs.<br/>Your merchandise.<br/><em>Your store.</em></h2></div><div><p>Take control of your organization’s merchandise. Choose a garment, add your artwork, set a selling price, and prepare your product for your connected store.</p><a href="#designer-preview" className="fc-text-link">Explore the designer preview ↗</a></div></div><div id="designer-preview" className="fc-editor"><div className="fc-editor-top"><b>◈ &nbsp; PRODUCT BUILDER</b><span>ILLUSTRATIVE PREVIEW</span><small>Design your merchandise</small></div><div className="fc-editor-grid"><div className="fc-editor-tools"><small>YOUR TOOLKIT</small><b>01 &nbsp; Garment</b><b>02 &nbsp; Graphics</b><b>03 &nbsp; Add text</b><b>04 &nbsp; Print locations</b><div className="fc-swatches"><i/><i/><i/><i/></div><p>Browse styles, colors, brands and your organization’s artwork.</p></div><div className="fc-editor-canvas"><div className="fc-editor-toggle"><b>FRONT</b><span>BACK</span></div><Shirt/><small>ILLUSTRATIVE GARMENT PREVIEW</small></div><div className="fc-editor-price"><small>SET YOUR PRICE</small><h3>Make it yours.</h3><p>Your base price covers applicable garment, printing, fulfillment and platform costs.</p><div><span>Base price</span><b>Example</b></div><div><span>Selling price</span><b>Set by you</b></div><div><span>Fundraising proceeds</span><b>Program rules apply</b></div><div className="fc-faux-button">PREPARE FOR YOUR STORE ↗</div><small>Publishing and pricing are subject to your program’s permissions and rules.</small></div></div></div><div className="fc-designer-bottom"><div><span>01</span><b>Browse the catalog</b><p>Find garments by category, subcategory, brand, or search.</p></div><div><span>02</span><b>Make your design</b><p>Use supported artwork, text, print locations, and color options.</p></div><div><span>03</span><b>Set a selling price</b><p>See your base and fundraising potential under your program’s rules.</p></div><div><span>04</span><b>Publish to your store</b><p>Authorized users can prepare and publish products through their configured workflow.</p></div></div></div></section>
+<section className="fc-section fc-platform"><div className="fc-wrap fc-platform-grid"><div><span className="fc-label">MANAGE / THE COMMAND CENTER</span><h2>Know exactly how your fundraiser is performing.</h2><p>Your private dashboard brings the details together, so your team can spend less time chasing updates and more time rallying your community.</p><ul><li>Sales, orders and product performance</li><li>Fulfillment and delivery visibility</li><li>Fundraising proceeds and payout activity</li><li>Reports and authorized team access</li></ul><Link href={demo} className="fc-text-link">Explore the dashboard demo ↗</Link></div><Dashboard/></div></section>
+<section id="features" className="fc-section fc-light"><div className="fc-wrap"><div className="fc-heading"><div><span className="fc-label">MORE THAN A STORE</span><h2>The platform and the<br/>people behind it.</h2></div><p>Powerful tools meet a hands-on merchandise partner. We help bring your program to life and handle the work after the order.</p></div><div className="fc-features">{features.map(([icon,t,d])=><article key={t}><span>{icon}</span><h3>{t}</h3><p>{d}</p></article>)}</div></div></section>
+<section className="fc-section fc-audiences"><div className="fc-wrap"><span className="fc-label">MADE FOR YOUR MISSION</span><h2>For the organizations<br/>that bring people together.</h2><p>From a short campaign to a year-round merchandise program, build a store that works for your community.</p><div className="fc-audience-grid">{audiences.map((x,i)=><div key={x}><span>0{i+1}</span><b>{x}</b><i>↗</i></div>)}</div></div></section>
+<section id="demo" className="fc-section fc-demo"><div className="fc-wrap fc-demo-inner"><div><span className="fc-label">SEE IT IN ACTION</span><h2>Explore before<br/>you launch.</h2><p>Take a look at the working dashboard through a sample Breast Cancer Awareness campaign. It’s one example of what your organization can create.</p><Link className="fc-button" href={demo}>Explore the dashboard demo ↗</Link></div><div className="fc-demo-card"><span>DEMO CAMPAIGN</span><h3>Your organization.<br/>Your impact.</h3><p>Explore sales, orders, reports, and payout visibility in a sample campaign.</p><Link href={demo}>Open demo →</Link></div></div></section>
+<section className="fc-section fc-cta"><div className="fc-wrap"><span className="fc-label">LET'S BUILD SOMETHING TOGETHER</span><h2>Ready to take command<br/>of your fundraising?</h2><p>Tell us about your organization, and we’ll help you get started with a branded merchandise storefront.</p><Link className="fc-button" href="/apply">Request your fundraiser ↗</Link></div></section>
+<footer className="fc-footer"><div className="fc-wrap fc-footer-grid"><div><b>FUNDRAISER COMMAND</b><p>Merchandise with a mission.<br/>Powered by Detroit Decal &amp; Apparel.</p></div><div><a href="#how">How it works</a><a href="#designer">Apparel designer</a><a href="#features">Features</a></div><div><Link href={demo}>Interactive demo</Link><Link href="/apply">Request a fundraiser</Link><Link href="/login">Portal login</Link></div><div><a href="mailto:anthony@detroitdecalandapparel.com">Contact</a><Link href="/privacy">Privacy policy</Link><Link href="/terms">Terms</Link></div></div></footer>
+</main>}
