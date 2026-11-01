@@ -1,0 +1,32 @@
+begin;
+do $$
+declare org uuid; camp uuid; product uuid; paid_order uuid; pending_order uuid; balance_row record; payout_row record; blocked boolean;
+begin
+ insert into organizations(name,slug,organization_type) values('Payout hold test','hold-test-'||gen_random_uuid(),'fire_department') returning id into org;
+ insert into campaigns(organization_id,name,slug,campaign_type,status,ends_at) values(org,'Hold test','hold-test-'||gen_random_uuid(),'fundraiser','active',null) returning id into camp;
+ insert into campaign_products(campaign_id,title,shopify_product_id,shopify_variant_id,retail_price,contribution_type,contribution_value) values(camp,'Test','hold-product-'||gen_random_uuid(),'hold-variant-'||gen_random_uuid(),25,'fixed',10) returning id into product;
+ insert into orders(organization_id,shopify_order_id,placed_at,total,subtotal,status) values(org,'hold-paid-'||gen_random_uuid(),now()-interval '50 days',50,50,'paid') returning id into paid_order;
+ insert into orders(organization_id,shopify_order_id,placed_at,total,subtotal,status) values(org,'hold-pending-'||gen_random_uuid(),now()-interval '50 days',50,50,'pending') returning id into pending_order;
+ insert into order_items(order_id,campaign_product_id,title,quantity,unit_price,contribution_amount,refunded_contribution_amount) values(paid_order,product,'Paid',2,25,20,5),(pending_order,product,'Pending',2,25,20,0);
+ select * into balance_row from station_collection_balance(camp);
+ if balance_row.available<>0 then raise exception 'Missing end date should hold funds'; end if;
+ if exists(select 1 from generate_campaign_payout(camp)) then raise exception 'Generated without end date'; end if;
+ update campaigns set ends_at=now()-interval '34 days' where id=camp;
+ select * into balance_row from station_collection_balance(camp);
+ if balance_row.available<>0 or exists(select 1 from generate_campaign_payout(camp)) then raise exception 'Funds released before 35 days'; end if;
+ blocked:=false;
+ begin insert into payout_requests(organization_id,campaign_id,requested_by,requested_amount,status) values(org,camp,gen_random_uuid(),15,'requested'); exception when others then if sqlerrm like 'Campaign payouts are available 35 days%' then blocked:=true; else raise; end if; end;
+ if not blocked then raise exception 'Request bypassed hold'; end if;
+ update campaigns set ends_at=now()-interval '35 days' where id=camp;
+ select * into balance_row from station_collection_balance(camp);
+ if balance_row.available<>15 then raise exception 'Expected 15 collected net of refund at boundary, got %',balance_row.available; end if;
+ select * into payout_row from generate_campaign_payout(camp);
+ if payout_row.payout_amount<>15 or payout_row.item_count<>1 then raise exception 'Generation included unpaid order or ignored refund'; end if;
+ select * into balance_row from station_collection_balance(camp);
+ if balance_row.available<>0 or balance_row.pending<>15 then raise exception 'Reserved amount not deducted'; end if;
+ update campaigns set ends_at=now() where id=camp;
+ blocked:=false;
+ begin update payouts set status='processing' where id=payout_row.payout_id; exception when others then if sqlerrm like 'Campaign payouts are available 35 days%' then blocked:=true; else raise; end if; end;
+ if not blocked then raise exception 'Previously reserved payout bypassed updated hold'; end if;
+end $$;
+rollback;

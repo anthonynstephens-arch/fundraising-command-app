@@ -3,7 +3,7 @@ do $$
 declare org uuid; camp uuid; prod uuid; n integer; bal record; pay record; original jsonb; oid uuid;
 begin
  insert into organizations(name,slug,organization_type,reporting_start_date) values('Reporting regression','reporting-test-'||gen_random_uuid(),'detroit_fire_station','2026-09-01') returning id into org;
- insert into campaigns(organization_id,name,slug,campaign_type,status) values(org,'Test','test-'||gen_random_uuid(),'department-store','active') returning id into camp;
+ insert into campaigns(organization_id,name,slug,campaign_type,status,ends_at) values(org,'Test','test-'||gen_random_uuid(),'department-store','active',now()-interval '36 days') returning id into camp;
  insert into campaign_products(campaign_id,title,shopify_product_id,shopify_variant_id,retail_price,contribution_type,contribution_value) values(camp,'Test','test-product','test-variant',25,'fixed',10) returning id into prod;
  original:=jsonb_build_object('id','test-order-'||gen_random_uuid(),'name','#TEST','createdAt','2026-09-01T04:00:00Z','currencyCode','USD','displayFinancialStatus','PAID','displayFulfillmentStatus','FULFILLED','lines',jsonb_build_array(jsonb_build_object('id','test-line','title','Test','quantity',20,'currentQuantity',20,'product',jsonb_build_object('id','test-product'),'variant',jsonb_build_object('id','test-variant'),'discountedUnitPriceAfterAllDiscountsSet',jsonb_build_object('shopMoney',jsonb_build_object('amount','25')))));
  n:=import_department_order(org,original);

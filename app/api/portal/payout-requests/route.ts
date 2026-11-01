@@ -37,7 +37,7 @@ export async function POST(request:Request){
   const {data:balances,error:balanceError}=await db.rpc('station_collection_balance',{target_campaign:campaignId})
   if(balanceError)return NextResponse.json({error:balanceError.message},{status:500})
   const available=Number(balances?.[0]?.available||0)
-  if(available<=0) return NextResponse.json({error:"There are no unpaid fundraising proceeds available."},{status:400})
+  if(available<=0) return NextResponse.json({error:"No collected proceeds are currently available. Campaign proceeds become eligible 35 days after the campaign ends."},{status:400})
 
   const threshold=Number(campaign.min_payout_threshold||0)
   if(available<threshold&&campaign.status!=="completed"){

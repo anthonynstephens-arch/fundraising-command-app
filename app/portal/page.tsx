@@ -102,7 +102,7 @@ export default async function PortalOverview({searchParams}:{searchParams:Promis
       <div><span>ORDERS</span><strong>{d.orders.length}</strong><small>Shopify campaign orders</small></div>
       <div><span>ITEMS SOLD</span><strong>{s.units}</strong><small>campaign items</small></div>
       <div><span>AVG. ORDER VALUE</span><strong>{money(s.avg)}</strong><small>eligible campaign orders</small></div>
-      <div><span>AVAILABLE FOR PAYOUT</span><strong className="green">{money(Number(d.balance.available||0))}</strong><small>unpaid, unreserved campaign proceeds</small></div>
+      <div><span>AVAILABLE FOR PAYOUT</span><strong className="green">{money(Number(d.balance.available||0))}</strong><small>collected proceeds after the 35-day campaign hold</small></div>
       <div><span>AWAITING FULFILLMENT</span><strong className="orange">{s.awaiting}</strong><small>Shopify fulfillment status</small></div>
     </section>
 
