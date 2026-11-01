@@ -17,7 +17,7 @@ function csvCell(v:any){return '"'+String(v??"").replaceAll('"','""')+'"'}
 function slug(v:string){return v.replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"").toLowerCase()}
 function saveCsv(name:string,rows:any[][]){const body=rows.map(r=>r.map(csvCell).join(",")).join("\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([body],{type:"text/csv"}));a.download=name;recordActivity("download",name);a.click();URL.revokeObjectURL(a.href)}
 
-export default function ReportsTool({org,campaign,orders,products,payouts,totals}:{org:string;campaign:string;orders:any[];products:any[];payouts:any[];totals:any}){
+export default function ReportsTool({org,campaign,orders,products,payouts,totals,compact=false}:{org:string;campaign:string;orders:any[];products:any[];payouts:any[];totals:any;compact?:boolean}){
   const [type,setType]=useState<(typeof reportTypes)[number][0]>("Campaign Summary")
   const generated=new Intl.DateTimeFormat("en-US",{month:"long",day:"numeric",year:"numeric"}).format(new Date())
   const paidTotal=payouts.filter(p=>p.status==="paid").reduce((a,p)=>a+Number(p.payout||0),0)
@@ -64,7 +64,7 @@ export default function ReportsTool({org,campaign,orders,products,payouts,totals
     }
   }
 
-  function table(doc:jsPDF,headers:string[],rows:any[][],y:number,widths:number[]){
+  function table(doc:jsPDF,headers:string[],rows:any[][],y:number,widths:number[],reportTitle=type){
     const x=42,rowH=22
     const drawHeader=()=>{
       doc.setFillColor(245,247,250);doc.rect(x,y,widths.reduce((a,b)=>a+b,0),rowH,"F")
@@ -75,7 +75,7 @@ export default function ReportsTool({org,campaign,orders,products,payouts,totals
     }
     drawHeader()
     rows.forEach((row,ri)=>{
-      if(y>720){doc.addPage();addHeader(doc,doc.getNumberOfPages(),type);y=98;drawHeader()}
+      if(y>720){doc.addPage();addHeader(doc,doc.getNumberOfPages(),reportTitle);y=98;drawHeader()}
       if(ri%2===1){doc.setFillColor(251,252,253);doc.rect(x,y,widths.reduce((a,b)=>a+b,0),rowH,"F")}
       doc.setDrawColor(234,237,241);doc.line(x,y+rowH,x+widths.reduce((a,b)=>a+b,0),y+rowH)
       doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(53,67,85)
@@ -90,7 +90,8 @@ export default function ReportsTool({org,campaign,orders,products,payouts,totals
     return y
   }
 
-  function downloadPdf(){
+  function downloadPdf(selectedType=type){
+    const type=selectedType
     const doc=new jsPDF({unit:"pt",format:"letter"})
     addHeader(doc,1,type)
 
@@ -125,30 +126,38 @@ export default function ReportsTool({org,campaign,orders,products,payouts,totals
       summary.forEach(line=>{doc.text(line,42,y,{maxWidth:528});y+=14})
       y+=10
       doc.setFont("helvetica","bold");doc.setFontSize(11);doc.setTextColor(28,40,56);doc.text("Recent Orders",42,y);y+=10
-      y=table(doc,["Order","Date","Customer","Gross","Raised"],orders.map(o=>[o.order,o.date,o.customer,money(o.gross),money(o.raised)]),y,[70,82,188,94,94])
+      y=table(doc,["Order","Date","Customer","Gross","Raised"],orders.map(o=>[o.order,o.date,o.customer,money(o.gross),money(o.raised)]),y,[70,82,188,94,94],type)
 
       if(topProducts.length){
         y+=24;if(y>650){doc.addPage();addHeader(doc,doc.getNumberOfPages(),type);y=105}
         doc.setFont("helvetica","bold");doc.setFontSize(11);doc.setTextColor(28,40,56);doc.text("Top Products",42,y);y+=10
-        table(doc,["Product","Units","Gross","Fundraising"],topProducts.map(p=>[p.title,p.qty,money(p.gross),money(p.raised)]),y,[260,70,99,99])
+        y=table(doc,["Product","Units","Gross","Fundraising"],topProducts.map(p=>[p.title,p.qty,money(p.gross),money(p.raised)]),y,[260,70,99,99],type)
+      }
+      if(type==="Full Campaign Closeout Report"){
+        y+=26;if(y>650){doc.addPage();addHeader(doc,doc.getNumberOfPages(),type);y=105}
+        doc.setFont("helvetica","bold");doc.setFontSize(11);doc.setTextColor(28,40,56);doc.text("Payout Activity",42,y);y+=18
+        doc.setFont("helvetica","normal");doc.setFontSize(9);doc.text("Paid: "+money(paidTotal)+"    Pending: "+money(pendingTotal),42,y);y+=20
+        table(doc,["Date","Status","Gross","Contribution","Payout"],payouts.map(p=>[p.date,p.status,money(p.gross),money(p.contribution),money(p.payout)]),y,[88,92,112,124,112],type)
       }
     } else if(type==="Sales by Product"){
       doc.setFont("helvetica","bold");doc.setFontSize(11);doc.setTextColor(28,40,56);doc.text("Product Performance",42,y);y+=10
-      table(doc,["Product","Units","Gross","Fundraising"],products.map(p=>[p.title,p.qty,money(p.gross),money(p.raised)]),y,[260,70,99,99])
+      table(doc,["Product","Units","Gross","Fundraising"],products.map(p=>[p.title,p.qty,money(p.gross),money(p.raised)]),y,[260,70,99,99],type)
     } else if(type==="Payout Statement"){
       doc.setFont("helvetica","bold");doc.setFontSize(11);doc.setTextColor(28,40,56);doc.text("Payout Summary",42,y);y+=18
       doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(93,107,124)
       doc.text("Paid to date: "+money(paidTotal),42,y);doc.text("Pending / in progress: "+money(pendingTotal),220,y);y+=24
-      table(doc,["Date","Status","Gross","Contribution","Payout"],payouts.map(p=>[p.date,p.status,money(p.gross),money(p.contribution),money(p.payout)]),y,[88,92,112,124,112])
+      table(doc,["Date","Status","Gross","Contribution","Payout"],payouts.map(p=>[p.date,p.status,money(p.gross),money(p.contribution),money(p.payout)]),y,[88,92,112,124,112],type)
     } else {
       doc.setFont("helvetica","bold");doc.setFontSize(11);doc.setTextColor(28,40,56);doc.text("Order Ledger",42,y);y+=10
-      table(doc,["Order","Date","Customer","Gross","Eligible","Raised"],orders.map(o=>[o.order,o.date,o.customer,money(o.gross),money(o.eligible),money(o.raised)]),y,[64,76,166,74,74,74])
+      table(doc,["Order","Date","Customer","Gross","Eligible","Raised"],orders.map(o=>[o.order,o.date,o.customer,money(o.gross),money(o.eligible),money(o.raised)]),y,[64,76,166,74,74,74],type)
     }
 
     addFooter(doc)
     recordActivity("download",type+" PDF · "+campaign)
     doc.save(slug(campaign||"campaign")+"-"+slug(type)+".pdf")
   }
+
+  if(compact) return <section className="agency-card closeout-reports"><header><div><h2>Campaign reports</h2><p>Download reports for your charity committee, CFO, and records.</p></div></header><div className="closeout-report-buttons">{(["Full Campaign Closeout Report","Sales by Product","Order Summary","Payout Statement"] as const).map(name=><button className="agency-outline-button" key={name} onClick={()=>downloadPdf(name)}>↓ {name} PDF</button>)}</div></section>
 
   const previewHeaders=type==="Sales by Product"?["Product","Units","Gross","Raised"]:type==="Payout Statement"?["Date","Status","Gross","Payout"]:["Order","Date","Customer","Gross","Raised"]
 
@@ -186,7 +195,7 @@ export default function ReportsTool({org,campaign,orders,products,payouts,totals
         </div>
 
         <div className="agency-report-actions-pro">
-          <button className="agency-primary" onClick={downloadPdf}>↓ Download Professional PDF</button>
+          <button className="agency-primary" onClick={()=>downloadPdf()}>↓ Download Professional PDF</button>
           <button className="agency-outline-button" onClick={()=>saveCsv(slug(campaign)+"-"+slug(type)+".csv",csvRows())}>▤ Download CSV</button>
           <button className="agency-outline-button" onClick={()=>window.print()}>▣ Print</button>
         </div>

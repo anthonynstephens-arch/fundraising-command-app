@@ -1,3 +1,4 @@
+import ReportsTool from "@/components/portal/ReportsTool"
 import OrdersExplorer from "@/components/portal/OrdersExplorer"
 import { redirect } from 'next/navigation'
 import { orderFulfillment, statusLabel } from '@/lib/orders/status'
@@ -5,7 +6,7 @@ import Link from "next/link"
 import PortalShell from "@/components/portal/PortalShell"
 import PortalMetricChart from "@/components/portal/PortalMetricChart"
 import CampaignGoalEditor from "@/components/portal/CampaignGoalEditor"
-import { getPortalData, money, portalStats, dailySeries, portalOrderRows, isTrackingOnlyCollection } from "@/lib/portal/data"
+import { getPortalData, money, money2, portalStats, dailySeries, portalOrderRows, isTrackingOnlyCollection } from "@/lib/portal/data"
 import { customerName, orderLabel } from "@/lib/orders/display"
 import DmdOrdersOverview from '@/components/portal/DmdOrdersOverview'
 import {getDmdPortalOrders} from '@/lib/shopify/dmd-private'
@@ -59,6 +60,27 @@ export default async function PortalOverview({searchParams}:{searchParams:Promis
     productTotals.set(key,cur)
   }
   const top=[...productTotals.values()].sort((a,b)=>b.gross-a.gross).slice(0,4)
+
+  const ended=!!end && Number.isFinite(end.getTime()) && end.getTime()<=Date.now()
+  if(ended && d.campaign?.campaign_type!=="designer"){
+    const payoutDate=new Date(end!.getTime()+35*86400000)
+    const remaining=Math.max(0,Math.ceil((payoutDate.getTime()-Date.now())/86400000))
+    const productMap=new Map<string,any>()
+    for(const i of d.items){
+      const key=String(i.shopify_product_id||i.campaign_product_id||i.title)
+      const row=productMap.get(key)||{title:i.title,qty:0,gross:0,raised:0}
+      row.qty+=Number(i.quantity||0);row.gross+=Number(i.unit_price||0)*Number(i.quantity||0);row.raised+=Number(i.contribution_amount||0)-Number(i.refunded_contribution_amount||0)
+      productMap.set(key,row)
+    }
+    const payoutRows=d.payouts.map((p:any)=>({date:new Date(p.created_at).toLocaleDateString(),status:p.status,gross:Number(p.gross_sales||0),contribution:Number(p.contribution_amount||0),payout:Number(p.payout_amount||0)}))
+    return <PortalShell org={d.org} campaign={d.campaign} campaigns={d.campaigns} userEmail={d.user.email||""} organizationId={d.organizationId} platform={d.platform} lastSynced={d.lastWebhook?.created_at||null} pinAccess={!!d.pinSession} collectionOnly={!!d.collectionOnly}>
+      <section className="agency-card closeout-hero"><span className="closeout-label">CAMPAIGN COMPLETE</span><h1>{d.campaign.name}</h1><p>Thank you for bringing your community together. Here is your campaign closeout at a glance.</p></section>
+      <section className="agency-kpis closeout-kpis"><div><span>FUNDRAISING PROCEEDS</span><strong className="green">{money2(s.raised)}</strong><small>Current total, subject to adjustments</small></div><div><span>TOTAL ORDERS</span><strong>{d.orders.length}</strong><small>Campaign orders, including cancelled orders</small></div><div><span>PAYOUT REVIEW</span><strong>{remaining>0?`${remaining} day${remaining===1?'':'s'}`:'Review due'}</strong><small>{remaining>0?'Until the estimated payout date': 'The estimated payout date has arrived'}</small></div></section>
+      <section className="agency-card closeout-note"><h2>Payout timeline</h2><p>The estimated payout date is <b>{payoutDate.toLocaleDateString('en-US',{timeZone:'America/Detroit',month:'long',day:'numeric',year:'numeric'})}</b>, 35 days after the campaign ends. This allows time for funds to be collected and for returns or chargebacks during the 30-day window to be accounted for. These adjustments can change the final amount.</p><p>This date is an estimate, not confirmation that a transfer has been sent. Check <Link href={'/portal/payouts?org='+encodeURIComponent(d.organizationId)+'&campaign='+encodeURIComponent(d.campaign.id)}>payout activity</Link> for the actual status.</p></section>
+      <ReportsTool compact org={d.org.name} campaign={d.campaign.name} orders={portalOrderRows(d)} products={[...productMap.values()]} payouts={payoutRows} totals={s}/>
+      <p className="closeout-more"><Link href={'/portal/reports?org='+encodeURIComponent(d.organizationId)+'&campaign='+encodeURIComponent(d.campaign.id)}>View all reports and CSV options →</Link></p>
+    </PortalShell>
+  }
 
   return <PortalShell org={d.org} campaign={d.campaign} campaigns={d.campaigns} userEmail={d.user.email||""} organizationId={d.organizationId} platform={d.platform} lastSynced={d.lastWebhook?.created_at||null} pinAccess={!!d.pinSession} collectionOnly={!!d.collectionOnly}>
     <section className="agency-hero">
