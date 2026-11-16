@@ -1835,3 +1835,18 @@ input:focus,select:focus,textarea:focus{
 
 /* Completed campaign overview */
 .closeout-hero{padding:30px;margin-bottom:18px;background:linear-gradient(120deg,#f7fbff,#fff);border:1px solid #dce9f3}.closeout-hero h1{font-size:clamp(28px,4vw,40px);font-weight:800;margin:9px 0;color:#182d45}.closeout-hero p,.closeout-note p{line-height:1.6;color:#52677b}.closeout-label{font-size:11px;font-weight:800;letter-spacing:.12em;color:#08765c}.closeout-kpis{grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:18px}.closeout-note,.closeout-reports{padding:24px;margin-bottom:18px}.closeout-note h2{margin:0;font-size:19px}.closeout-note p:last-child{margin-bottom:0}.closeout-report-buttons{display:flex;flex-wrap:wrap;gap:10px}.closeout-more{margin:0 0 24px}.closeout-more a,.closeout-note a{color:#145b9e;font-weight:700}@media(max-width:700px){.closeout-kpis{grid-template-columns:1fr}.closeout-report-buttons{display:grid}.closeout-hero{padding:22px}}
+
+/* Admin navigation must remain available when the desktop sidebar is hidden. */
+.fc-mobile-menu{display:none}
+@media(max-width:900px){
+  .fc-app-mobile-brand{padding:14px 16px!important;gap:10px!important;align-items:center!important}
+  .fc-mobile-menu{display:block;margin:0 16px;border:1px solid #dddfea;border-radius:12px;background:#fff;color:#24324a}
+  .fc-mobile-menu summary{min-height:48px;padding:14px 16px;cursor:pointer;font-weight:800;list-style:none;touch-action:manipulation}
+  .fc-mobile-menu summary::-webkit-details-marker{display:none}
+  .fc-mobile-menu summary span{margin-left:8px}
+  .fc-mobile-menu[open] summary{border-bottom:1px solid #e6e8ef}
+  .fc-mobile-menu nav{display:grid;padding:8px;gap:4px}
+  .fc-mobile-menu nav a{display:flex;align-items:center;min-height:48px;padding:12px;border-radius:8px;touch-action:manipulation}
+  .fc-mobile-menu nav a[aria-current="page"]{background:#edeaff;color:#5146d7;font-weight:800}
+  .fc-mobile-menu :is(a,summary):focus-visible{outline:3px solid #6554db;outline-offset:2px}
+}

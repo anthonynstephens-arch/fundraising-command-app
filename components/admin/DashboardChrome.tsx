@@ -21,6 +21,8 @@ const nav = [
 export default function DashboardChrome({ children, showActivity=false }: { children: React.ReactNode; showActivity?:boolean }) {
   const pathname = usePathname()
 
+  const navigation = [...nav, ...(showActivity ? [{ href: "/dashboard/activity", label: "Activity Log" }] : [])]
+
   return (
     <div className="fc-app">
       <aside className="fc-app-sidebar">
@@ -33,8 +35,8 @@ export default function DashboardChrome({ children, showActivity=false }: { chil
         </Link>
 
         <div className="fc-nav-label">PLATFORM</div>
-        <nav className="fc-app-nav">
-          {[...nav,...(showActivity?[{href:'/dashboard/activity',label:'Activity Log'}]:[])].map((item) => {
+        <nav className="fc-app-nav" aria-label="Platform administration">
+          {navigation.map((item) => {
             const active = item.exact ? pathname === item.href : pathname.startsWith(item.href)
             return <Link key={item.href} href={item.href} className={active ? "active" : ""}>{item.label}</Link>
           })}
@@ -57,6 +59,19 @@ export default function DashboardChrome({ children, showActivity=false }: { chil
           <span className="fc-app-brand-mark">FC</span>
           <strong>Fundraising Command</strong>
         </div>
+        <details className="fc-mobile-menu" key={pathname}>
+          <summary>☰ <span>Menu</span></summary>
+          <nav aria-label="Mobile platform administration">
+            {navigation.map((item) => {
+              const active = item.exact ? pathname === item.href : pathname.startsWith(item.href)
+              return <Link key={item.href} href={item.href} aria-current={active ? "page" : undefined}>{item.label}</Link>
+            })}
+            <Link href={pathname.startsWith("/dashboard/stations") ? "/station" : "/portal"} target="_blank">{pathname.startsWith("/dashboard/stations") ? "Station Portal ↗" : "Department Portal ↗"}</Link>
+            <Link href="/demo/breast-cancer-awareness" target="_blank">BCA Demo ↗</Link>
+            <Link href="/fundraisers" target="_blank">Public Fundraisers ↗</Link>
+            <Link href="/apply" target="_blank">Public Application ↗</Link>
+          </nav>
+        </details>
         <div className="fc-app-content">{children}</div>
       </main>
     </div>
