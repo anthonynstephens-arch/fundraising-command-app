@@ -7,10 +7,10 @@ import {shopifyGraphQL, toShopifyGid} from "@/lib/shopify/admin"
 
 export type StoreImage={url:string;altText:string|null;width:number|null;height:number|null}
 export type StoreVariant={id:string;title:string;price:number;available:boolean;selectedOptions:{name:string;value:string}[];image:StoreImage|null}
-export type StoreProduct={id:string;handle:string;title:string;description:string;sizeGuide?:ProductSizeGuide;images:StoreImage[];options:{name:string;values:string[]}[];variants:StoreVariant[];minPrice:number;maxPrice:number;available:boolean}
+export type StoreProduct={vendor?:string|null;id:string;handle:string;title:string;description:string;sizeGuide?:ProductSizeGuide;images:StoreImage[];options:{name:string;values:string[]}[];variants:StoreVariant[];minPrice:number;maxPrice:number;available:boolean}
 
 type ShopifyProduct={
-  id:string;title:string;handle:string;description:string;descriptionHtml:string;status:string
+  id:string;title:string;handle:string;vendor:string;description:string;descriptionHtml:string;status:string
   featuredImage:StoreImage|null
   images:{nodes:StoreImage[]}
   options:{name:string;values:string[]}[]
@@ -20,7 +20,7 @@ type ShopifyProduct={
 const productQuery=`query CampaignStoreProducts($ids: [ID!]!) {
   nodes(ids: $ids) {
     ... on Product {
-      id title handle description descriptionHtml status
+      id title handle vendor description descriptionHtml status
       featuredImage { url altText width height }
       images(first: 20) { nodes { url altText width height } }
       options { name values }
@@ -39,7 +39,7 @@ function numericId(value:string){return value.includes("/")?(value.split("/").po
 
 function fallbackProducts(campaign:any):StoreProduct[]{
   return campaign.products.map((product:any)=>({
-    id:String(product.productId),
+    id:String(product.productId), vendor:product.vendor||null,
     handle:product.handle||String(product.productId),
     title:product.title,
     description:"",
@@ -79,7 +79,7 @@ export const getCampaignStorefront = cache(async (slug:string)=>{
       const images=product.images.nodes.length?product.images.nodes:(product.featuredImage?[product.featuredImage]:[])
       const prices=variants.map(variant=>variant.price)
       const sizeGuide=getProductSizeGuide(product.descriptionHtml || "")
-      return {id:numericId(product.id),handle:product.handle,title:product.title,description:productDescriptionWithoutSizeGuide(product.description,sizeGuide),sizeGuide,images,
+      return {id:numericId(product.id),handle:product.handle,title:product.title,vendor:product.vendor,description:productDescriptionWithoutSizeGuide(product.description,sizeGuide),sizeGuide,images,
         options:product.options.filter(option=>!(option.name==="Title"&&option.values.length===1&&option.values[0]==="Default Title")),
         variants,minPrice:prices.length?Math.min(...prices):0,maxPrice:prices.length?Math.max(...prices):0,available:variants.some(variant=>variant.available)}
     }).filter(product=>product.variants.length)

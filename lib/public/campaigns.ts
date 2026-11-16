@@ -26,7 +26,7 @@ export async function getPublicCampaign(slug: string) {
   const refIds = [...new Set(rows.map((x:any)=>x.shopify_product_ref_id).filter(Boolean))]
 
   const [{data: products},{data: items},{data: mappings},{data: stores}] = await Promise.all([
-    refIds.length ? db.from("shopify_products").select("id,handle,image_url").in("id", refIds) : Promise.resolve({data:[]}),
+    refIds.length ? db.from("shopify_products").select("id,handle,image_url,vendor").in("id", refIds) : Promise.resolve({data:[]}),
     cpIds.length ? db.from("order_items").select("order_id,campaign_product_id,quantity,unit_price,contribution_amount,refunded_contribution_amount").in("campaign_product_id", cpIds) : Promise.resolve({data:[]}),
     db.from("campaign_shopify_collections").select("handle").eq("campaign_id", campaign.id).limit(1),
     db.from("shopify_stores").select("shop_domain").eq("organization_id", campaign.organization_id).eq("is_active", true).limit(1),
@@ -46,6 +46,7 @@ export async function getPublicCampaign(slug: string) {
       productId:String(row.shopify_product_id || key),
       handle:normalized?.handle || null,
       title:row.title,
+      vendor:normalized?.vendor || null,
       imageUrl:row.image_url || normalized?.image_url || null,
       productUrl:normalized?.handle ? `https://${shopDomain}/products/${normalized.handle}` : storeUrl,
       minPrice:price,maxPrice:price,variants:[]
