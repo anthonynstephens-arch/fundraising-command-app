@@ -56,7 +56,7 @@ function fallbackProducts(campaign:any):StoreProduct[]{
 // Share catalog reads across page visits; checkout still validates live pricing.
 const getStoreProducts = unstable_cache(
   async (ids:string[]) => shopifyGraphQL<{nodes:Array<ShopifyProduct|null>}>(productQuery,{ids}),
-  ["public-store-products-v1"],
+  ["public-store-products-v2"],
   {revalidate:30},
 )
 
