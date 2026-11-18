@@ -6,7 +6,7 @@ export default function LegalDocument({ title, content }: { title: string; conte
     <header><Link href="/">Fundraiser Command</Link><span>Detroit Decal &amp; Apparel, LLC</span></header>
     <article>
       <p className="fc-legal-eyebrow">POLICIES &amp; INFORMATION</p>
-      <h1>{title}</h1><p className="fc-legal-date">Effective date: {effectiveDate}</p>
+      <h1>{title}</h1>{title !== 'Terms of Service' && <p className="fc-legal-date">Effective date: {effectiveDate}</p>}
       <nav className="fc-legal-toc" aria-label="On this page">{content.split('\n\n').filter(block => block.startsWith('## ')).map((block) => {
         const heading = block.split('\n')[0].slice(3)
         return <a key={heading} href={`#section-${heading.split('.')[0]}`}>{heading}</a>
