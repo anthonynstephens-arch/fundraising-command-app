@@ -31,3 +31,8 @@
 .mk-club-logo{z-index:2;cursor:pointer}.mk-club-logo:focus-visible{outline:3px solid #7556a0;outline-offset:4px}.mk-collection-breadcrumb{display:flex;justify-content:space-between;gap:16px;padding:28px 8%;background:#eeeaf3;font:900 11px Manakoa Winner,Arial,sans-serif;letter-spacing:.1em}.mk-collection-empty{padding:90px 8% 130px;min-height:440px}.mk-collection-empty h1{font:900 clamp(40px,6vw,80px)/1 Manakoa Winner Wide,Arial,sans-serif;color:#101014}.mk-collection-empty p:not(.mk-label){color:#696570;margin:20px 0 30px}@media(max-width:700px){.mk-collection-breadcrumb{padding:24px 6%;font-size:9px}.mk-collection-empty{padding:70px 6% 100px}}
 /* Restrained movement for the hero; reduced-motion users see the static banner. */
 @media (prefers-reduced-motion:no-preference){.mk-hero-inner{animation:mk-hero-enter .8s ease-out both}.mk-shark-hero{animation:mk-shark-drift 7s ease-in-out infinite}.mk-hero:after{animation:mk-banner-light 8s ease-in-out infinite alternate}@keyframes mk-hero-enter{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}@keyframes mk-shark-drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}@keyframes mk-banner-light{from{opacity:.1}to{opacity:.22}}}
+
+/* Give each club emblem a clean, unobstructed area. */
+.mk-card-art .mk-card-watermark,.mk-card-art .mk-card-caption{display:none}
+.mk-card-art .mk-club-logo{inset:48px 28px 24px}
+@media(max-width:700px){.mk-card-art .mk-club-logo{inset:42px 24px 20px}}
