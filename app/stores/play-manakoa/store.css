@@ -14,3 +14,8 @@
 .manakoa-store :is(.mk-topline,.mk-kicker,.mk-label,.mk-header nav,.mk-nav-button,.mk-button,.mk-ticker,.mk-card-number,.mk-card-caption,.mk-card-body>p,.mk-card-link,.mk-cart,.mk-product-brand,.mk-product-meta button,.mk-product-meta strong,.mk-detail-copy h2,.mk-footer-bottom){font-family:Manakoa Winner,Arial,sans-serif}
 .mk-shark-hero img,.mk-shark-card img{width:100%!important;height:100%!important;max-width:100%!important;left:0;top:0;object-fit:contain}
 @media(max-width:700px){.mk-hero h1{font-size:clamp(37px,9.5vw,68px)}.mk-card h3{font-size:clamp(24px,7vw,36px)}}
+
+/* Keep the wide team type readable beside the mascot. */
+.manakoa-store .mk-hero h1{color:#fff!important;font-size:clamp(42px,5.1vw,76px);line-height:1.02;letter-spacing:-.045em}
+.manakoa-store .mk-hero h1 em{color:#ad9ed0}
+@media(max-width:700px){.manakoa-store .mk-hero h1{font-size:clamp(29px,7.3vw,50px)}}
