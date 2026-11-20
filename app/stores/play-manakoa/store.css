@@ -22,3 +22,6 @@
 
 /* Each club is represented by its own supplied emblem. */
 .mk-card .mk-card-art,.mk-card:nth-child(2) .mk-card-art{background:#fff;color:#292032}.mk-club-logo{position:absolute;inset:42px 24px 36px;display:flex;align-items:center;justify-content:center}.mk-club-logo img{width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain}.mk-card-art .mk-card-watermark{color:#a99acd;opacity:.12;pointer-events:none}.mk-card-number,.mk-card-caption{z-index:1}@media(max-width:700px){.mk-club-logo{inset:35px 22px 32px}}
+
+/* The image and title are already clickable; hide the overlapping action label. */
+.mk-product-art>span:last-child{display:none}
