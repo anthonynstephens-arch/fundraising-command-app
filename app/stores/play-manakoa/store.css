@@ -25,3 +25,6 @@
 
 /* The image and title are already clickable; hide the overlapping action label. */
 .mk-product-art>span:last-child{display:none}
+
+/* Honor the inset on both sides so the image is centered over its details. */
+.mk-product-art .dmd-floating-image,.mk-detail-art .dmd-floating-image{width:auto;height:auto}
